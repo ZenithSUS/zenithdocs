@@ -1,15 +1,23 @@
 import express from "express";
-import header from "./middleware/headers";
+import header from "./middlewares/header.middleware";
+import logger from "./middlewares/logger.middleware";
 import helmet from "helmet";
 import cors from "cors";
 import config from "./config/env";
+import notFound from "./middlewares/notFound.middleware";
+import errorHandler from "./middlewares/error.middleware";
+
+// Routers
+import userRouter from "./routes/user.route";
+import apiKeyVerifier from "./middlewares/api-key-verifier.middleware";
 
 const app = express();
 
-const origins = config.allowedOrigins.split(",");
+const origins = config.server.allowedOrigins.split(",");
 
 // Express Middleware Config
 app.use(header);
+app.use(logger);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
@@ -28,5 +36,12 @@ app.use(
     },
   }),
 );
+
+// Routes
+app.use("/api/users", apiKeyVerifier, userRouter);
+
+// Error Handlers
+app.use(notFound);
+app.use(errorHandler);
 
 export default app;
