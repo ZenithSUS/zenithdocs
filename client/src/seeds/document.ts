@@ -1,0 +1,77 @@
+import Doc from "@/types/doc";
+
+const DOCUMENTS: Doc[] = [
+  {
+    _id: "d1",
+    title: "Service Agreement 2026.pdf",
+    fileType: "pdf",
+    fileSize: 248000,
+    status: "completed",
+    folder: "f1",
+    createdAt: "2026-02-01",
+  },
+  {
+    _id: "d2",
+    title: "NLP Research Overview.docx",
+    fileType: "docx",
+    fileSize: 512000,
+    status: "completed",
+    folder: "f2",
+    createdAt: "2026-02-03",
+  },
+  {
+    _id: "d3",
+    title: "Q1 Strategy Meeting.txt",
+    fileType: "txt",
+    fileSize: 32000,
+    status: "completed",
+    folder: "f3",
+    createdAt: "2026-02-05",
+  },
+  {
+    _id: "d4",
+    title: "Employment Contract Draft.pdf",
+    fileType: "pdf",
+    fileSize: 189000,
+    status: "processing",
+    folder: "f1",
+    createdAt: "2026-02-10",
+  },
+  {
+    _id: "d5",
+    title: "AI Ethics Paper.pdf",
+    fileType: "pdf",
+    fileSize: 876000,
+    status: "completed",
+    folder: "f2",
+    createdAt: "2026-02-11",
+  },
+  {
+    _id: "d6",
+    title: "Product Roadmap 2026.docx",
+    fileType: "docx",
+    fileSize: 340000,
+    status: "failed",
+    createdAt: "2026-02-12",
+  },
+  {
+    _id: "d7",
+    title: "Vendor Agreement.pdf",
+    fileType: "pdf",
+    fileSize: 155000,
+    status: "uploaded",
+    folder: "f1",
+    createdAt: "2026-02-14",
+  },
+  {
+    _id: "d8",
+    title: "Transformer Architecture.pdf",
+    fileType: "pdf",
+    fileSize: 1240000,
+    status: "completed",
+    folder: "f2",
+    createdAt: "2026-02-14",
+  },
+];
+
+export default DOCUMENTS;
