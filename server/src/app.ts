@@ -41,6 +41,16 @@ app.use(
   }),
 );
 
+// Health Check
+app.get("/health", (req, res) => res.status(200).json({ success: true }));
+
+// Root Route
+app.get("/", (req, res) =>
+  res
+    .status(200)
+    .json({ success: true, message: "Welcome to the ZenithDocs " }),
+);
+
 // Routes
 app.use("/api/users", apiKeyVerifier, userRouter);
 app.use("/api/auth", apiKeyVerifier, authRouter);
