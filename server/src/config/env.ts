@@ -6,6 +6,10 @@ const config = {
     allowedOrigins: process.env.ALLOWED_ORIGINS || "http://localhost:5000",
     apikey: process.env.API_KEY || "",
   },
+  jwt: {
+    accessSecret: process.env.JWT_ACCESS_SECRET || "",
+    refreshSecret: process.env.JWT_REFRESH_SECRET || "",
+  },
   ai: {
     mistralai: process.env.MISTRALAI_API_KEY || "",
   },
@@ -22,6 +26,9 @@ const requiredEnvVars = [
   "MISTRALAI_API_KEY",
   "MONGODB_URI_DEV",
   "ALLOWED_ORIGINS",
+  "API_KEY",
+  "JWT_ACCESS_SECRET",
+  "JWT_REFRESH_SECRET",
 ];
 
 requiredEnvVars.forEach((envVar) => {
