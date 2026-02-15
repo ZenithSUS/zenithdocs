@@ -10,6 +10,7 @@ import errorHandler from "./middlewares/error.middleware";
 // Routers
 import userRouter from "./routes/user.route";
 import apiKeyVerifier from "./middlewares/api-key-verifier.middleware";
+import jwtKeyVerifier from "./middlewares/jwt-key-verifier.middleware";
 
 const app = express();
 
