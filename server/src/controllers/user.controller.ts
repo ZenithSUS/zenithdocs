@@ -6,12 +6,58 @@ import {
   getAllUsersService,
   getUserByEmailService,
   getUserByIdService,
+  loginService,
   updateUserService,
 } from "../services/user.service";
 
-interface UserParams {
+import { ParamsDictionary } from "express-serve-static-core";
+import { hashPassword } from "../utils/bcrypt-password";
+
+interface UserParams extends ParamsDictionary {
   id: string;
 }
+
+/**
+ * Login user
+ * POST /api/login
+ */
+export const loginController = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and password are required",
+      });
+    }
+
+    const result = await loginService(email, password);
+
+    res.cookie("refreshToken", result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "User logged in successfully",
+      data: {
+        user: result.user,
+        accessToken: result.accessToken,
+      },
+    });
+  } catch (error: unknown) {
+    const err = error as Error;
+    return res.status(500).json({
+      success: false,
+      message: "Error logging in user",
+      error: err.message,
+    });
+  }
+};
 
 /**
  * Create a new user
@@ -23,6 +69,14 @@ export const createUserController = async (
 ): Promise<void> => {
   try {
     const { email, password, role, tokensUsed } = req.body;
+
+    if (!email || !password) {
+      res.status(400).json({
+        success: false,
+        message: "Email and password are required",
+      });
+      return;
+    }
 
     // Check if user already exists
     const existingUser = await getUserByEmailService(email);
@@ -46,7 +100,7 @@ export const createUserController = async (
       message: "User created successfully",
       data: user,
     });
-  } catch (error) {
+  } catch (error: unknown) {
     const err = error as Error;
     res.status(500).json({
       success: false,
@@ -128,7 +182,7 @@ export const updateUserController = async (
     const { id } = req.params;
     const { email, password, role, tokensUsed, refreshToken } = req.body;
 
-    if (!id && typeof id !== "string") {
+    if (!id || typeof id !== "string") {
       res.status(400).json({
         success: false,
         message: "User ID is required",
@@ -159,8 +213,13 @@ export const updateUserController = async (
     }
 
     const updateData: Record<string, unknown> = {};
+
+    // Update user data
     if (email) updateData.email = email;
-    if (password) updateData.password = password;
+    if (password) {
+      const hashedPassword = await hashPassword(password);
+      updateData.password = hashedPassword;
+    }
     if (role) updateData.role = role;
     if (tokensUsed !== undefined) updateData.tokensUsed = tokensUsed;
     if (refreshToken !== undefined) updateData.refreshToken = refreshToken;

@@ -1,3 +1,4 @@
+import config from "../config/env";
 import { IUser } from "../models/User";
 import {
   createUser,
@@ -7,7 +8,53 @@ import {
   getUserById,
   updateUser,
 } from "../repositories/user.repository";
-import { hashPassword } from "../utils/bcrypt-password";
+import { comparePassword, hashPassword } from "../utils/bcrypt-password";
+import jwt from "jsonwebtoken";
+
+/**
+ * Login user
+ * @param email - User email
+ * @param password - User password
+ * @returns User if found, null otherwise
+ */
+export const loginService = async (email: string, password: string) => {
+  const user = await getUserByEmail(email);
+
+  if (!user) throw new Error("Invalid credentials");
+
+  const isMatch = await comparePassword(password, user.password!);
+
+  if (!isMatch) throw new Error("Invalid credentials");
+
+  // Generate access token and refresh token
+  const accessToken = jwt.sign(
+    { sub: user._id, role: user.role },
+    config.jwt.accessSecret,
+    { expiresIn: "1h" },
+  );
+
+  const refreshToken = jwt.sign(
+    { userId: user._id },
+    config.jwt.refreshSecret,
+    {
+      expiresIn: "7d",
+    },
+  );
+
+  // Update user refresh token in DB
+  user.refreshToken = refreshToken;
+  await user.save();
+
+  return {
+    user: {
+      id: user._id,
+      email: user.email,
+      role: user.role,
+    },
+    accessToken,
+    refreshToken,
+  };
+};
 
 /**
  * Create a new user

@@ -1,5 +1,6 @@
 import User, { IUser } from "../models/User";
 import mongoose from "mongoose";
+import { comparePassword } from "../utils/bcrypt-password";
 
 /**
  * Create a new user
