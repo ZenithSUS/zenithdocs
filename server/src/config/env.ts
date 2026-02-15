@@ -22,10 +22,6 @@ const config = {
   },
 };
 
-console.log("=".repeat(50));
-console.log(`${colors.green}Server Config: ${colors.reset}`, config);
-console.log("=".repeat(50));
-
 // Check if the required environment variables are set
 const requiredEnvVars = [
   "MISTRALAI_API_KEY",
