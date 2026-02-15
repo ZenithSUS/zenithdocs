@@ -1,4 +1,5 @@
 import "dotenv/config";
+import colors from "../utils/log-colors";
 
 const config = {
   server: {
@@ -20,6 +21,10 @@ const config = {
         : process.env.MONGODB_URI_DEV || "",
   },
 };
+
+console.log("=".repeat(50));
+console.log(`${colors.green}Server Config: ${colors.reset}`, config);
+console.log("=".repeat(50));
 
 // Check if the required environment variables are set
 const requiredEnvVars = [
