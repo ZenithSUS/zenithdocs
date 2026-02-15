@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     "document collaboration",
     "ZenithDocs",
   ],
-  authors: [{ name: "ZenithDocs", url: BASE_URL }],
+  authors: [{ name: "ZenithDocs" }],
   creator: "ZenithDocs",
   publisher: "ZenithDocs",
   category: "Productivity",
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
   // Open Graph
   openGraph: {
     type: "website",
-    url: BASE_URL,
+
     siteName: "ZenithDocs",
     title: "ZenithDocs — AI-Powered Document Manager",
     description:
