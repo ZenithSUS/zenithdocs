@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import GoogleIcon from "@/src/components/google-icon";
-import CursorGlow from "@/src/components/cursor-glow";
+import GoogleIcon from "@/components/GoogleIcon";
+import CursorGlow from "@/components/CursorGlow";
 
 // ── Zod schema ───────────────────────────────────────────────────────────────
 const loginSchema = z.object({

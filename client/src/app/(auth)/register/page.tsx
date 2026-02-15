@@ -5,9 +5,9 @@ import Link from "next/link";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import getPasswordStrength from "@/src/utils/password-strength";
-import GoogleIcon from "@/src/components/google-icon";
-import CursorGlow from "@/src/components/cursor-glow";
+import getPasswordStrength from "@/utils/password-strength";
+import GoogleIcon from "@/components/GoogleIcon";
+import CursorGlow from "@/components/CursorGlow";
 
 const registerSchema = z
   .object({
@@ -166,12 +166,14 @@ export default function RegisterPage() {
         />
 
         {/* Logo */}
-        <div className="relative z-10 flex items-center gap-2.5">
-          <span className="text-[22px] text-primary">◈</span>
-          <span className="text-[18px] font-bold tracking-[0.08em] font-serif">
-            ZENITH<span className="text-primary">DOCS</span>
-          </span>
-        </div>
+        <Link href="/" className="cursor-pointer">
+          <div className="relative z-10 flex items-center gap-2.5">
+            <span className="text-[22px] text-primary">◈</span>
+            <span className="text-[18px] font-bold tracking-[0.08em] font-serif">
+              ZENITH<span className="text-primary">DOCS</span>
+            </span>
+          </div>
+        </Link>
 
         {/* Feature list */}
         <div className="relative z-10 flex-1 flex flex-col justify-center px-4">
