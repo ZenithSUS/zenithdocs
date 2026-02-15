@@ -1,16 +1,19 @@
+// Dependencies
 import express from "express";
-import header from "./middlewares/header.middleware";
-import logger from "./middlewares/logger.middleware";
 import helmet from "helmet";
 import cors from "cors";
 import config from "./config/env";
+
+// Middlewares
+import header from "./middlewares/header.middleware";
+import logger from "./middlewares/logger.middleware";
 import notFound from "./middlewares/notFound.middleware";
 import errorHandler from "./middlewares/error.middleware";
+import apiKeyVerifier from "./middlewares/api-key-verifier.middleware";
 
 // Routers
 import userRouter from "./routes/user.route";
-import apiKeyVerifier from "./middlewares/api-key-verifier.middleware";
-import jwtKeyVerifier from "./middlewares/jwt-key-verifier.middleware";
+import authRouter from "./routes/auth.route";
 
 const app = express();
 
@@ -40,6 +43,7 @@ app.use(
 
 // Routes
 app.use("/api/users", apiKeyVerifier, userRouter);
+app.use("/api/auth", apiKeyVerifier, authRouter);
 
 // Error Handlers
 app.use(notFound);
