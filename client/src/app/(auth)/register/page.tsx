@@ -5,9 +5,9 @@ import Link from "next/link";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import GoogleIcon from "../../components/google-icon";
-import getPasswordStrength from "../../utils/password-strength";
-import CursorGlow from "../../components/cursor-glow";
+import getPasswordStrength from "@/src/utils/password-strength";
+import GoogleIcon from "@/src/components/google-icon";
+import CursorGlow from "@/src/components/cursor-glow";
 
 const registerSchema = z
   .object({
