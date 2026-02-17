@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
-import config from "../config/env";
+import config from "../config/env.js";
 import jwt from "jsonwebtoken";
-import { JwtPayload } from "../types/express";
+import { JwtPayload } from "../types/express.js";
 
 const jwtKeyVerifier = (req: Request, res: Response, next: NextFunction) => {
   const secret = config.jwt.accessSecret;
@@ -31,11 +31,8 @@ const jwtKeyVerifier = (req: Request, res: Response, next: NextFunction) => {
         .json({ error: "Invalid token, Unauthorized Access to the server" });
     }
     req.user = decoded as JwtPayload;
+    next();
   });
-
-  console.log(req.user);
-
-  next();
 };
 
 export default jwtKeyVerifier;
