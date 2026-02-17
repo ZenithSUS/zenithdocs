@@ -3,12 +3,14 @@ import { Response, ResponseWithUser } from "@/types/api";
 import { AuthInput } from "@/types/input";
 
 export type LoginResponse = {
-  user: {
-    _id: string;
-    email: string;
-    role: string;
+  data: {
+    user: {
+      _id: string;
+      email: string;
+      role: string;
+    };
+    accessToken: string;
   };
-  accessToken: string;
 } & Response;
 
 export type RegisterResponse = ResponseWithUser;
@@ -26,6 +28,12 @@ export const register = async ({ email, password }: AuthInput) => {
     email,
     password,
   });
+  return data;
+};
+
+export const getMe = async () => {
+  const { data } =
+    await api.get<Omit<ResponseWithUser, "message">>("/api/auth/me");
   return data;
 };
 

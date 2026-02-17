@@ -1,12 +1,13 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  getMe,
   login,
   LoginResponse,
   register,
   RegisterResponse,
 } from "@/features/auth/auth.api";
 import { authKeys } from "@/features/auth/auth.keys";
-import { AxiosError } from "@/types/api";
+import { AxiosError, ResponseWithUser } from "@/types/api";
 import { AuthInput } from "@/types/input";
 
 const useAuth = () => {
@@ -30,7 +31,14 @@ const useAuth = () => {
     },
   );
 
+  // Me
+  const me = useQuery<Omit<ResponseWithUser, "message">, AxiosError>({
+    queryKey: authKeys.user(),
+    queryFn: getMe,
+  });
+
   return {
+    me,
     loginMutation,
     registerMutation,
     loginLoading: loginMutation.isPending,
