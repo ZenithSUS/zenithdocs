@@ -8,6 +8,8 @@ export type NavItem =
   | "usage";
 
 interface DashboardSidebarProps {
+  userLoading: boolean;
+  email: string | undefined;
   nav: NavItem;
   setNav: React.Dispatch<React.SetStateAction<NavItem>>;
   sidebarOpen: boolean;
@@ -27,6 +29,8 @@ const navItems: { id: NavItem; icon: string; label: string }[] = [
 ];
 
 function DashBoardSidebar({
+  userLoading,
+  email,
   nav,
   setNav,
   sidebarOpen,
@@ -117,7 +121,7 @@ function DashBoardSidebar({
         </div>
         <div className="flex-1 min-w-0">
           <div className="text-[13px] font-sans text-text/80 truncate">
-            archie@company.com
+            {userLoading ? "Getting user info" : email || "Anonymous"}
           </div>
           <div className="text-[10px] text-text/30 font-sans tracking-wider">
             FREE PLAN
