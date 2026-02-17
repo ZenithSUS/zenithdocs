@@ -1,5 +1,5 @@
-import config from "../config/env";
-import { IUser } from "../models/User";
+import config from "../config/env.js";
+import { IUser } from "../models/User.js";
 import {
   createUser,
   deleteUser,
@@ -7,8 +7,8 @@ import {
   getUserByEmail,
   getUserById,
   updateUser,
-} from "../repositories/user.repository";
-import { comparePassword, hashPassword } from "../utils/bcrypt-password";
+} from "../repositories/user.repository.js";
+import { comparePassword, hashPassword } from "../utils/bcrypt-password.js";
 import jwt from "jsonwebtoken";
 
 /**

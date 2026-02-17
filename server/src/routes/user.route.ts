@@ -7,9 +7,9 @@ import {
   getAllUsersController,
   getUserByIdController,
   updateUserController,
-} from "../controllers/user.controller";
-import jwtKeyVerifier from "../middlewares/jwt-key-verifier.middleware";
-import authorizeSelf from "../middlewares/authorize-self.middleware";
+} from "../controllers/user.controller.js";
+import jwtKeyVerifier from "../middlewares/jwt-key-verifier.middleware.js";
+import authorizeSelf from "../middlewares/authorize-self.middleware.js";
 
 // User routes
 router.get("/", jwtKeyVerifier, getAllUsersController);

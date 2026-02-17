@@ -8,10 +8,10 @@ import {
   getUserByIdService,
   loginService,
   updateUserService,
-} from "../services/user.service";
+} from "../services/user.service.js";
 
 import { ParamsDictionary } from "express-serve-static-core";
-import { hashPassword } from "../utils/bcrypt-password";
+import { hashPassword } from "../utils/bcrypt-password.js";
 
 interface UserParams extends ParamsDictionary {
   id: string;
@@ -51,6 +51,13 @@ export const loginController = async (req: Request, res: Response) => {
     });
   } catch (error: unknown) {
     const err = error as Error;
+    if (err.message === "Invalid credentials") {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
+
     return res.status(500).json({
       success: false,
       message: "Error logging in user",
@@ -97,7 +104,7 @@ export const createUserController = async (
 
     res.status(201).json({
       success: true,
-      message: "User created successfully",
+      message: "User registered successfully",
       data: user,
     });
   } catch (error: unknown) {
@@ -140,6 +147,36 @@ export const getUserByIdController = async (
       success: false,
       message: "Error fetching user",
       error: err.message,
+    });
+  }
+};
+
+/**
+ * Get user by access token
+ * GET /api/users/me
+ *
+ */
+export const getMeController = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user.sub;
+
+    const user = await getUserByIdService(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: user,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching user",
     });
   }
 };
