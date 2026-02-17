@@ -5,6 +5,7 @@ export interface IUser extends Document {
   password?: string;
   role: "user" | "admin";
   tokensUsed: number;
+  plan: string;
   refreshToken?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -29,6 +30,11 @@ const userSchema = new Schema<IUser>(
       type: String,
       enum: ["user", "admin"],
       default: "user",
+    },
+    plan: {
+      type: String,
+      enum: ["free", "premium"],
+      default: "free",
     },
     tokensUsed: {
       type: Number,
