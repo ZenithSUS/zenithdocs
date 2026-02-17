@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import colors from "../utils/log-colors";
+import colors from "../utils/log-colors.js";
 
 interface AppError extends Error {
   statusCode?: number;
