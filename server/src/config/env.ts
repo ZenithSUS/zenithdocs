@@ -1,5 +1,4 @@
 import "dotenv/config";
-import colors from "../utils/log-colors";
 
 const config = {
   server: {

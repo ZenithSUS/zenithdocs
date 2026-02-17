@@ -1,7 +1,7 @@
-import config from "./config/env";
-import app from "./app";
-import colors from "./utils/log-colors";
-import connectDB from "./config/db";
+import app from "./app.js";
+import config from "./config/env.js";
+import colors from "./utils/log-colors.js";
+import connectDB from "./config/db.js";
 
 // Connect to MongoDB
 connectDB();

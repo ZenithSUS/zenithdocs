@@ -2,18 +2,18 @@
 import express from "express";
 import helmet from "helmet";
 import cors from "cors";
-import config from "./config/env";
+import config from "./config/env.js";
 
 // Middlewares
-import header from "./middlewares/header.middleware";
-import logger from "./middlewares/logger.middleware";
-import notFound from "./middlewares/notFound.middleware";
-import errorHandler from "./middlewares/error.middleware";
-import apiKeyVerifier from "./middlewares/api-key-verifier.middleware";
+import header from "./middlewares/header.middleware.js";
+import logger from "./middlewares/logger.middleware.js";
+import notFound from "./middlewares/notFound.middleware.js";
+import errorHandler from "./middlewares/error.middleware.js";
+import apiKeyVerifier from "./middlewares/api-key-verifier.middleware.js";
 
 // Routers
-import userRouter from "./routes/user.route";
-import authRouter from "./routes/auth.route";
+import userRouter from "./routes/user.route.js";
+import authRouter from "./routes/auth.route.js";
 
 const app = express();
 

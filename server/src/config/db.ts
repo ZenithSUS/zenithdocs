@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import config from "./env";
-import colors from "../utils/log-colors";
+import config from "./env.js";
+import colors from "../utils/log-colors.js";
 
 const connectDB = async () => {
   try {
