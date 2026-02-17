@@ -7,8 +7,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import GoogleIcon from "@/components/GoogleIcon";
 import CursorGlow from "@/components/CursorGlow";
+import useAuth from "@/features/auth/useAuth";
+import { toast } from "sonner";
+import { AxiosError } from "@/types/api";
+import { useRouter } from "next/navigation";
 
-// ── Zod schema ───────────────────────────────────────────────────────────────
 const loginSchema = z.object({
   email: z
     .string()
@@ -22,15 +25,17 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
-// ── Component ────────────────────────────────────────────────────────────────
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState("");
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const formPanelRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
-  // Mount animation via CSS class + rAF — avoids setState-in-effect warning.
-  // We mutate the DOM directly instead of calling setState.
+  // Auth hooks
+  const { loginMutation } = useAuth();
+  const { isPending, mutateAsync } = loginMutation;
+
   useEffect(() => {
     const el = formPanelRef.current;
     if (!el) return;
@@ -40,7 +45,6 @@ export default function LoginPage() {
     return () => cancelAnimationFrame(frame);
   }, []);
 
-  // Mousemove — only updates state in an event callback, not synchronously in the effect body.
   useEffect(() => {
     const handleMouse = (e: MouseEvent) =>
       setMousePos({ x: e.clientX, y: e.clientY });
@@ -60,19 +64,18 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormValues) => {
     setServerError("");
     try {
-      // TODO: replace with real API call
-      // const res = await fetch("/api/auth/login", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ email: data.email, password: data.password }),
-      // });
-      // if (!res.ok) { const body = await res.json(); throw new Error(body.message); }
-      // router.push("/dashboard");
-      console.log("Login payload →", data);
-      await new Promise((r) => setTimeout(r, 1500)); // placeholder
+      const res = await mutateAsync(data);
+
+      if (!res.success) throw new Error(res.message);
+      localStorage.setItem("token", res.data.accessToken);
+
+      toast.success("Login successful!");
+      router.push("/dashboard");
     } catch (err: unknown) {
+      const axiosError = err as AxiosError;
+
       setServerError(
-        err instanceof Error ? err.message : "Invalid email or password.",
+        axiosError.response.data.message || "Invalid email or password.",
       );
     }
   };
@@ -202,10 +205,12 @@ export default function LoginPage() {
       <div className="flex-1 flex flex-col justify-center px-6 sm:px-10 md:px-16 lg:px-20 py-12 relative z-10">
         {/* Mobile logo */}
         <div className="flex items-center gap-2.5 mb-12 lg:hidden">
-          <span className="text-[22px] text-primary">◈</span>
-          <span className="text-[18px] font-bold tracking-[0.08em] font-serif">
-            ZENITH<span className="text-primary">DOCS</span>
-          </span>
+          <Link href="/" className="cursor-pointer">
+            <span className="text-[22px] text-primary">◈</span>
+            <span className="text-[18px] font-bold tracking-[0.08em] font-serif">
+              ZENITH<span className="text-primary">DOCS</span>
+            </span>
+          </Link>
         </div>
 
         <div ref={formPanelRef} className="panel-enter w-full max-w-md">
@@ -318,10 +323,10 @@ export default function LoginPage() {
             {/* Submit */}
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isPending}
               className="mt-2 w-full py-4 bg-primary border-none text-background rounded-sm cursor-pointer text-[12px] font-bold tracking-[0.14em] font-sans transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed hover:bg-[#e0b530] hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(201,162,39,0.35)] flex items-center justify-center gap-2.5"
             >
-              {isSubmitting ? (
+              {isSubmitting || isPending ? (
                 <>
                   <span className="inline-block w-3.5 h-3.5 border-2 border-background/30 border-t-background rounded-full animate-spin" />
                   SIGNING IN...

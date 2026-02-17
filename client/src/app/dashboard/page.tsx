@@ -11,6 +11,7 @@ import SummaryDashboard, {
 import UsageDashboard from "@/components/dashboard/Usage";
 import FileIcon from "@/components/FileIcon";
 import STATUS_META from "@/constants/status-meta";
+import useAuth from "@/features/auth/useAuth";
 import sizefmt from "@/helpers/size-format";
 import DOCUMENTS from "@/seeds/document";
 import FOLDERS from "@/seeds/folder";
@@ -32,6 +33,9 @@ export default function DashboardPage() {
   const [filterFolder, setFilterFolder] = useState<string>("all");
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const mainRef = useRef<HTMLElement>(null);
+
+  const { me } = useAuth();
+  const { data: user, isLoading: userLoading } = me;
 
   useEffect(() => {
     const h = (e: MouseEvent) => setMousePos({ x: e.clientX, y: e.clientY });
@@ -80,6 +84,8 @@ export default function DashboardPage() {
       )}
 
       <DashBoardSidebar
+        email={user?.data.email}
+        userLoading={userLoading}
         nav={nav}
         setNav={setNav}
         sidebarOpen={sidebarOpen}

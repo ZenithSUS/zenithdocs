@@ -8,6 +8,10 @@ import { z } from "zod";
 import getPasswordStrength from "@/utils/password-strength";
 import GoogleIcon from "@/components/GoogleIcon";
 import CursorGlow from "@/components/CursorGlow";
+import useAuth from "@/features/auth/useAuth";
+import { AxiosError } from "@/types/api";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const registerSchema = z
   .object({
@@ -35,6 +39,10 @@ export default function RegisterPage() {
   const [success, setSuccess] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const formPanelRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+
+  const { registerMutation } = useAuth();
+  const { isPending, mutateAsync } = registerMutation;
 
   useEffect(() => {
     const el = formPanelRef.current;
@@ -63,7 +71,6 @@ export default function RegisterPage() {
     defaultValues: { email: "", password: "", confirmPassword: "" },
   });
 
-  // useWatch is memoization-safe for React Compiler; watch() is not
   const passwordValue = useWatch({
     control,
     name: "password",
@@ -78,27 +85,21 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterFormValues) => {
     setServerError("");
+
     try {
-      // TODO: replace with real API call
-      // const res = await fetch("/api/auth/register", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ email: data.email, password: data.password }),
-      //   // role defaults to "user", tokensUsed defaults to 0 on the server
-      // });
-      // if (!res.ok) { const body = await res.json(); throw new Error(body.message); }
-      // router.push("/login");
-      console.log("Register payload →", {
-        email: data.email,
-        password: data.password,
-      });
-      await new Promise((r) => setTimeout(r, 1600)); // placeholder
+      const res = await mutateAsync(data);
+      if (!res.success) throw new Error(res.message);
+
+      console.log("Register response →", res.data);
+      toast.success(res.message);
+
       setSuccess(true);
+      router.push("/login");
     } catch (err: unknown) {
+      const axiosError = err as AxiosError;
       setServerError(
-        err instanceof Error
-          ? err.message
-          : "Something went wrong. Please try again.",
+        axiosError.response.data.message ||
+          "Something went wrong. Please try again.",
       );
     }
   };
@@ -233,7 +234,7 @@ export default function RegisterPage() {
         </div>
 
         <div className="relative z-10 text-[11px] text-text/20 font-sans tracking-[0.06em]">
-          © 2024 ZENITHDOCS · AI DOCUMENT INTELLIGENCE
+          © {new Date().getFullYear()} ZENITHDOCS · AI DOCUMENT INTELLIGENCE
         </div>
       </div>
 
@@ -241,10 +242,12 @@ export default function RegisterPage() {
       <div className="flex-1 flex flex-col justify-center px-6 sm:px-10 md:px-14 lg:px-16 xl:px-20 py-12 relative z-10">
         {/* Mobile logo */}
         <div className="flex items-center gap-2.5 mb-10 lg:hidden">
-          <span className="text-[22px] text-primary">◈</span>
-          <span className="text-[18px] font-bold tracking-[0.08em] font-serif">
-            ZENITH<span className="text-primary">DOCS</span>
-          </span>
+          <Link href="/" className="cursor-pointer">
+            <span className="text-[22px] text-primary">◈</span>
+            <span className="text-[18px] font-bold tracking-[0.08em] font-serif">
+              ZENITH<span className="text-primary">DOCS</span>
+            </span>
+          </Link>
         </div>
 
         <div ref={formPanelRef} className="panel-enter w-full max-w-md">
@@ -447,10 +450,10 @@ export default function RegisterPage() {
             {/* Submit */}
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isPending}
               className="mt-1 w-full py-4 bg-primary border-none text-background rounded-sm cursor-pointer text-[12px] font-bold tracking-[0.14em] font-sans transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed hover:bg-[#e0b530] hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(201,162,39,0.35)] flex items-center justify-center gap-2.5"
             >
-              {isSubmitting ? (
+              {isSubmitting || isPending ? (
                 <>
                   <span className="inline-block w-3.5 h-3.5 border-2 border-background/30 border-t-background rounded-full animate-spin" />
                   CREATING ACCOUNT...

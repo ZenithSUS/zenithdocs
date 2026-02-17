@@ -1,5 +1,6 @@
 "use client";
 
+import CursorGlow from "@/components/CursorGlow";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 
@@ -120,15 +121,7 @@ export default function Home() {
   return (
     <div className="bg-background text-text font-serif overflow-x-hidden">
       {/* Ambient cursor glow */}
-      <div
-        className="fixed w-150 h-150 rounded-full pointer-events-none z-0 transition-[left,top] duration-300 ease-out hidden md:block"
-        style={{
-          left: mousePos.x - 300,
-          top: mousePos.y - 300,
-          background:
-            "radial-gradient(circle, rgba(201,162,39,0.04) 0%, transparent 70%)",
-        }}
-      />
+      <CursorGlow mousePos={mousePos} />
 
       {/* ─── NAVBAR ─── */}
       <nav
@@ -273,7 +266,10 @@ export default function Home() {
           </p>
 
           <div className="flex gap-3 sm:gap-4 justify-center items-center flex-wrap">
-            <button className="px-7 sm:px-9 py-3.5 sm:py-4 bg-primary border-none text-background rounded-sm cursor-pointer text-[12px] sm:text-[13px] font-bold tracking-[0.12em] font-sans transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(201,162,39,0.35)]">
+            <button
+              onClick={handleRegister}
+              className="px-7 sm:px-9 py-3.5 sm:py-4 bg-primary border-none text-background rounded-sm cursor-pointer text-[12px] sm:text-[13px] font-bold tracking-[0.12em] font-sans transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(201,162,39,0.35)]"
+            >
               START FOR FREE →
             </button>
             <button className="px-7 sm:px-9 py-3.5 sm:py-4 bg-transparent border border-text/15 text-text rounded-sm cursor-pointer text-[12px] sm:text-[13px] tracking-[0.12em] font-sans transition-all duration-200 hover:border-text/40">
