@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import config from "../config/env";
+import config from "../config/env.js";
 
 const apiKeyVerifier = (req: Request, res: Response, next: NextFunction) => {
   const apiKey = req.headers["x-api-key"];
