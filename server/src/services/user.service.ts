@@ -7,6 +7,7 @@ import {
   updateUser,
 } from "../repositories/user.repository.js";
 import AppError from "../utils/app-error.js";
+import { hashPassword } from "../utils/bcrypt-password.js";
 
 /**
  * Get user by ID
@@ -40,6 +41,8 @@ export const getAllUsersService = async () => {
  * @returns User if found, null otherwise
  */
 export const getUserByEmailService = async (email: string) => {
+  if (!email) throw new AppError("Email is required", 400);
+
   const user = await getUserByEmail(email);
   return user;
 };
@@ -52,6 +55,16 @@ export const getUserByEmailService = async (email: string) => {
  *
  */
 export const updateUserService = async (id: string, data: Partial<IUser>) => {
+  if (!id) throw new AppError("User ID is required", 400);
+
+  if (!data || Object.keys(data).length === 0)
+    throw new AppError("Data is required", 400);
+
+  // If password is being updated, hash it
+  if (data.password) {
+    data.password = await hashPassword(data.password);
+  }
+
   const user = await updateUser(id, data);
   return user;
 };
@@ -62,6 +75,8 @@ export const updateUserService = async (id: string, data: Partial<IUser>) => {
  * @returns Deleted user if found, null otherwise
  */
 export const deleteUserService = async (id: string) => {
+  if (!id) throw new AppError("User ID is required", 400);
+
   const user = await deleteUser(id);
   return user;
 };

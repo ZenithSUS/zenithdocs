@@ -85,6 +85,10 @@ export const getSummarByDocumentyPaginatedService = async (
     throw new AppError("Page and limit are required", 400);
   }
 
+  if (page < 1 || limit < 1) {
+    throw new AppError("Page and limit must be positive integers", 400);
+  }
+
   const summary = await getSummaryByDocumentPaginated(documentId, page, limit);
   return summary;
 };
