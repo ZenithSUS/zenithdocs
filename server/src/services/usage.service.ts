@@ -7,6 +7,7 @@ import {
   updateUsage,
   deleteUsageByUser,
   deleteUsage,
+  getUsageById,
 } from "../repositories/usage.repository.js";
 import AppError from "../utils/app-error.js";
 
@@ -80,16 +81,42 @@ export const getUsageByUserService = async (userId: string) => {
 /** Updates a usage document by ID
  * @param {string} id - Usage ID
  * @param {Partial<IUsage>} data - Usage data to update
+ * @param {string} currentUserId - ID of the user making the request (for authorization)
+ * @param {"user" | "admin"} role - Role of the user making the request (for authorization)
  * @returns {Promise<IUsage>} Updated usage document if found, null otherwise
  * @throws {AppError} If usage data is invalid or if user or month is missing
  */
-export const updateUsageService = async (id: string, data: Partial<IUsage>) => {
+export const updateUsageService = async (
+  id: string,
+  data: Partial<IUsage>,
+  currentUserId: string,
+  role: "user" | "admin",
+) => {
   if (!id) throw new AppError("Usage ID is required", 400);
   if (!data || Object.keys(data).length === 0)
     throw new AppError("Usage data is required", 400);
 
   if (!data.user || !data.month)
     throw new AppError("User and month are required", 400);
+
+  const existingUsage = await getUsageByUserAndMonth(
+    data.user.toString(),
+    data.month,
+  );
+
+  if (!existingUsage) {
+    throw new AppError(
+      "Usage document not found for the given user and month",
+      404,
+    );
+  }
+
+  if (existingUsage.user.toString() !== currentUserId && role !== "admin") {
+    throw new AppError(
+      "You are not authorized to update this usage document",
+      403,
+    );
+  }
 
   const usage = await updateUsage(id, data);
   return usage;
@@ -109,11 +136,31 @@ export const deleteUsageByUserService = async (userId: string) => {
 
 /** Deletes a usage document by ID
  * @param {string} id - Usage ID
+ * @param {string} currentUserId - ID of the user making the request (for authorization)
+ * @param {"user" | "admin"} role - Role of the user making the request (for authorization)
  * @returns {Promise<DeleteResult>} Result of delete operation
  * @throws {AppError} If usage ID is invalid or missing
  */
-export const deleteUsageById = async (id: string) => {
+export const deleteUsageById = async (
+  id: string,
+  currentUserId: string,
+  role: "user" | "admin",
+) => {
   if (!id) throw new AppError("Usage ID is required", 400);
+
+  const existingUsage = await getUsageById(id);
+
+  if (!existingUsage) {
+    throw new AppError("Usage document not found", 404);
+  }
+
+  if (existingUsage.user._id.toString() !== currentUserId && role !== "admin") {
+    throw new AppError(
+      "You are not authorized to delete this usage document",
+      403,
+    );
+  }
+
   const usage = await deleteUsage(id);
 
   return usage;
