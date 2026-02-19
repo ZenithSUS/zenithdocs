@@ -20,7 +20,7 @@ export const getUserById = async (id: string): Promise<IUser | null> => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return null;
   }
-  return await User.findById(id);
+  return await User.findById(id).select("-refreshToken -password");
 };
 
 /**
@@ -37,7 +37,7 @@ export const getUserByEmail = async (email: string): Promise<IUser | null> => {
  * @returns Array of users
  */
 export const getAllUsers = async (): Promise<IUser[]> => {
-  return await User.find().select("-refreshToken");
+  return await User.find().select("-refreshToken -password");
 };
 
 /**
@@ -53,9 +53,10 @@ export const updateUser = async (
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return null;
   }
-  return await User.findByIdAndUpdate(id, data, { new: true }).select(
-    "-refreshToken",
-  );
+
+  return await User.findByIdAndUpdate(id, data, {
+    returnDocument: "after",
+  }).select("-refreshToken -password");
 };
 
 /**
@@ -67,5 +68,5 @@ export const deleteUser = async (id: string): Promise<IUser | null> => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return null;
   }
-  return await User.findByIdAndDelete(id);
+  return await User.findByIdAndDelete(id).select("-refreshToken -password");
 };
