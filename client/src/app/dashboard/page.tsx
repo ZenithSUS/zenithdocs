@@ -19,10 +19,10 @@ import SUMMARIES from "@/seeds/summary";
 import USAGE from "@/seeds/usage";
 import Doc, { DocStatus } from "@/types/doc";
 import { Folder } from "@/types/folder";
-import { useState, useEffect, useRef } from "react";
+import { User } from "@/types/user";
+import { useState, useEffect, useRef, useMemo } from "react";
 
 const TOKEN_LIMIT = 10000;
-const CURRENT_TOKENS_USED = 3890;
 const CURRENT_MONTH = "2026-02";
 
 export default function DashboardPage() {
@@ -36,6 +36,11 @@ export default function DashboardPage() {
 
   const { me } = useAuth();
   const { data: user, isLoading: userLoading } = me;
+
+  const userInfo = useMemo<User | null>(() => {
+    if (userLoading || !user) return null;
+    return user?.data;
+  }, [user, userLoading]);
 
   useEffect(() => {
     const h = (e: MouseEvent) => setMousePos({ x: e.clientX, y: e.clientY });
@@ -66,7 +71,9 @@ export default function DashboardPage() {
   const processingDocs = DOCUMENTS.filter(
     (d) => d.status === "processing",
   ).length;
-  const tokenPct = Math.round((CURRENT_TOKENS_USED / TOKEN_LIMIT) * 100);
+  const tokenPct = Math.round(
+    ((userInfo?.tokensUsed || 0) / TOKEN_LIMIT) * 100,
+  );
   const maxUsage = Math.max(...USAGE.map((u) => u.tokensUsed));
 
   return (
@@ -84,7 +91,7 @@ export default function DashboardPage() {
       )}
 
       <DashBoardSidebar
-        email={user?.data.email}
+        user={userInfo}
         userLoading={userLoading}
         nav={nav}
         setNav={setNav}
@@ -92,7 +99,7 @@ export default function DashboardPage() {
         setSidebarOpen={setSidebarOpen}
         tokenPct={tokenPct}
         processingDocs={processingDocs}
-        tokensUsed={CURRENT_TOKENS_USED}
+        tokensUsed={userInfo?.tokensUsed || 0}
         tokenLimit={TOKEN_LIMIT}
       />
 
@@ -100,6 +107,7 @@ export default function DashboardPage() {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top bar */}
         <DashboardHeader
+          email={userInfo?.email || "..."}
           nav={nav}
           setSidebarOpen={setSidebarOpen}
           documents={filteredDocs}
@@ -124,7 +132,7 @@ export default function DashboardPage() {
               summaries={SUMMARIES}
               usage={USAGE}
               tokenPct={tokenPct}
-              currentTokensUsed={CURRENT_TOKENS_USED}
+              currentTokensUsed={userInfo?.tokensUsed || 0}
               maxUsage={maxUsage}
             />
           )}
@@ -311,7 +319,7 @@ export default function DashboardPage() {
               currentMonth={CURRENT_MONTH}
               tokenPct={tokenPct}
               tokenLimit={TOKEN_LIMIT}
-              currentTokensUsed={CURRENT_TOKENS_USED}
+              currentTokensUsed={userInfo?.tokensUsed || 0}
               maxUsage={maxUsage}
             />
           )}
