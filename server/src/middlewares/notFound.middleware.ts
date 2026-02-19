@@ -1,12 +1,10 @@
 import { NextFunction, Request, Response } from "express";
-
-interface AppError extends Error {
-  statusCode?: number;
-}
+import AppError from "../utils/app-error.js";
 
 const notFound = (req: Request, res: Response, next: NextFunction) => {
-  const error: AppError = new Error(
-    `${req.method} Route not found - ${req.originalUrl}`,
+  const error = new AppError(
+    `Route not found - ${req.method} ${req.originalUrl}`,
+    404,
   );
 
   error.statusCode = 404;
