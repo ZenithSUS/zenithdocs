@@ -8,17 +8,26 @@ import Document, { IDocument } from "../models/Document.js";
  * @throws MongooseError if document data is invalid
  */
 export const createDocument = async (data: Partial<IDocument>) => {
+  if (!data || Object.keys(data).length === 0) {
+    throw new Error("Document data is required");
+  }
+
   const document = new Document(data);
   return await document.save();
 };
 
 /**
  * Retrieves all documents from the database
- * Populates the user field with the email and role of the user
+ * Populates the user field with the email of the user
  * Returns an array of documents
  */
 export const getAllDocuments = async () => {
-  return await Document.find().populate("user", ["email", "role"]).lean();
+  return await Document.find()
+    .populate({
+      path: "user",
+      select: "_id email",
+    })
+    .lean();
 };
 
 /**
@@ -32,7 +41,12 @@ export const getDocumentById = async (id: string) => {
     return null;
   }
 
-  return await Document.findById(id).populate("user", ["email", "role"]).lean();
+  return await Document.findById(id)
+    .populate({
+      path: "user",
+      select: "_id email",
+    })
+    .lean();
 };
 
 /**
@@ -56,15 +70,17 @@ export const getDocumentsByUserPaginated = async (
   const documents = await Document.find({ user: userId })
     .skip(offset)
     .limit(limit)
-    .populate("user", ["email", "role"])
+    .populate({
+      path: "user",
+      select: "_id email",
+    })
     .lean();
 
   const total = await Document.countDocuments({ user: userId });
 
   return {
     documents,
-    total,
-    totalPages: Math.ceil(total / limit),
+    pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
   };
 };
 
@@ -79,8 +95,11 @@ export const updateDocument = async (id: string, data: Partial<IDocument>) => {
     return null;
   }
 
-  return await Document.findByIdAndUpdate(id, data, { new: true })
-    .populate("user", ["email", "role"])
+  return await Document.findByIdAndUpdate(id, data, { returnDocument: "after" })
+    .populate({
+      path: "user",
+      select: "_id email",
+    })
     .lean();
 };
 
