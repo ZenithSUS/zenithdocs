@@ -6,9 +6,9 @@ import {
   getUserByIdService,
   updateUserService,
 } from "../services/user.service.js";
-
 import { NextFunction, ParamsDictionary } from "express-serve-static-core";
-import { hashPassword } from "../utils/bcrypt-password.js";
+import { IUser } from "../models/User.js";
+import AppError from "../utils/app-error.js";
 
 interface UserParams extends ParamsDictionary {
   id: string;
@@ -69,42 +69,24 @@ export const updateUserController = async (
 ) => {
   try {
     const { id } = req.params;
-    const { email, password, role, tokensUsed, refreshToken } = req.body;
+    const data: Partial<IUser> = req.body;
 
     // Check if user exists
     const existingUser = await getUserByIdService(id);
 
     if (!existingUser) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
+      throw new AppError("User not found", 404);
     }
 
     // Check if email is being changed and if it's already taken
-    if (email && email !== existingUser.email) {
-      const emailExists = await getUserByEmailService(email);
+    if (data.email && data.email !== existingUser.email) {
+      const emailExists = await getUserByEmailService(data.email);
       if (emailExists) {
-        return res.status(400).json({
-          success: false,
-          message: "Email already in use",
-        });
+        throw new AppError("Email already in use", 400);
       }
     }
 
-    const updateData: Record<string, unknown> = {};
-
-    // Update user data
-    if (email) updateData.email = email;
-    if (password) {
-      const hashedPassword = await hashPassword(password);
-      updateData.password = hashedPassword;
-    }
-    if (role) updateData.role = role;
-    if (tokensUsed !== undefined) updateData.tokensUsed = tokensUsed;
-    if (refreshToken !== undefined) updateData.refreshToken = refreshToken;
-
-    const updatedUser = await updateUserService(id, updateData);
+    const updatedUser = await updateUserService(id, data);
 
     return res.status(200).json({
       success: true,
@@ -132,10 +114,7 @@ export const deleteUserController = async (
     const existingUser = await getUserByIdService(id);
 
     if (!existingUser) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
+      throw new AppError("User not found", 404);
     }
 
     await deleteUserService(id);
