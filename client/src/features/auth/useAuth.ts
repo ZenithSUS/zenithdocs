@@ -32,7 +32,7 @@ const useAuth = () => {
   );
 
   // Me
-  const me = useQuery<Omit<ResponseWithUser, "message">, AxiosError>({
+  const me = useQuery<Omit<ResponseWithUser, "message"> | null, AxiosError>({
     queryKey: authKeys.user(),
     queryFn: getMe,
   });
