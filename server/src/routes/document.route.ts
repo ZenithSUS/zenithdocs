@@ -9,27 +9,22 @@ import {
   updateDocumentController,
 } from "../controllers/document.controller.js";
 import protect from "../middlewares/protect.middleware.js";
-import isAdmin from "../middlewares/is-admin.middleware.js";
+import requireAdmin from "../middlewares/require-admin.middleware.js";
 
 const router = Router();
 
-router.get("/:id", protect, getDocumentByIdController);
+router.get("/admin", protect, requireAdmin, getAllDocumentsController);
 router.get(
   "/user/:id",
   protect,
   authorizeSelfOrAdmin,
   getDocumentsByUserPaginatedController,
 );
-router.get("/admin", protect, isAdmin, getAllDocumentsController);
+
+router.get("/:id", protect, getDocumentByIdController);
 
 router.post("/", protect, createDocumentController);
-router.put("/:id", protect, authorizeSelfOrAdmin, updateDocumentController);
-
-router.delete(
-  "/:id",
-  protect,
-  authorizeSelfOrAdmin,
-  deleteDocumentByIdController,
-);
+router.put("/:id", protect, updateDocumentController);
+router.delete("/:id", protect, deleteDocumentByIdController);
 
 export default router;
