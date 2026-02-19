@@ -1,21 +1,21 @@
 import { Router } from "express";
-
-const router = Router();
-
 import {
   deleteUserController,
   getAllUsersController,
   getUserByIdController,
   updateUserController,
 } from "../controllers/user.controller.js";
-import jwtKeyVerifier from "../middlewares/jwt-key-verifier.middleware.js";
-import authorizeSelf from "../middlewares/authorize-self.middleware.js";
+import protect from "../middlewares/protect.middleware.js";
+import authorizeSelfOrAdmin from "../middlewares/authorize-self-or-admin.middleware.js";
+import isAdmin from "../middlewares/is-admin.middleware.js";
+
+const router = Router();
 
 // User routes
-router.get("/", jwtKeyVerifier, getAllUsersController);
-router.get("/:id", jwtKeyVerifier, authorizeSelf, getUserByIdController);
+router.get("/", protect, isAdmin, getAllUsersController);
+router.get("/:id", protect, authorizeSelfOrAdmin, getUserByIdController);
 
-router.put("/:id", jwtKeyVerifier, authorizeSelf, updateUserController);
-router.delete("/:id", jwtKeyVerifier, authorizeSelf, deleteUserController);
+router.put("/:id", protect, authorizeSelfOrAdmin, updateUserController);
+router.delete("/:id", protect, authorizeSelfOrAdmin, deleteUserController);
 
 export default router;
