@@ -9,10 +9,12 @@ import {
 
 const router = Router();
 
+// Authentication routes
 router.post("/login", loginController);
 router.post("/register", registerUserController);
 router.post("/refresh", refreshAccessTokenController);
 
+// Get current user
 router.get("/me", protect, getMeController);
 
 export default router;
