@@ -9,6 +9,7 @@ import {
   updateDocumentService,
 } from "../services/document.service.js";
 import { NextFunction, ParamsDictionary } from "express-serve-static-core";
+import AppError from "../utils/app-error.js";
 
 interface DocumentParams extends ParamsDictionary {
   id: string;
@@ -24,7 +25,17 @@ export const createDocumentController = async (
   next: NextFunction,
 ) => {
   try {
-    const { data }: { data: Partial<IDocument> } = req.body;
+    const userId = req.user?.sub;
+
+    // Check if user is authenticated
+    if (!userId) {
+      throw new AppError("Unauthorized", 401);
+    }
+
+    const data: Partial<IDocument> = {
+      ...req.body,
+      user: req.user.sub,
+    };
 
     const document = await createDocumentService(data);
 
@@ -101,16 +112,15 @@ export const getDocumentByIdController = async (
 ) => {
   try {
     const { id } = req.params;
-    const userId = req.user?.sub;
+    const currentUserId = req.user?.sub;
+    const role = req.user?.role;
 
-    const document = await getDocumentByIdService(id);
-
-    if (document.user.toString() !== userId) {
-      return res.status(401).json({
-        success: false,
-        message: "You don't have access on this resource",
-      });
+    // Check if user is authenticated
+    if (!currentUserId || !role) {
+      throw new AppError("Unauthorized", 401);
     }
+
+    const document = await getDocumentByIdService(id, currentUserId, role);
 
     return res.status(200).json({
       success: true,
@@ -133,9 +143,20 @@ export const updateDocumentController = async (
 ) => {
   try {
     const { id } = req.params;
-    const { data }: { data: Partial<IDocument> } = req.body;
+    const currentUserId = req.user?.sub;
+    const role = req.user?.role;
 
-    const document = await updateDocumentService(id, data);
+    // Check if user is authenticated
+    if (!currentUserId || !role) {
+      throw new AppError("Unauthorized", 401);
+    }
+
+    const data: Partial<IDocument> = {
+      ...req.body,
+      user: req.user.sub,
+    };
+
+    const document = await updateDocumentService(id, data, currentUserId, role);
 
     return res.status(200).json({
       success: true,
@@ -158,8 +179,15 @@ export const deleteDocumentByIdController = async (
 ) => {
   try {
     const { id } = req.params;
+    const currentUserId = req.user?.sub;
+    const role = req.user?.role;
 
-    const document = await deleteDocumentByIdService(id);
+    // Check if user is authenticated
+    if (!currentUserId || !role) {
+      throw new AppError("Unauthorized", 401);
+    }
+
+    const document = await deleteDocumentByIdService(id, currentUserId, role);
 
     return res.status(200).json({
       success: true,

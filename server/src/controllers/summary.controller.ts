@@ -24,7 +24,7 @@ export const createSummaryController = async (
   next: NextFunction,
 ) => {
   try {
-    const { data }: { data: Partial<ISummary> } = req.body;
+    const data: Partial<ISummary> = req.body;
 
     const summary = await createSummaryService(data);
 
