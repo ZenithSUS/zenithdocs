@@ -20,6 +20,9 @@ import requireApiKey from "./middlewares/require-api-key.middleware.js";
 import userRouter from "./routes/user.route.js";
 import authRouter from "./routes/auth.route.js";
 import documentRouter from "./routes/document.route.js";
+import folderRouter from "./routes/folder.route.js";
+import summaryRouter from "./routes/summary.route.js";
+import usageRouter from "./routes/usage.route.js";
 
 // Config
 const __filename = fileURLToPath(import.meta.url);
@@ -70,6 +73,9 @@ app.get("/", (_, res) =>
 app.use("/api/auth", requireApiKey, authRouter);
 app.use("/api/users", requireApiKey, userRouter);
 app.use("/api/documents", requireApiKey, documentRouter);
+app.use("/api/folders", requireApiKey, folderRouter);
+app.use("/api/summaries", requireApiKey, summaryRouter);
+app.use("/api/usage", requireApiKey, usageRouter);
 
 // Error Handlers
 app.use(notFound);
