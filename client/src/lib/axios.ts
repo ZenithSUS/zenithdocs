@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { InternalAxiosRequestConfig } from "axios";
 import config from "@/config/env";
 
 const api = axios.create({
@@ -7,6 +7,7 @@ const api = axios.create({
     "Content-Type": "application/json",
     "x-api-key": config.api.key,
   },
+  withCredentials: true,
 });
 
 api.interceptors.request.use((req) => {
@@ -22,12 +23,42 @@ api.interceptors.request.use((req) => {
 
 api.interceptors.response.use(
   (res) => res,
-  (err) => {
-    if (err.response.status === 401) {
+  async (err) => {
+    const originalRequest = err.config as InternalAxiosRequestConfig & {
+      _retry?: boolean;
+    };
+
+    if (err.response?.status === 403 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        const newToken = await refreshToken();
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        return api(originalRequest);
+      } catch (refreshError) {
+        localStorage.removeItem("token");
+        return Promise.reject(refreshError);
+      }
+    }
+
+    if (err.response?.status === 401) {
       localStorage.removeItem("token");
     }
+
     return Promise.reject(err);
   },
 );
+
+async function refreshToken(): Promise<string> {
+  const res = await api.post<{ data: { accessToken: string } }>(
+    "/api/auth/refresh",
+  );
+
+  const newToken = res.data.data.accessToken;
+
+  localStorage.setItem("token", newToken);
+
+  return newToken;
+}
 
 export default api;
