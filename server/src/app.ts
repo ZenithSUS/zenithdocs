@@ -3,32 +3,34 @@ import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import config from "./config/env.js";
+import cookieParser from "cookie-parser";
+import hpp from "hpp";
+import compression from "compression";
+import path from "path";
+import favicon from "serve-favicon";
+import { fileURLToPath } from "url";
 
 // Middlewares
-import header from "./middlewares/header.middleware.js";
-import logger from "./middlewares/logger.middleware.js";
+import requestLogger from "./middlewares/request-logger.middleware.js";
 import notFound from "./middlewares/notFound.middleware.js";
 import errorHandler from "./middlewares/error.middleware.js";
-import apiKeyVerifier from "./middlewares/api-key-verifier.middleware.js";
+import requireApiKey from "./middlewares/require-api-key.middleware.js";
 
 // Routers
 import userRouter from "./routes/user.route.js";
 import authRouter from "./routes/auth.route.js";
+import documentRouter from "./routes/document.route.js";
 
-const app = express();
-
+// Config
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const origins = config.server.allowedOrigins.split(",");
 
+// Express App
+const app = express();
+
 // Express Middleware Config
-app.use(header);
-app.use(logger);
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(
-  helmet({
-    crossOriginResourcePolicy: false,
-  }),
-);
+app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -38,22 +40,36 @@ app.use(
         callback(new Error("Not allowed by CORS"));
       }
     },
+    credentials: true,
   }),
 );
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(hpp());
+app.use(compression());
+app.use(requestLogger);
+app.use(express.static(path.join(__dirname, "public")));
+app.use(favicon(path.join(__dirname, "public", "favicon.ico")));
 
 // Health Check
-app.get("/health", (req, res) => res.status(200).json({ success: true }));
-
-// Root Route
-app.get("/", (req, res) =>
+app.get("/health", (_, res) =>
   res
     .status(200)
-    .json({ success: true, message: "Welcome to the ZenithDocs " }),
+    .json({ success: true, message: "ZenithDocs Server is Healthy" }),
+);
+
+// Home Page
+app.get("/", (_, res) =>
+  res
+    .status(200)
+    .json({ success: true, message: "Welcome to the ZenithDocs Server" }),
 );
 
 // Routes
-app.use("/api/users", apiKeyVerifier, userRouter);
-app.use("/api/auth", apiKeyVerifier, authRouter);
+app.use("/api/auth", requireApiKey, authRouter);
+app.use("/api/users", requireApiKey, userRouter);
+app.use("/api/documents", requireApiKey, documentRouter);
 
 // Error Handlers
 app.use(notFound);
