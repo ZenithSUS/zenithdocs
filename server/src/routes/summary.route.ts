@@ -1,13 +1,29 @@
 import { Router } from "express";
 import protect from "../middlewares/protect.middleware.js";
-import isAdmin from "../middlewares/is-admin.middleware.js";
+import requireAdmin from "../middlewares/require-admin.middleware.js";
 import {
+  createSummaryController,
+  deleteSummaryController,
   getAllSummaryController,
   getSummaryByIdController,
+  getSummaryByDocumentPaginatedController,
+  updateSummaryController,
 } from "../controllers/summary.controller.js";
 import authorizeSelfOrAdmin from "../middlewares/authorize-self-or-admin.middleware.js";
 
 const router = Router();
 
-router.get("/", protect, isAdmin, getAllSummaryController);
+// Summary routes
+router.get("/", protect, requireAdmin, getAllSummaryController);
 router.get("/:id", protect, authorizeSelfOrAdmin, getSummaryByIdController);
+router.get(
+  "/document/:id",
+  protect,
+  authorizeSelfOrAdmin,
+  getSummaryByDocumentPaginatedController,
+);
+router.post("/", protect, createSummaryController);
+router.put("/:id", protect, authorizeSelfOrAdmin, updateSummaryController);
+router.delete("/:id", protect, authorizeSelfOrAdmin, deleteSummaryController);
+
+export default router;
