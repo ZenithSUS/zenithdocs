@@ -17,7 +17,12 @@ export const createSummary = async (data: Partial<ISummary>) => {
  * @returns All Summaries
  */
 export const getAllSummary = async () => {
-  return await Summary.find({}).populate("document").lean();
+  return await Summary.find({})
+    .populate({
+      path: "document",
+      select: "_id title",
+    })
+    .lean();
 };
 
 /**
@@ -26,7 +31,12 @@ export const getAllSummary = async () => {
  * @returns Single Summary
  */
 export const getSummaryById = async (id: string) => {
-  return await Summary.findById(id).populate("document").lean();
+  return await Summary.findById(id)
+    .populate({
+      path: "document",
+      select: "_id title",
+    })
+    .lean();
 };
 
 /**
@@ -37,7 +47,10 @@ export const getSummaryById = async (id: string) => {
  */
 export const getSummaryByDocument = async (documentId: string) => {
   return await Summary.find({ document: documentId })
-    .populate("document")
+    .populate({
+      path: "document",
+      select: "_id title",
+    })
     .lean();
 };
 
@@ -63,15 +76,17 @@ export const getSummaryByDocumentPaginated = async (
   const summaries = await Summary.find({ document: documentId })
     .skip(offset)
     .limit(limit)
-    .populate("document")
+    .populate({
+      path: "document",
+      select: "_id title",
+    })
     .lean();
 
   const total = await Summary.countDocuments({ document: documentId });
 
   return {
     summaries,
-    total,
-    totalPages: Math.ceil(total / limit),
+    pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
   };
 };
 
@@ -87,9 +102,12 @@ export const updateSummary = async (id: string, data: Partial<ISummary>) => {
   }
 
   const summary = await Summary.findByIdAndUpdate(id, data, {
-    new: true,
+    returnDocument: "after",
   })
-    .populate("document")
+    .populate({
+      path: "document",
+      select: "_id title",
+    })
     .lean();
 
   return summary;
