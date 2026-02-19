@@ -8,6 +8,7 @@ export type Response = {
 export type AxiosError = {
   response: {
     data: {
+      success: boolean;
       message: string;
     };
   };

@@ -4,6 +4,7 @@ export type User = {
   password?: string;
   role: "user" | "admin";
   tokensUsed: number;
+  plan: string;
   refreshToken?: string;
   createdAt: Date;
   updatedAt: Date;
