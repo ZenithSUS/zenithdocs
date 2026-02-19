@@ -1,4 +1,5 @@
 import sizefmt from "@/helpers/size-format";
+import { User } from "@/types/user";
 
 export type NavItem =
   | "overview"
@@ -9,7 +10,7 @@ export type NavItem =
 
 interface DashboardSidebarProps {
   userLoading: boolean;
-  email: string | undefined;
+  user: User | null;
   nav: NavItem;
   setNav: React.Dispatch<React.SetStateAction<NavItem>>;
   sidebarOpen: boolean;
@@ -30,7 +31,7 @@ const navItems: { id: NavItem; icon: string; label: string }[] = [
 
 function DashBoardSidebar({
   userLoading,
-  email,
+  user,
   nav,
   setNav,
   sidebarOpen,
@@ -121,10 +122,12 @@ function DashBoardSidebar({
         </div>
         <div className="flex-1 min-w-0">
           <div className="text-[13px] font-sans text-text/80 truncate">
-            {userLoading ? "Getting user info" : email || "Anonymous"}
+            {userLoading ? "Getting user info" : user?.email || "Anonymous"}
           </div>
           <div className="text-[10px] text-text/30 font-sans tracking-wider">
-            FREE PLAN
+            {userLoading
+              ? "..."
+              : `${user?.plan.toUpperCase()} PLAN` || "FREE PLAN"}
           </div>
         </div>
       </div>

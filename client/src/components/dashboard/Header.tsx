@@ -3,6 +3,7 @@ import { Folder } from "@/types/folder";
 import { Summary } from "@/types/summary";
 
 interface DashboardHeaderProps {
+  email: string;
   nav: string;
   setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
   documents: Doc[];
@@ -11,6 +12,7 @@ interface DashboardHeaderProps {
 }
 
 function DashboardHeader({
+  email,
   nav,
   setSidebarOpen,
   documents,
@@ -49,7 +51,7 @@ function DashboardHeader({
           ↑
         </button>
         <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-[11px] text-primary font-bold font-sans">
-          A
+          {email.slice(0, 1).toUpperCase()}
         </div>
       </div>
     </header>
