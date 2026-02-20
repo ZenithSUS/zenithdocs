@@ -63,7 +63,7 @@ export const getUsageByUserAndMonthController = async (
 };
 
 /** Retrieves a usage document by user ID
- * @route GET /api/usage/:userId
+ * @route GET /api/usage/:id
  */
 export const getUsageByUserController = async (
   req: Request<UsageParams>,
@@ -71,8 +71,8 @@ export const getUsageByUserController = async (
   next: NextFunction,
 ) => {
   try {
-    const { userId } = req.params;
-    const usage = await getUsageByUserService(userId);
+    const { id } = req.params;
+    const usage = await getUsageByUserService(id);
 
     return res.status(200).json({
       success: true,
