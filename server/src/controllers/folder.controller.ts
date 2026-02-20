@@ -3,7 +3,7 @@ import {
   createFolderService,
   deleteFolderService,
   getAllFoldersAdminService,
-  getFolderByIdWithDocumentsService,
+  getFolderByIdService,
   getFolderByNameService,
   getFoldersByUserService,
   updateFolderService,
@@ -128,31 +128,7 @@ export const getFolderByIdController = async (
   try {
     const { id } = req.params;
 
-    const folder = await getFoldersByUserService(id);
-
-    return res.status(200).json({
-      success: true,
-      message: "Folder fetched successfully",
-      data: folder,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
- * Get folder by ID with its associated documents
- * @route GET /api/folders/:id/documents
- */
-export const getFolderByIdWithDocumentsController = async (
-  req: Request<FolderParams>,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const { id } = req.params;
-
-    const folder = await getFolderByIdWithDocumentsService(id);
+    const folder = await getFolderByIdService(id);
 
     return res.status(200).json({
       success: true,
