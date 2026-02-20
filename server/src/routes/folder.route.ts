@@ -15,20 +15,24 @@ import requireAdmin from "../middlewares/require-admin.middleware.js";
 const router = Router();
 
 // Folder routes
-router.post("/", protect, createFolderController);
 router.get("/admin", protect, requireAdmin, getAllFoldersAdminController);
+
 router.get(
   "/user/:id/paginated",
   protect,
   authorizeSelfOrAdmin,
   getFolderByUserPaginatedController,
 );
+
 router.get(
   "/user/:id",
   protect,
   authorizeSelfOrAdmin,
   getFoldersByUserController,
 );
+
+router.post("/", protect, createFolderController);
+
 router.get("/:id", protect, getFolderByIdController);
 router.put("/:id", protect, updateFolderController);
 router.delete("/:id", protect, deleteFolderController);
