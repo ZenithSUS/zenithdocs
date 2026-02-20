@@ -97,12 +97,9 @@ export const updateUsageService = async (
     throw new AppError("Usage data is required", 400);
 
   const existingUsage = await getUsageById(id);
-  
+
   if (!existingUsage) {
-    throw new AppError(
-      "Usage document not found for the given user and month",
-      404,
-    );
+    throw new AppError("Usage document not found", 404);
   }
 
   if (existingUsage.user.toString() !== currentUserId && role !== "admin") {
