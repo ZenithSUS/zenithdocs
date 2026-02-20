@@ -75,7 +75,7 @@ app.use("/api/users", requireApiKey, userRouter);
 app.use("/api/documents", requireApiKey, documentRouter);
 app.use("/api/folders", requireApiKey, folderRouter);
 app.use("/api/summaries", requireApiKey, summaryRouter);
-app.use("/api/usage", requireApiKey, usageRouter);
+app.use("/api/usages", requireApiKey, usageRouter);
 
 // Error Handlers
 app.use(notFound);
