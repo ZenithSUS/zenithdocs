@@ -165,7 +165,7 @@ export const deleteUsageController = async (
 };
 
 /** Deletes all usage documents belonging to a user
- * @route DELETE /api/usage/user/:userId
+ * @route DELETE /api/usage/user/:id
  */
 export const deleteUsageByUserController = async (
   req: Request<UsageParams>,
@@ -173,15 +173,15 @@ export const deleteUsageByUserController = async (
   next: NextFunction,
 ) => {
   try {
-    const { userId } = req.params;
+    const { id } = req.params;
     const currentUserId = req.user?.sub;
     const role = req.user?.role;
 
-    if (!currentUserId || (role !== "admin" && currentUserId !== userId)) {
+    if (!currentUserId || (role !== "admin" && currentUserId !== id)) {
       throw new AppError("Unauthorized", 401);
     }
 
-    const usage = await deleteUsageById(userId, currentUserId, role);
+    const usage = await deleteUsageById(id, currentUserId, role);
 
     return res.status(201).json({
       success: true,
