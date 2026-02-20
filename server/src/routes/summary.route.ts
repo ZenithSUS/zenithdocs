@@ -15,13 +15,16 @@ const router = Router();
 
 // Summary routes
 router.get("/", protect, requireAdmin, getAllSummaryController);
-router.get("/:id", protect, authorizeSelfOrAdmin, getSummaryByIdController);
+
 router.get(
   "/document/:id",
   protect,
   authorizeSelfOrAdmin,
   getSummaryByDocumentPaginatedController,
 );
+
+router.get("/:id", protect, authorizeSelfOrAdmin, getSummaryByIdController);
+
 router.post("/", protect, createSummaryController);
 router.put("/:id", protect, authorizeSelfOrAdmin, updateSummaryController);
 router.delete("/:id", protect, authorizeSelfOrAdmin, deleteSummaryController);
