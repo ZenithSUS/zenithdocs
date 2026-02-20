@@ -125,7 +125,7 @@ export const updateSummaryController = async (
 ) => {
   try {
     const { id } = req.params;
-    const { data }: { data: Partial<ISummary> } = req.body;
+    const data: Partial<ISummary> = req.body;
 
     const summary = await updateSummaryService(id, data);
 
