@@ -71,13 +71,14 @@ export const getAllDocumentsService = async () => {
 };
 
 /**
- * Retrieves documents belonging to a user in a paginated manner
+ * Retrieves all documents belonging to a user in a paginated manner
  * @param {string} userId - User ID
  * @param {number} page - Page number to retrieve
  * @param {number} limit - Number of documents to retrieve per page
- * @returns {Promise<{documents: IDocument[], pagination: {page: number, limit: number, total: number, totalPages: number}}>} Documents and pagination data if found, empty object otherwise
- * @throws {AppError} If user ID is invalid or missing
- * @throws {AppError} If page number or limit is invalid or missing
+ * @returns An object containing the documents and the count of documents belonging to the user
+ * @throws {AppError} If the user ID is invalid or missing
+ * @throws {AppError} If the page number or limit is invalid or missing
+ * @throws {AppError} If the page number or limit is not a positive integer
  */
 export const getDocumentsByUserPaginatedService = async (
   userId: string,
@@ -85,6 +86,9 @@ export const getDocumentsByUserPaginatedService = async (
   limit: number,
 ) => {
   if (!userId) throw new AppError("User ID is required", 400);
+
+  if (!mongoose.Types.ObjectId.isValid(userId))
+    throw new AppError("Invalid User ID", 400);
 
   if (!page || !limit) throw new AppError("Page and limit are required", 400);
 
@@ -110,6 +114,14 @@ export const getDocumentByIdService = async (
   currentUserId: string,
   role: "user" | "admin",
 ) => {
+  if (!id) {
+    throw new AppError("Document ID is required", 400);
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new AppError("Invalid Document ID", 400);
+  }
+
   const document = await getDocumentById(id);
 
   if (!document) {
@@ -144,6 +156,10 @@ export const updateDocumentService = async (
 ) => {
   if (!id) {
     throw new AppError("Document ID is required", 400);
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new AppError("Invalid Document ID", 400);
   }
 
   const existingDocument = await getDocumentById(id);
@@ -186,6 +202,10 @@ export const deleteDocumentByIdService = async (
 ) => {
   if (!id) {
     throw new AppError("Document ID is required", 400);
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new AppError("Invalid Document ID", 400);
   }
 
   const existingDocument = await getDocumentById(id);

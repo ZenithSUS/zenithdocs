@@ -27,6 +27,10 @@ export const getAllDocuments = async () => {
       path: "user",
       select: "_id email",
     })
+    .populate({
+      path: "folder",
+      select: "_id name",
+    })
     .lean();
 };
 
@@ -45,6 +49,10 @@ export const getDocumentById = async (id: string) => {
     .populate({
       path: "user",
       select: "_id email",
+    })
+    .populate({
+      path: "folder",
+      select: "_id name",
     })
     .lean();
 };
@@ -74,6 +82,11 @@ export const getDocumentsByUserPaginated = async (
       path: "user",
       select: "_id email",
     })
+    .populate({
+      path: "folder",
+      select: "_id name",
+    })
+    .sort({ createdAt: -1 })
     .lean();
 
   const total = await Document.countDocuments({ user: userId });
@@ -99,6 +112,10 @@ export const updateDocument = async (id: string, data: Partial<IDocument>) => {
     .populate({
       path: "user",
       select: "_id email",
+    })
+    .populate({
+      path: "folder",
+      select: "_id name",
     })
     .lean();
 };
