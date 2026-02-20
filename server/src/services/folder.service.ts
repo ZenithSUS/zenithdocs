@@ -5,7 +5,6 @@ import {
   deleteFolder,
   getAllFoldersAdmin,
   getFolderById,
-  getFolderByIdWithDocuments,
   getFolderByName,
   getFoldersByUser,
   getFoldersByUserPaginated,
@@ -53,6 +52,24 @@ export const getAllFoldersAdminService = async () => {
 };
 
 /**
+ * Retrieves a single folder by its ID
+ * @param {string} id - Folder ID
+ * @returns The retrieved folder if found, null otherwise
+ * @throws {AppError} If the folder ID is invalid or missing
+ */
+export const getFoldersByIdService = async (id: string) => {
+  if (!id || typeof id !== "string") {
+    throw new AppError("Folder ID is required and must be a string", 400);
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new AppError("Invalid folder ID", 400);
+  }
+
+  return await getFolderById(id);
+};
+
+/**
  * Retrieves all folders belonging to a user
  * @param {string} userId - User ID
  * @returns An array of folders if found, null otherwise
@@ -62,6 +79,10 @@ export const getAllFoldersAdminService = async () => {
 export const getFoldersByUserService = async (userId: string) => {
   if (!userId || typeof userId !== "string") {
     throw new AppError("User ID is required and must be a string", 400);
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    throw new AppError("Invalid user ID", 400);
   }
 
   const folders = await getFoldersByUser(userId);
@@ -94,26 +115,6 @@ export const getFolderByIdService = async (id: string) => {
   }
 
   const folder = await getFolderById(id);
-
-  return folder;
-};
-
-/**
- * Retrieves a single folder by its ID with its associated documents
- * @param {string} id - Folder ID
- * @returns The retrieved folder with its associated documents if found, null otherwise
- * @throws {AppError} If the folder ID is invalid or missing
- */
-export const getFolderByIdWithDocumentsService = async (id: string) => {
-  if (!id || typeof id !== "string") {
-    throw new AppError("Folder ID is required and must be a string", 400);
-  }
-
-  const folder = await getFolderByIdWithDocuments(id);
-
-  if (!folder) {
-    throw new AppError("Folder not found", 404);
-  }
 
   return folder;
 };

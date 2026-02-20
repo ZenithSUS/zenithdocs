@@ -60,26 +60,7 @@ export const getFolderById = async (id: string) => {
       path: "user",
       select: "_id email",
     })
-    .lean();
-};
-
-/**
- * Retrieves a single folder by its ID with its associated documents
- * @param {string} id - Folder ID
- * @returns The retrieved folder with its associated documents if found, null otherwise
- * @throws {null} If the folder ID is invalid
- */
-export const getFolderByIdWithDocuments = async (id: string) => {
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return null;
-  }
-
-  return await Folder.findById(id)
-    .populate({
-      path: "documents",
-      populate: { path: "user", select: "_id email" },
-      options: { sort: { createdAt: -1 } },
-    })
+    .sort({ createdAt: -1 })
     .lean();
 };
 
