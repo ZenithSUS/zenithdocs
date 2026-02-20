@@ -96,14 +96,8 @@ export const updateUsageService = async (
   if (!data || Object.keys(data).length === 0)
     throw new AppError("Usage data is required", 400);
 
-  if (!data.user || !data.month)
-    throw new AppError("User and month are required", 400);
-
-  const existingUsage = await getUsageByUserAndMonth(
-    data.user.toString(),
-    data.month,
-  );
-
+  const existingUsage = await getUsageById(id);
+  
   if (!existingUsage) {
     throw new AppError(
       "Usage document not found for the given user and month",
