@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { IUsage } from "../models/Usage.js";
 import {
   createUsage,
@@ -24,6 +25,9 @@ export const createUsageService = async (data: Partial<IUsage>) => {
 
   if (!data.user || !data.month)
     throw new AppError("User and month are required", 400);
+
+  if (!mongoose.Types.ObjectId.isValid(data.user.toString()))
+    throw new AppError("Invalid User ID", 400);
 
   const existingUsage = await getUsageByUserAndMonth(
     data.user.toString(),
@@ -115,13 +119,41 @@ export const updateUsageService = async (
 
 /** * Deletes all usage documents belonging to a user
  * @param {string} userId - User ID
+ * @param {string} currentUserId - ID of the user making the request (for authorization)
+ * @param {"user" | "admin"} role - Role of the user making the request (for authorization)
  * @returns {Promise<DeleteResult>} Result of delete operation
  * @throws {AppError} If user ID is invalid or missing
  */
-export const deleteUsageByUserService = async (userId: string) => {
+export const deleteUsageByUserService = async (
+  userId: string,
+  currentUserId: string,
+  role: "user" | "admin",
+) => {
   if (!userId) throw new AppError("User ID is required", 400);
 
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    throw new AppError("Invalid user ID", 400);
+  }
+
+  const existingUsage = await getUsageByUser(userId);
+
+  if (!existingUsage) {
+    throw new AppError("No usage documents found for the user", 404);
+  }
+
+  if (existingUsage[0].user.toString() !== currentUserId && role !== "admin") {
+    throw new AppError(
+      "You are not authorized to delete usage documents for this user",
+      403,
+    );
+  }
+
   const usage = await deleteUsageByUser(userId);
+
+  if (usage.deletedCount === 0) {
+    throw new AppError("No usage documents found for the user", 404);
+  }
+
   return usage;
 };
 
@@ -138,6 +170,10 @@ export const deleteUsageById = async (
   role: "user" | "admin",
 ) => {
   if (!id) throw new AppError("Usage ID is required", 400);
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new AppError("Invalid usage ID", 400);
+  }
 
   const existingUsage = await getUsageById(id);
 

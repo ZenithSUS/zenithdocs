@@ -3,6 +3,7 @@ import { IUsage } from "../models/Usage.js";
 import {
   createUsageService,
   deleteUsageById,
+  deleteUsageByUserService,
   getAllUsageServiceAdmin,
   getUsageByUserAndMonthService,
   getUsageByUserService,
@@ -181,7 +182,7 @@ export const deleteUsageByUserController = async (
       throw new AppError("Unauthorized", 401);
     }
 
-    const usage = await deleteUsageById(id, currentUserId, role);
+    const usage = await deleteUsageByUserService(id, currentUserId, role);
 
     return res.status(201).json({
       success: true,

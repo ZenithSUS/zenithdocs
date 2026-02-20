@@ -17,25 +17,25 @@ const router = Router();
 // Usage routes
 router.get("/", protect, requireAdmin, getAllUsageAdminController);
 router.get(
-  "/user/:id",
-  protect,
-  authorizeSelfOrAdmin,
-  getUsageByUserController,
-);
-router.get(
   "/user/:id/:month",
   protect,
   authorizeSelfOrAdmin,
   getUsageByUserAndMonthController,
 );
+router.get(
+  "/user/:id",
+  protect,
+  authorizeSelfOrAdmin,
+  getUsageByUserController,
+);
 router.post("/", protect, createUsageController);
 router.put("/:id", protect, updateUsageController);
-router.delete("/:id", protect, deleteUsageController);
 router.delete(
   "/user/:id",
   protect,
   authorizeSelfOrAdmin,
   deleteUsageByUserController,
 );
+router.delete("/:id", protect, deleteUsageController);
 
 export default router;
