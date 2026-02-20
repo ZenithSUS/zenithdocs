@@ -53,4 +53,7 @@ const documentSchema = new Schema<IDocument>(
   { timestamps: true },
 );
 
+documentSchema.index({ user: 1, createdAt: -1 });
+documentSchema.index({ folder: 1 });
+
 export default mongoose.model<IDocument>("Document", documentSchema);

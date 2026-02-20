@@ -24,6 +24,7 @@ const userSchema = new Schema<IUser>(
       type: String,
       required: false,
       minlength: 6,
+      select: false,
     },
     role: {
       type: String,
@@ -41,9 +42,13 @@ const userSchema = new Schema<IUser>(
     },
     refreshToken: {
       type: String,
+      required: false,
+      select: false,
     },
   },
   { timestamps: true },
 );
+
+userSchema.index({ email: 1 });
 
 export default mongoose.model<IUser>("User", userSchema);

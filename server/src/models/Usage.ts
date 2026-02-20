@@ -27,4 +27,6 @@ const usageSchema = new Schema<IUsage>({
   },
 });
 
+usageSchema.index({ user: 1, month: 1 }, { unique: true });
+
 export default mongoose.model<IUsage>("Usage", usageSchema);

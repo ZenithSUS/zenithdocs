@@ -23,4 +23,6 @@ const folderSchema = new Schema<IFolder>(
   { timestamps: true },
 );
 
+folderSchema.index({ user: 1, name: 1 }, { unique: true });
+
 export default mongoose.model<IFolder>("Folder", folderSchema);
