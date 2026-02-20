@@ -31,14 +31,14 @@ export const loginService = async (email: string, password: string) => {
   const accessToken = jwt.sign(
     { sub: user._id, role: user.role },
     config.jwt.accessSecret,
-    { expiresIn: "1h" },
+    { expiresIn: user.role === "admin" ? "7d" : "1h" },
   );
 
   const refreshToken = jwt.sign(
     { userId: user._id },
     config.jwt.refreshSecret,
     {
-      expiresIn: "7d",
+      expiresIn: user.role === "admin" ? "30d" : "7d",
     },
   );
 
@@ -107,7 +107,7 @@ export const refreshAccessTokenService = async (refreshToken: string) => {
   const accessToken = jwt.sign(
     { sub: user._id, role: user.role },
     config.jwt.accessSecret,
-    { expiresIn: "1h" },
+    { expiresIn: user.role === "admin" ? "7d" : "1h" },
   );
 
   return { accessToken };

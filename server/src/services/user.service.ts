@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { IUser } from "../models/User.js";
 import {
   deleteUser,
@@ -57,6 +58,9 @@ export const getUserByEmailService = async (email: string) => {
 export const updateUserService = async (id: string, data: Partial<IUser>) => {
   if (!id) throw new AppError("User ID is required", 400);
 
+  if (!mongoose.Types.ObjectId.isValid(id))
+    throw new AppError("Invalid User ID", 400);
+
   if (!data || Object.keys(data).length === 0)
     throw new AppError("Data is required", 400);
 
@@ -66,6 +70,8 @@ export const updateUserService = async (id: string, data: Partial<IUser>) => {
   }
 
   const user = await updateUser(id, data);
+
+  if (!user) throw new AppError("User not found", 404);
   return user;
 };
 
@@ -77,6 +83,11 @@ export const updateUserService = async (id: string, data: Partial<IUser>) => {
 export const deleteUserService = async (id: string) => {
   if (!id) throw new AppError("User ID is required", 400);
 
+  if (!mongoose.Types.ObjectId.isValid(id))
+    throw new AppError("Invalid User ID", 400);
+
   const user = await deleteUser(id);
+
+  if (!user) throw new AppError("User not found", 404);
   return user;
 };
