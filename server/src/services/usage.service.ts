@@ -66,6 +66,9 @@ export const getUsageByUserAndMonthService = async (
     throw new AppError("User ID and month are required", 400);
 
   const usage = await getUsageByUserAndMonth(userId, month);
+
+  if (!usage) throw new AppError("Usage not found", 404);
+
   return usage;
 };
 
