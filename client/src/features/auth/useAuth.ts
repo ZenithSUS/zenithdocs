@@ -7,8 +7,9 @@ import {
   RegisterResponse,
 } from "@/features/auth/auth.api";
 import { authKeys } from "@/features/auth/auth.keys";
-import { AxiosError, ResponseWithUser } from "@/types/api";
+import { AxiosError } from "@/types/api";
 import { AuthInput } from "@/types/input";
+import { User } from "@/types/user";
 
 const useAuth = () => {
   const queryClient = useQueryClient();
@@ -16,23 +17,19 @@ const useAuth = () => {
   // Login
   const loginMutation = useMutation<LoginResponse, AxiosError, AuthInput>({
     mutationFn: login,
-    onSuccess: (data) => {
-      queryClient.setQueryData(authKeys.user(), data);
-    },
   });
 
   // Register
   const registerMutation = useMutation<RegisterResponse, AxiosError, AuthInput>(
     {
       mutationFn: register,
-      onSuccess: (data) => {
-        queryClient.setQueryData(authKeys.user(), data);
-      },
+      onSuccess: () =>
+        queryClient.invalidateQueries({ queryKey: authKeys.user() }),
     },
   );
 
   // Me
-  const me = useQuery<Omit<ResponseWithUser, "message"> | null, AxiosError>({
+  const me = useQuery<User | null, AxiosError>({
     queryKey: authKeys.user(),
     queryFn: getMe,
   });
