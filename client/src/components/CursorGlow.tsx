@@ -1,3 +1,5 @@
+"use client";
+
 interface CursorGlowProps {
   mousePos: { x: number; y: number };
 }

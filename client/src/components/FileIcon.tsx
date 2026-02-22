@@ -1,3 +1,5 @@
+"use client";
+
 function FileIcon({ type }: { type: string }) {
   const map: Record<string, string> = {
     pdf: "#C9A227",
