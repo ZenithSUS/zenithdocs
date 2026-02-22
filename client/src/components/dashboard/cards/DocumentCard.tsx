@@ -11,7 +11,7 @@ interface DocumentCardProps {
 
 function DocumentCard({ document: doc, setNav }: DocumentCardProps) {
   const sm = STATUS_META[doc.status];
-  const doctype = doc.fileType.split("/")[1] || "txt";
+  const doctype = doc.fileType;
   const folder = doc.folder;
   const folderTitle =
     typeof folder === "object" && folder !== null ? folder.title : "No folder";
