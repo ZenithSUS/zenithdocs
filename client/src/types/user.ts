@@ -3,11 +3,12 @@ export type User = {
   email: string;
   password?: string;
   role: "user" | "admin";
-  tokensUsed: number;
   plan: string;
   refreshToken?: string;
   createdAt: Date;
   updatedAt: Date;
+  tokenLimit: number;
+  __v: number;
 };
 
 export type Token = {
