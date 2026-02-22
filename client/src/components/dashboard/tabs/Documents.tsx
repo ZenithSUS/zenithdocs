@@ -7,22 +7,43 @@ import { SUMMARY_ICONS } from "@/components/dashboard/tabs/Summary";
 import FileIcon from "@/components/FileIcon";
 import STATUS_META from "@/constants/status-meta";
 import { useState } from "react";
-import DOCUMENTS from "@/seeds/document";
 import FOLDERS from "@/seeds/folder";
 import SUMMARIES from "@/seeds/summary";
+import useDocument from "@/features/documents/useDocument";
 
-function DocumentsTab() {
+function DocumentsTab({ userId }: { userId: string }) {
   const [selectedDoc, setSelectedDoc] = useState<Doc | null>(null);
   const [filterFolder, setFilterFolder] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<Doc["status"] | "all">(
     "all",
   );
 
-  const filteredDocs = DOCUMENTS.filter(
-    (d) =>
-      (filterStatus === "all" || d.status === filterStatus) &&
-      (filterFolder === "all" || d.folder === filterFolder),
-  );
+  const { documentsByUserPage } = useDocument(userId, "");
+  const { data: documents } = documentsByUserPage;
+
+  const allDocs = documents?.pages.flatMap((page) => page.documents) ?? [];
+
+  const filteredDocs = allDocs.filter((doc) => {
+    const folderId =
+      typeof doc.folder === "object"
+        ? doc.folder?._id
+        : typeof doc.folder === "string"
+          ? doc.folder
+          : undefined;
+
+    if (filterFolder !== "all") {
+      return folderId === filterFolder;
+    }
+
+    if (filterStatus !== "all") {
+      return doc.status === filterStatus;
+    }
+
+    return true;
+  });
+  const folders = FOLDERS.filter((f) => {
+    return filteredDocs.some((d) => d.folder === f._id);
+  });
 
   return (
     <div className="space-y-5">
@@ -85,6 +106,8 @@ function DocumentsTab() {
               const sm = STATUS_META[doc.status];
               const folder = FOLDERS.find((f) => f._id === doc.folder);
               const isSelected = selectedDoc?._id === doc._id;
+              const fileType = doc.fileType;
+
               return (
                 <div
                   key={doc._id}
@@ -96,7 +119,7 @@ function DocumentsTab() {
                   }`}
                 >
                   <div className="flex items-center gap-3 sm:contents">
-                    <FileIcon type={doc.fileType} />
+                    <FileIcon type={fileType} />
                     <div className="sm:col-start-2 min-w-0">
                       <div className="text-[13px] font-sans text-text/80 truncate">
                         {doc.title}
