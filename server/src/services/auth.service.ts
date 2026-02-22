@@ -3,7 +3,8 @@ import { IUser } from "../models/User.js";
 import {
   createUser,
   getUserByEmail,
-  getUserById,
+  getUserRefreshToken,
+  updateUser,
 } from "../repositories/user.repository.js";
 import AppError from "../utils/app-error.js";
 import { comparePassword, hashPassword } from "../utils/bcrypt-password.js";
@@ -42,16 +43,10 @@ export const loginService = async (email: string, password: string) => {
     },
   );
 
-  // Update user refresh token in DB
-  user.refreshToken = refreshToken;
-  await user.save();
+  // Update user refresh token
+  await updateUser(user._id.toString(), { refreshToken });
 
   return {
-    user: {
-      id: user._id,
-      email: user.email,
-      role: user.role,
-    },
     accessToken,
     refreshToken,
   };
@@ -74,6 +69,9 @@ export const registerService = async (data: Partial<IUser>) => {
   data.password = await hashPassword(data.password);
 
   const user = await createUser(data);
+
+  // Remove password from response
+  user.password = undefined;
   return user;
 };
 
@@ -97,7 +95,7 @@ export const refreshAccessTokenService = async (refreshToken: string) => {
   }
 
   // Check user exists and token matches what's stored in DB
-  const user = await getUserById(decoded.userId);
+  const user = await getUserRefreshToken(decoded.userId);
 
   if (!user) throw new AppError("User not found", 404);
   if (user.refreshToken !== refreshToken)
