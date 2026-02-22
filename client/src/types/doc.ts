@@ -13,8 +13,8 @@ export interface Doc {
         title: string;
       }
     | null;
-  type: string;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export default Doc;
