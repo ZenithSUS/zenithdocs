@@ -4,10 +4,9 @@ import {
   refreshAccessTokenService,
   registerService,
 } from "../services/auth.service.js";
-import {
-  getUserByEmailService,
-  getUserByIdService,
-} from "../services/user.service.js";
+import { getUserByIdService } from "../services/user.service.js";
+import PLAN_LIMITS from "../config/plans.js";
+import AppError from "../utils/app-error.js";
 
 /**
  * Login user
@@ -34,7 +33,6 @@ export const loginController = async (
       success: true,
       message: "User logged in successfully",
       data: {
-        user: result.user,
         accessToken: result.accessToken,
       },
     });
@@ -45,7 +43,7 @@ export const loginController = async (
 
 /**
  * Register a new user
- * @route POST /api/auth/users
+ * @route POST /api/auth/register
  */
 export const registerUserController = async (
   req: Request,
@@ -53,13 +51,11 @@ export const registerUserController = async (
   next: NextFunction,
 ) => {
   try {
-    const { email, password, role, tokensUsed } = req.body;
+    const { email, password } = req.body;
 
     const user = await registerService({
       email,
       password,
-      role: role || "user",
-      tokensUsed: tokensUsed || 0,
     });
 
     return res.status(201).json({
@@ -109,10 +105,7 @@ export const refreshAccessTokenController = async (
     const refreshToken = req.cookies?.refreshToken;
 
     if (!refreshToken) {
-      return res.status(401).json({
-        success: false,
-        message: "No refresh token provided",
-      });
+      throw new AppError("No refresh token provided", 401);
     }
 
     const { accessToken } = await refreshAccessTokenService(refreshToken);
