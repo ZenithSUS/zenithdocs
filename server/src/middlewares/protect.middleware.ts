@@ -26,11 +26,11 @@ const protect = async (req: Request, res: Response, next: NextFunction) => {
     next();
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError) {
-      return next(new AppError("Invalid token", 401));
+      return next(new AppError("Invalid token", 403));
     }
 
     if (error instanceof jwt.TokenExpiredError) {
-      return next(new AppError("Token expired", 401));
+      return next(new AppError("Token expired", 403));
     }
 
     return next(error);
