@@ -23,6 +23,7 @@ import documentRouter from "./routes/document.route.js";
 import folderRouter from "./routes/folder.route.js";
 import summaryRouter from "./routes/summary.route.js";
 import usageRouter from "./routes/usage.route.js";
+import dashboardRouter from "./routes/dashboard.route.js";
 
 // Config
 const __filename = fileURLToPath(import.meta.url);
@@ -76,6 +77,7 @@ app.use("/api/documents", requireApiKey, documentRouter);
 app.use("/api/folders", requireApiKey, folderRouter);
 app.use("/api/summaries", requireApiKey, summaryRouter);
 app.use("/api/usages", requireApiKey, usageRouter);
+app.use("/api/dashboard", requireApiKey, dashboardRouter);
 
 // Error Handlers
 app.use(notFound);
