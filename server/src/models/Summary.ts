@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface ISummary extends Document {
+  user: Types.ObjectId;
   document: Types.ObjectId;
   type: "short" | "bullet" | "detailed" | "executive";
   content: string;
@@ -11,6 +12,11 @@ export interface ISummary extends Document {
 
 const summarySchema = new Schema<ISummary>(
   {
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     document: {
       type: Schema.Types.ObjectId,
       ref: "Document",
