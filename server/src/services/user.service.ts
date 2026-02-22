@@ -9,6 +9,7 @@ import {
 } from "../repositories/user.repository.js";
 import AppError from "../utils/app-error.js";
 import { hashPassword } from "../utils/bcrypt-password.js";
+import PLAN_LIMITS from "../config/plans.js";
 
 /**
  * Get user by ID
@@ -24,7 +25,13 @@ export const getUserByIdService = async (id: string) => {
 
   if (!user) throw new AppError("User not found", 404);
 
-  return user;
+  // Get the token limit based on the user's plan
+  const tokenLimit =
+    PLAN_LIMITS[user.plan as keyof typeof PLAN_LIMITS].tokenLimit;
+
+  const userWithTokenLimit = { ...user, tokenLimit };
+
+  return userWithTokenLimit;
 };
 
 /**
