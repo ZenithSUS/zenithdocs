@@ -20,7 +20,18 @@ export const getUserById = async (id: string): Promise<IUser | null> => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return null;
   }
-  return await User.findById(id).select("-refreshToken -password");
+  return await User.findById(id).select("-refreshToken -password").lean();
+};
+
+/**
+ * Get a user by their refresh token
+ * @param {string} userId - User ID
+ * @returns {Promise<IUser | null>} User if found, null otherwise
+ */
+export const getUserRefreshToken = async (
+  userId: string,
+): Promise<IUser | null> => {
+  return await User.findOne({ _id: userId }).select("-password").lean();
 };
 
 /**
@@ -29,7 +40,9 @@ export const getUserById = async (id: string): Promise<IUser | null> => {
  * @returns User if found, null otherwise
  */
 export const getUserByEmail = async (email: string): Promise<IUser | null> => {
-  return await User.findOne({ email: email.toLowerCase() });
+  return await User.findOne({ email: email.toLowerCase() })
+    .select("-refreshToken")
+    .lean();
 };
 
 /**
@@ -37,7 +50,7 @@ export const getUserByEmail = async (email: string): Promise<IUser | null> => {
  * @returns Array of users
  */
 export const getAllUsers = async (): Promise<IUser[]> => {
-  return await User.find().select("-refreshToken -password");
+  return await User.find().select("-refreshToken -password").lean();
 };
 
 /**
@@ -56,7 +69,9 @@ export const updateUser = async (
 
   return await User.findByIdAndUpdate(id, data, {
     returnDocument: "after",
-  }).select("-refreshToken -password");
+  })
+    .select("-refreshToken -password")
+    .lean();
 };
 
 /**
@@ -68,5 +83,7 @@ export const deleteUser = async (id: string): Promise<IUser | null> => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return null;
   }
-  return await User.findByIdAndDelete(id).select("-refreshToken -password");
+  return await User.findByIdAndDelete(id)
+    .select("-refreshToken -password")
+    .lean();
 };
