@@ -117,7 +117,7 @@ export default function DashboardPage() {
           {/* ══ DOCUMENTS ═════════════════════════════════════════════════════ */}
           {nav === "documents" && (
             <Suspense fallback={<DashboardTabLoading />}>
-              <DocumentsTab />
+              <DocumentsTab userId={user?._id ?? ""} />
             </Suspense>
           )}
 
