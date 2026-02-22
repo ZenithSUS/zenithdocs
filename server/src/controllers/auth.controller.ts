@@ -5,7 +5,6 @@ import {
   registerService,
 } from "../services/auth.service.js";
 import { getUserByIdService } from "../services/user.service.js";
-import PLAN_LIMITS from "../config/plans.js";
 import AppError from "../utils/app-error.js";
 
 /**
