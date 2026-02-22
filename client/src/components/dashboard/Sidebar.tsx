@@ -1,3 +1,5 @@
+"use client";
+
 import sizefmt from "@/helpers/size-format";
 import { User } from "@/types/user";
 
@@ -125,9 +127,7 @@ function DashBoardSidebar({
             {userLoading ? "Getting user info" : user?.email || "Anonymous"}
           </div>
           <div className="text-[10px] text-text/30 font-sans tracking-wider">
-            {userLoading
-              ? "..."
-              : `${user?.plan.toUpperCase()} PLAN` || "FREE PLAN"}
+            {user?.plan ? user.plan.toUpperCase() + " PLAN" : "FREE PLAN"}
           </div>
         </div>
       </div>

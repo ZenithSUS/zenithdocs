@@ -1,39 +1,36 @@
-import STATUS_META from "@/constants/status-meta";
+"use client";
+
 import sizefmt from "@/helpers/size-format";
-import Doc from "@/types/doc";
-import { Folder } from "@/types/folder";
-import { Summary, SummaryType } from "@/types/summary";
-import FileIcon from "@/components/FileIcon";
-import { Usage } from "@/types/usage";
+import { SummaryType } from "@/types/summary";
 import { SUMMARY_ICONS } from "./Summary";
 import { NavItem } from "@/components/dashboard/Sidebar";
+import { DashboardOverview } from "@/types/dashboard";
+import { ThreeDot } from "react-loading-indicators";
+import DocumentCardSkeleton from "../skeleton/DocumentCardSkeleton";
+import DocumentCard from "../cards/DocumentCard";
+import UsageCard from "../cards/UsageCard";
+import { UsageChartSkeleton } from "../DashBoardTabLoading";
 
 interface OverViewProps {
   setNav: React.Dispatch<React.SetStateAction<NavItem>>;
-  setSelectedDoc: React.Dispatch<React.SetStateAction<Doc | null>>;
   currentMonth: string;
   completedDocs: number;
-  documents: Doc[];
-  folders: Folder[];
-  summaries: Summary[];
-  usage: Usage[];
   tokenPct: number;
   currentTokensUsed: number;
   maxUsage: number;
+  overview: DashboardOverview | undefined;
+  overviewLoading: boolean;
 }
 
-function OverViewDashboard({
+function OverViewTab({
   setNav,
-  setSelectedDoc,
   currentMonth,
   completedDocs,
-  documents,
-  folders,
-  usage,
-  summaries,
   tokenPct,
   currentTokensUsed,
   maxUsage,
+  overview,
+  overviewLoading,
 }: OverViewProps) {
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -43,19 +40,19 @@ function OverViewDashboard({
           {
             icon: "▣",
             label: "Total Documents",
-            value: documents.length,
+            value: overview?.totalDocuments || 0,
             sub: `${completedDocs} completed`,
           },
           {
             icon: "◎",
             label: "Summaries",
-            value: summaries.length,
+            value: overview?.totalSummary || 0,
             sub: "4 summary types",
           },
           {
             icon: "⬡",
             label: "Folders",
-            value: folders.length,
+            value: overview?.totalFolders || 0,
             sub: "Organised workspace",
           },
           {
@@ -75,9 +72,14 @@ function OverViewDashboard({
                 #{String(i + 1).padStart(2, "0")}
               </span>
             </div>
-            <div className="text-[26px] sm:text-[28px] font-light text-text font-serif tracking-[-0.02em]">
-              {s.value}
-            </div>
+            {overviewLoading ? (
+              <ThreeDot color="#c9a227" size="small" text="" textColor="" />
+            ) : (
+              <div className="text-[26px] sm:text-[28px] font-light text-text font-serif tracking-[-0.02em]">
+                {s.value}
+              </div>
+            )}
+
             <div className="text-[10px] text-text/35 font-sans tracking-[0.06em] mt-0.5">
               {s.label.toUpperCase()}
             </div>
@@ -104,39 +106,17 @@ function OverViewDashboard({
             </button>
           </div>
           <div className="divide-y divide-white/4">
-            {documents.slice(0, 5).map((doc) => {
-              const sm = STATUS_META[doc.status];
-              const folder = folders.find((f) => f._id === doc.folder);
-              return (
-                <div
-                  key={doc._id}
-                  onClick={() => {
-                    setSelectedDoc(doc);
-                    setNav("documents");
-                  }}
-                  className="px-5 py-3.5 flex items-center gap-3 hover:bg-white/3 cursor-pointer transition-colors duration-150"
-                >
-                  <FileIcon type={doc.fileType} />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[13px] font-sans text-text/80 truncate">
-                      {doc.title}
-                    </div>
-                    <div className="text-[11px] text-text/30 font-sans mt-0.5">
-                      {folder?.name ?? "No folder"} ·{" "}
-                      {sizefmt.bytes(doc.fileSize)}
-                    </div>
-                  </div>
-                  <div
-                    className={`flex items-center gap-1.5 text-[10px] font-sans ${sm.text} shrink-0`}
-                  >
-                    <span
-                      className={`w-1.5 h-1.5 rounded-full ${sm.dot} ${doc.status === "processing" ? "animate-pulse" : ""}`}
-                    />
-                    <span className="hidden sm:inline">{sm.label}</span>
-                  </div>
-                </div>
-              );
-            })}
+            {overviewLoading ? (
+              <DocumentCardSkeleton />
+            ) : overview?.recentDocuments.length === 0 ? (
+              <div className="px-5 py-5 text-center text-text/40">
+                No recent documents
+              </div>
+            ) : (
+              overview?.recentDocuments.map((doc) => (
+                <DocumentCard key={doc._id} document={doc} setNav={setNav} />
+              ))
+            )}
           </div>
         </div>
 
@@ -148,28 +128,22 @@ function OverViewDashboard({
             </span>
           </div>
           <div className="px-5 py-5 flex flex-col gap-3">
-            {usage.map((u) => (
-              <div key={u.month} className="flex items-center gap-3">
-                <span className="text-[11px] text-text/30 font-sans w-8 shrink-0">
-                  {sizefmt.month(u.month)}
-                </span>
-                <div className="flex-1 h-1.5 bg-white/6 rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-700"
-                    style={{
-                      width: `${(u.tokensUsed / maxUsage) * 100}%`,
-                      background:
-                        u.month === currentMonth
-                          ? "#C9A227"
-                          : "rgba(201,162,39,0.35)",
-                    }}
-                  />
-                </div>
-                <span className="text-[11px] text-text/30 font-sans w-10 text-right shrink-0">
-                  {sizefmt.num(u.tokensUsed)}
-                </span>
+            {overviewLoading ? (
+              <UsageChartSkeleton />
+            ) : overview?.usageHistory.length === 0 ? (
+              <div className="px-5 py-5 text-center text-text/40">
+                No usage history
               </div>
-            ))}
+            ) : (
+              overview?.usageHistory.map((u) => (
+                <UsageCard
+                  key={u.month}
+                  usage={u}
+                  currentMonth={currentMonth}
+                  maxUsage={maxUsage}
+                />
+              ))
+            )}
           </div>
 
           {/* Summary type breakdown */}
@@ -182,7 +156,9 @@ function OverViewDashboard({
                 {(
                   ["short", "bullet", "detailed", "executive"] as SummaryType[]
                 ).map((t) => {
-                  const count = summaries.filter((s) => s.type === t).length;
+                  const count = overview?.recentSummary.filter(
+                    (s) => s.type === t,
+                  ).length;
                   return (
                     <div
                       key={t}
@@ -216,8 +192,10 @@ function OverViewDashboard({
           </button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-white/6">
-          {summaries.slice(0, 2).map((s) => {
-            const doc = documents.find((d) => d._id === s.document);
+          {overview?.recentSummary.map((s) => {
+            const doc = overview.recentDocuments.find(
+              (d) => d._id === s.document,
+            );
             return (
               <div key={s._id} className="px-5 py-5">
                 <div className="flex items-center gap-2 mb-3">
@@ -246,4 +224,4 @@ function OverViewDashboard({
   );
 }
 
-export default OverViewDashboard;
+export default OverViewTab;

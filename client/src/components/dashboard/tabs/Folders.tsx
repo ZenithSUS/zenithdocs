@@ -1,23 +1,22 @@
+"use client";
+
 import Doc, { DocStatus } from "@/types/doc";
 import { Folder } from "@/types/folder";
 import { NavItem } from "@/components/dashboard/Sidebar";
 import STATUS_META from "@/constants/status-meta";
 import FileIcon from "@/components/FileIcon";
 import sizefmt from "@/helpers/size-format";
+import FOLDERS from "@/seeds/folder";
+import DOCUMENTS from "@/seeds/document";
 
 interface FolderDashBoardProps {
-  setFilterFolder: React.Dispatch<React.SetStateAction<string>>;
   setNav: React.Dispatch<React.SetStateAction<NavItem>>;
-  documents: Doc[];
-  folders: Folder[];
 }
 
-function FolderDashBoard({
-  setFilterFolder,
-  setNav,
-  documents,
-  folders,
-}: FolderDashBoardProps) {
+function FolderDashBoard({ setNav }: FolderDashBoardProps) {
+  const folders = FOLDERS as Folder[];
+  const documents = DOCUMENTS as Doc[];
+
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -29,7 +28,6 @@ function FolderDashBoard({
             <div
               key={folder._id}
               onClick={() => {
-                setFilterFolder(folder._id);
                 setNav("documents");
               }}
               className="border border-white/8 rounded-sm px-6 py-6 cursor-pointer hover:border-primary/25 hover:bg-primary/3 transition-all duration-200 group"

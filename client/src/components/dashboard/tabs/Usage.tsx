@@ -1,3 +1,5 @@
+"use client";
+
 import sizefmt from "@/helpers/size-format";
 import { Usage } from "@/types/usage";
 
@@ -10,10 +12,9 @@ interface UsageProps {
   maxUsage: number;
 }
 
-function UsageDashboard({
+function UsageTab({
   currentMonth,
   usage,
-
   tokenPct,
   tokenLimit,
   currentTokensUsed,
@@ -200,4 +201,4 @@ function UsageDashboard({
   );
 }
 
-export default UsageDashboard;
+export default UsageTab;

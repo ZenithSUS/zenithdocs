@@ -2,11 +2,8 @@ import Doc from "@/types/doc";
 import { Summary, SummaryType } from "@/types/summary";
 import FileIcon from "@/components/FileIcon";
 import sizefmt from "@/helpers/size-format";
-
-interface SummaryProps {
-  summaries: Summary[];
-  documents: Doc[];
-}
+import SUMMARIES from "@/seeds/summary";
+import DOCUMENTS from "@/seeds/document";
 
 export const SUMMARY_ICONS: Record<SummaryType, string> = {
   short: "◎",
@@ -15,7 +12,10 @@ export const SUMMARY_ICONS: Record<SummaryType, string> = {
   executive: "◈",
 };
 
-function SummaryDashboard({ summaries, documents }: SummaryProps) {
+function SummaryTab() {
+  const summaries = SUMMARIES as Summary[];
+  const documents = DOCUMENTS as Doc[];
+
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -78,4 +78,4 @@ function SummaryDashboard({ summaries, documents }: SummaryProps) {
   );
 }
 
-export default SummaryDashboard;
+export default SummaryTab;
