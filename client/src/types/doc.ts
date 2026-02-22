@@ -6,7 +6,14 @@ export interface Doc {
   fileType: string;
   fileSize: number;
   status: DocStatus;
-  folder?: string;
+  folder?:
+    | string
+    | {
+        _id: string;
+        title: string;
+      }
+    | null;
+  type: string;
   createdAt: string;
 }
 
