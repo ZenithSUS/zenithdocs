@@ -1,23 +1,21 @@
-import Doc from "@/types/doc";
-import { Folder } from "@/types/folder";
-import { Summary } from "@/types/summary";
+"use client";
 
 interface DashboardHeaderProps {
   email: string;
   nav: string;
   setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  documents: Doc[];
-  summaries: Summary[];
-  folders: Folder[];
+  totalDocuments: number;
+  totalSummaries: number;
+  totalFolders: number;
 }
 
 function DashboardHeader({
   email,
   nav,
   setSidebarOpen,
-  documents,
-  summaries,
-  folders,
+  totalDocuments,
+  totalSummaries,
+  totalFolders,
 }: DashboardHeaderProps) {
   return (
     <header className="px-5 sm:px-8 py-4 border-b border-white/6 flex items-center justify-between bg-background/90 backdrop-blur-sm sticky top-0 z-20">
@@ -34,10 +32,9 @@ function DashboardHeader({
           </h1>
           <p className="text-[11px] text-text/30 font-sans tracking-[0.05em] hidden sm:block">
             {nav === "overview" && "Your workspace at a glance"}
-            {nav === "documents" && `${documents.length} total documents`}
-            {nav === "summaries" &&
-              `${summaries.length} AI-generated summaries`}
-            {nav === "folders" && `${folders.length} folders`}
+            {nav === "documents" && `${totalDocuments} total documents`}
+            {nav === "summaries" && `${totalSummaries} AI-generated summaries`}
+            {nav === "folders" && `${totalFolders} folders`}
             {nav === "usage" && "Token & document consumption"}
           </p>
         </div>
