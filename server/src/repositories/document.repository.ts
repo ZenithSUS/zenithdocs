@@ -98,6 +98,52 @@ export const getDocumentsByUserPaginated = async (
 };
 
 /**
+ * Retrieves the total number of documents belonging to a user
+ * @param {string} userId - User ID
+ * @returns The total number of documents belonging to the user if found, null otherwise
+ * @throws {null} If the user ID is invalid
+ */
+export const getTotalDocumentsByUser = async (userId: string) => {
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return null;
+  }
+
+  return await Document.countDocuments({ user: userId });
+};
+
+/**
+ * Retrieves the total number of documents belonging to a user with a specific status
+ * @param {string} userId - User ID
+ * @param {string} status - Status of the documents to retrieve
+ * @returns The total number of documents belonging to the user with the specified status if found, null otherwise
+ * @throws {null} If the user ID is invalid
+ */
+export const getTotalStatusDocumentsByUser = async (
+  userId: string,
+  status: "uploaded" | "processing" | "completed" | "failed",
+) => {
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return null;
+  }
+
+  return await Document.countDocuments({ user: userId, status: status });
+};
+
+/**
+ * Retrieves the 5 most recent documents belonging to a user
+ * @param {string} userId - User ID
+ * @returns The 5 most recent documents belonging to the user if found, empty array otherwise
+ * @throws {null} If the user ID is invalid
+ */
+export const getRecentDocumentsByUser = async (userId: string) => {
+  return await Document.find({ user: userId })
+    .populate({ path: "folder", select: "_id name type" })
+    .sort({ createdAt: -1 })
+    .limit(5)
+    .lean();
+};
+
+/**
  * Update a document by ID
  * @param {string} id - Document ID
  * @param {Partial<IDocument>} data - Data to update

@@ -44,6 +44,23 @@ export const getUsageByUserAndMonth = async (userId: string, month: string) => {
 };
 
 /**
+ * Retrieves the last six months of usage documents belonging to a user
+ * @param {string} userId - User ID
+ * @returns {Promise<IUsage[]>} Array of usage documents if found, empty array otherwise
+ * @throws {MongooseError} If usage data is invalid
+ */
+export const getLastSixMonthsUsage = async (userId: string) => {
+  return await Usage.find({ user: userId })
+    .populate({
+      path: "user",
+      select: "_id email",
+    })
+    .sort({ month: -1 })
+    .limit(6)
+    .lean();
+};
+
+/**
  * Retrieves all usage documents belonging to a user
  * @param {string} userId - User ID
  * @returns {Promise<IUsage[]>} Array of usage documents if found, empty array otherwise

@@ -55,6 +55,16 @@ export const getSummaryByDocument = async (documentId: string) => {
 };
 
 /**
+ * Retrieves the total number of summaries belonging to a user
+ * @param {string} userId - User ID
+ * @returns The total number of summaries belonging to the user if found, null otherwise
+ * @throws {null} If the user ID is invalid
+ */
+export const getTotalSummaryByUser = async (userId: string) => {
+  return await Summary.countDocuments({ user: userId });
+};
+
+/**
  * Gets Summary by document in paginated data
  * @param documentId - Document ID
  * @param page - Page number to retrieve
@@ -88,6 +98,19 @@ export const getSummaryByDocumentPaginated = async (
     summaries,
     pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
   };
+};
+
+/**
+ * Retrieves the 5 most recent summaries belonging to a user
+ * @param {string} userId - User ID
+ * @returns An array of the 5 most recent summaries belonging to the user if found, empty array otherwise
+ * @throws {null} If the user ID is invalid
+ */
+export const getRecentSummaryByUser = async (userId: string) => {
+  return await Summary.find({ user: userId })
+    .sort({ createdAt: -1 })
+    .limit(5)
+    .lean();
 };
 
 /**

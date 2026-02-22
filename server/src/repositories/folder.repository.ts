@@ -102,6 +102,20 @@ export const getFoldersByUserPaginated = async (
 };
 
 /**
+ * Retrieves the total number of folders belonging to a user
+ * @param {string} userId - User ID
+ * @returns The total number of folders belonging to the user if found, null otherwise
+ * @throws {null} If the user ID is invalid
+ */
+export const getTotalFoldersByUser = async (userId: string) => {
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return null;
+  }
+
+  return await Folder.countDocuments({ user: userId });
+};
+
+/**
  * Updates a folder by its ID
  * @param {string} id - Folder ID
  * @param {Partial<IFolder>} data - Folder data to update
