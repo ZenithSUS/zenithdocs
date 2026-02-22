@@ -20,10 +20,12 @@ const usageSchema = new Schema<IUsage>({
   documentsUploaded: {
     type: Number,
     default: 0,
+    min: 0,
   },
   tokensUsed: {
     type: Number,
     default: 0,
+    min: 0,
   },
 });
 
