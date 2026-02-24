@@ -6,6 +6,7 @@ import {
   getSummaryByDocument,
   getSummaryByDocumentPaginated,
   getSummaryById,
+  getSummaryByuserPaginated,
   updateSummary,
 } from "../repositories/summary.repository.js";
 import AppError from "../utils/app-error.js";
@@ -127,6 +128,41 @@ export const getSummarByDocumentyPaginatedService = async (
   }
 
   const summary = await getSummaryByDocumentPaginated(documentId, page, limit);
+  return summary;
+};
+
+/**
+ * Retrieves summaries belonging to a user in a paginated manner
+ * @param {string} userId - User ID
+ * @param {number} page - Page number to retrieve
+ * @param {number} limit - Number of summaries to retrieve per page
+ * @returns An object containing the summaries and the count of summaries belonging to the user
+ * @throws {AppError} If user ID is invalid or missing
+ * @throws {AppError} If page or limit is invalid or missing
+ * @throws {AppError} If page or limit is not a positive integer
+ */
+export const getSummaryByUserPaginatedService = async (
+  userId: string,
+  page: number,
+  limit: number,
+) => {
+  if (!userId) {
+    throw new AppError("User ID is required", 400);
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    throw new AppError("Invalid User ID", 400);
+  }
+
+  if (!page || !limit) {
+    throw new AppError("Page and limit are required", 400);
+  }
+
+  if (page < 1 || limit < 1) {
+    throw new AppError("Page and limit must be positive integers", 400);
+  }
+
+  const summary = await getSummaryByuserPaginated(userId, page, limit);
   return summary;
 };
 

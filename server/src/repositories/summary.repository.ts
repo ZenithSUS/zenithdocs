@@ -20,7 +20,7 @@ export const getAllSummary = async () => {
   return await Summary.find({})
     .populate({
       path: "document",
-      select: "_id title",
+      select: "_id title fileType fileSize",
     })
     .lean();
 };
@@ -34,7 +34,7 @@ export const getSummaryById = async (id: string) => {
   return await Summary.findById(id)
     .populate({
       path: "document",
-      select: "_id title",
+      select: "_id title fileType fileSize",
     })
     .lean();
 };
@@ -49,7 +49,7 @@ export const getSummaryByDocument = async (documentId: string) => {
   return await Summary.find({ document: documentId })
     .populate({
       path: "document",
-      select: "_id title",
+      select: "_id title fileType fileSize",
     })
     .lean();
 };
@@ -88,11 +88,47 @@ export const getSummaryByDocumentPaginated = async (
     .limit(limit)
     .populate({
       path: "document",
-      select: "_id title",
+      select: "_id title fileType fileSize",
     })
     .lean();
 
   const total = await Summary.countDocuments({ document: documentId });
+
+  return {
+    summaries,
+    pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+  };
+};
+
+/**
+ * Retrieves summaries belonging to a user in a paginated manner
+ * @param {string} userId - User ID
+ * @param {number} page - Page number to retrieve
+ * @param {number} limit - Number of summaries to retrieve per page
+ * @returns An object containing the summaries and the count of summaries belonging to the user
+ * @throws {null} If the user ID is invalid
+ */
+export const getSummaryByuserPaginated = async (
+  userId: string,
+  page: number,
+  limit: number,
+) => {
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return null;
+  }
+
+  const offset = (page - 1) * limit;
+
+  const summaries = await Summary.find({ user: userId })
+    .skip(offset)
+    .limit(limit)
+    .populate({
+      path: "document",
+      select: "_id title fileType fileSize",
+    })
+    .lean();
+
+  const total = await Summary.countDocuments({ user: userId });
 
   return {
     summaries,
@@ -129,7 +165,7 @@ export const updateSummary = async (id: string, data: Partial<ISummary>) => {
   })
     .populate({
       path: "document",
-      select: "_id title",
+      select: "_id title fileType filefileSize",
     })
     .lean();
 

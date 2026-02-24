@@ -6,6 +6,7 @@ import {
   getAllSummaryService,
   getSummarByDocumentyPaginatedService,
   getSummaryByIdService,
+  getSummaryByUserPaginatedService,
   updateSummaryService,
 } from "../services/summary.service.js";
 import { ParamsDictionary } from "express-serve-static-core";
@@ -107,6 +108,32 @@ export const getSummaryByDocumentPaginatedController = async (
     return res.status(200).json({
       success: true,
       message: "Summaries fetched successully",
+      data: summaries,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get summary by user
+ * @route GET /api/summaries/user/:id
+ */
+export const getSummaryByUserPaginatedController = async (
+  req: Request<SummaryParams>,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { id } = req.params;
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+
+    const summaries = await getSummaryByUserPaginatedService(id, page, limit);
+
+    return res.status(200).json({
+      success: true,
+      message: "Summaries fetched successfully",
       data: summaries,
     });
   } catch (error) {

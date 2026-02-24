@@ -8,6 +8,7 @@ import {
   getSummaryByIdController,
   getSummaryByDocumentPaginatedController,
   updateSummaryController,
+  getSummaryByUserPaginatedController,
 } from "../controllers/summary.controller.js";
 import authorizeSelfOrAdmin from "../middlewares/authorize-self-or-admin.middleware.js";
 
@@ -16,17 +17,18 @@ const router = Router();
 // Summary routes
 router.get("/", protect, requireAdmin, getAllSummaryController);
 
+router.get("/document/:id", protect, getSummaryByDocumentPaginatedController);
 router.get(
-  "/document/:id",
+  "/user/:id",
   protect,
   authorizeSelfOrAdmin,
-  getSummaryByDocumentPaginatedController,
+  getSummaryByUserPaginatedController,
 );
 
-router.get("/:id", protect, authorizeSelfOrAdmin, getSummaryByIdController);
+router.get("/:id", protect, getSummaryByIdController);
 
 router.post("/", protect, createSummaryController);
-router.put("/:id", protect, authorizeSelfOrAdmin, updateSummaryController);
-router.delete("/:id", protect, authorizeSelfOrAdmin, deleteSummaryController);
+router.put("/:id", protect, updateSummaryController);
+router.delete("/:id", protect, deleteSummaryController);
 
 export default router;
