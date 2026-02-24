@@ -5,9 +5,9 @@ const documentKeys = {
   byFolder: (folderId: string) => [...documentKeys.all, folderId] as const,
   byUserPage: (userId: string, page: number) =>
     [...documentKeys.byUser(userId), page] as const,
-  create: () => [...documentKeys.all] as const,
-  update: () => [...documentKeys.all] as const,
-  delete: (id: string) => [...documentKeys.byId(id)] as const,
+  create: () => [...documentKeys.all, "create"] as const,
+  update: () => [...documentKeys.all, "update"] as const,
+  delete: () => [...documentKeys.all, "delete"] as const,
 };
 
 export type DocumentKeys = typeof documentKeys;
