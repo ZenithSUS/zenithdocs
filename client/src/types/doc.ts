@@ -10,7 +10,7 @@ export interface Doc {
     | string
     | {
         _id: string;
-        title: string;
+        name: string;
       }
     | null;
   createdAt: string;
