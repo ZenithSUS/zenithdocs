@@ -1,6 +1,6 @@
 "use client";
 
-export default function DashboardTabLoading() {
+function DashboardTabLoading() {
   return (
     <div className="space-y-6 sm:space-y-8 animate-fade-in">
       {/* Skeleton stat cards */}
@@ -104,67 +104,4 @@ export default function DashboardTabLoading() {
   );
 }
 
-export function FolderCardSkeleton() {
-  return (
-    <div className="border border-white/6 rounded-sm px-6 py-6 animate-pulse">
-      <div className="flex items-start justify-between mb-5">
-        <div className="w-7 h-7 bg-white/8 rounded" />
-        <div className="w-16 h-2 bg-white/6 rounded" />
-      </div>
-      <div className="w-32 h-4 bg-white/8 rounded mb-1" />
-      <div className="w-24 h-3 bg-white/6 rounded mb-5" />
-      <div className="flex gap-2 flex-wrap">
-        <div className="w-16 h-5 bg-white/6 rounded-full" />
-        <div className="w-20 h-5 bg-white/6 rounded-full" />
-      </div>
-      <div className="mt-4 pt-4 border-t border-white/6">
-        <div className="w-full h-1 bg-white/6 rounded-full mb-1.5" />
-        <div className="w-20 h-2 bg-white/6 rounded" />
-      </div>
-    </div>
-  );
-}
-
-export function UsageChartSkeleton() {
-  return (
-    <div className="border border-white/8 rounded-sm overflow-hidden">
-      <div className="px-5 sm:px-7 py-4 border-b border-white/6 bg-white/2 animate-pulse">
-        <div className="w-40 h-3 bg-white/8 rounded" />
-      </div>
-      <div className="px-5 sm:px-7 py-6 space-y-6">
-        {/* Bar chart skeleton */}
-        <div className="flex items-end gap-2 sm:gap-3 h-32">
-          {[40, 65, 55, 80, 70, 90].map((height, i) => (
-            <div
-              key={i}
-              className="flex-1 rounded-t-sm bg-white/8 animate-pulse"
-              style={{ height: `${height}%`, minHeight: 4 }}
-            />
-          ))}
-        </div>
-        {/* Labels skeleton */}
-        <div className="flex gap-2 sm:gap-3">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="flex-1 text-center">
-              <div className="w-8 h-2 bg-white/6 rounded mx-auto" />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export function StatCardSkeleton() {
-  return (
-    <div className="px-5 py-5 border border-white/8 rounded-sm bg-white/2 animate-pulse">
-      <div className="flex justify-between items-start mb-3">
-        <div className="w-6 h-6 bg-white/8 rounded" />
-        <div className="w-8 h-3 bg-white/6 rounded" />
-      </div>
-      <div className="w-16 h-8 bg-white/8 rounded mb-1" />
-      <div className="w-24 h-3 bg-white/6 rounded mb-2" />
-      <div className="w-20 h-3 bg-white/6 rounded" />
-    </div>
-  );
-}
+export default DashboardTabLoading;
