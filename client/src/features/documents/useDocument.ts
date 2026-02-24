@@ -32,7 +32,18 @@ type MutationContext = {
   previousDoc?: DocumentsInfiniteData;
 };
 
-const useDocument = (userId: string, id: string = "") => {
+/**
+ * A hook that provides mutations and queries related to documents.
+ * @param {string} userId - The ID of the user that owns the documents.
+ * @param {string} documentId - The ID of the document to query by ID.
+ * @returns An object with the following properties:
+ *   - createDocumentMutation: A mutation that creates a new document.
+ *   - documentsByUserPage: An infinite query that fetches documents by the user ID with pagination.
+ *   - documentById: A query that fetches a document by its ID.
+ *   - updateDocumentMutation: A mutation that updates a document by its ID.
+ *   - deleteDocumentMutation: A mutation that deletes a document by its ID.
+ */
+const useDocument = (userId: string, documentId: string = "") => {
   const queryClient = useQueryClient();
   const documentLimit = 10;
 
@@ -84,9 +95,9 @@ const useDocument = (userId: string, id: string = "") => {
 
   // Get document by ID
   const documentById = useQuery<Doc, AxiosError>({
-    queryKey: documentKeys.byId(id),
-    queryFn: () => fetchDocumentById(id),
-    enabled: !!id,
+    queryKey: documentKeys.byId(documentId),
+    queryFn: () => fetchDocumentById(documentId),
+    enabled: !!documentId,
   });
 
   // Update document
@@ -99,8 +110,8 @@ const useDocument = (userId: string, id: string = "") => {
     mutationKey: documentKeys.update(),
     mutationFn: ({ id, data }: { id: string; data: Partial<Doc> }) =>
       updateDocumentById(id, data),
-    onMutate: ({ id, data }) => {
-      queryClient.cancelQueries({
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({
         queryKey: documentKeys.byUserPage(userId, documentLimit),
       });
 
@@ -156,7 +167,7 @@ const useDocument = (userId: string, id: string = "") => {
     string,
     MutationContext
   >({
-    mutationKey: documentKeys.delete(id),
+    mutationKey: documentKeys.delete(),
     mutationFn: (id) => deleteDocumentById(id),
     onMutate: async (id) => {
       await queryClient.cancelQueries({
