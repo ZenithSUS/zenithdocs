@@ -5,7 +5,6 @@ import DashboardHeader from "@/components/dashboard/Header";
 import DashboardTabLoading from "@/components/dashboard/DashBoardTabLoading";
 import DashBoardSidebar, { NavItem } from "@/components/dashboard/Sidebar";
 import useAuth from "@/features/auth/useAuth";
-import USAGE from "@/seeds/usage";
 
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import DocumentsTab from "@/components/dashboard/tabs/Documents";
@@ -22,6 +21,7 @@ const CURRENT_MONTH = new Date().toISOString().slice(0, 7); // YYYY-MM
 export default function DashboardPage() {
   const [nav, setNav] = useState<NavItem>("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [filterFolder, setFilterFolder] = useState<string>("all");
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const mainRef = useRef<HTMLElement>(null);
 
@@ -51,7 +51,6 @@ export default function DashboardPage() {
   const tokenPct = user?.tokenLimit
     ? Math.round(((overview?.tokensUsed || 0) / user.tokenLimit) * 100)
     : 0;
-  const maxUsage = Math.max(...USAGE.map((u) => u.tokensUsed));
 
   return (
     <div className="min-h-screen bg-background text-text font-serif flex overflow-hidden">
@@ -107,7 +106,7 @@ export default function DashboardPage() {
                 completedDocs={overview?.completedDocuments || 0}
                 tokenPct={tokenPct}
                 currentTokensUsed={overview?.tokensUsed || 0}
-                maxUsage={maxUsage}
+                maxUsage={user?.tokenLimit || 0}
                 overview={overview}
                 overviewLoading={overviewLoading}
               />
@@ -117,21 +116,29 @@ export default function DashboardPage() {
           {/* ══ DOCUMENTS ═════════════════════════════════════════════════════ */}
           {nav === "documents" && (
             <Suspense fallback={<DashboardTabLoading />}>
-              <DocumentsTab userId={user?._id ?? ""} />
+              <DocumentsTab
+                userId={user?._id ?? ""}
+                filterFolder={filterFolder}
+                setFilterFolder={setFilterFolder}
+              />
             </Suspense>
           )}
 
           {/* ══ SUMMARIES ═════════════════════════════════════════════════════ */}
           {nav === "summaries" && (
             <Suspense fallback={<DashboardTabLoading />}>
-              <SummaryTab />
+              <SummaryTab userId={user?._id ?? ""} />
             </Suspense>
           )}
 
           {/* ══ FOLDERS ═══════════════════════════════════════════════════════ */}
           {nav === "folders" && (
             <Suspense fallback={<DashboardTabLoading />}>
-              <FolderTab setNav={setNav} />
+              <FolderTab
+                setNav={setNav}
+                userId={user?._id ?? ""}
+                setFilterFolder={setFilterFolder}
+              />
             </Suspense>
           )}
 
@@ -139,12 +146,12 @@ export default function DashboardPage() {
           {nav === "usage" && (
             <Suspense fallback={<DashboardTabLoading />}>
               <UsageTab
-                usage={USAGE}
                 currentMonth={CURRENT_MONTH}
                 tokenPct={tokenPct}
                 tokenLimit={user?.tokenLimit || 0}
                 currentTokensUsed={overview?.tokensUsed || 0}
-                maxUsage={maxUsage}
+                maxUsage={user?.tokenLimit || 0}
+                usage={overview?.usageHistory || []}
               />
             </Suspense>
           )}
