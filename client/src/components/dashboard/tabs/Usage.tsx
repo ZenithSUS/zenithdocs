@@ -27,7 +27,7 @@ function UsageTab({
         {[
           {
             label: "Documents This Month",
-            value: usage.slice(-1)[0].documentsUploaded,
+            value: usage.reduce((acc, u) => acc + u.documentsUploaded, 0),
             icon: "▣",
             sub: "vs 9 last month",
           },
