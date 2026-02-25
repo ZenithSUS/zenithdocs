@@ -4,6 +4,7 @@ import {
   createUser,
   getUserByEmail,
   getUserRefreshToken,
+  removeRefreshToken,
   updateUser,
 } from "../repositories/user.repository.js";
 import AppError from "../utils/app-error.js";
@@ -73,6 +74,17 @@ export const registerService = async (data: Partial<IUser>) => {
   // Remove password from response
   user.password = undefined;
   return user;
+};
+
+/**
+ * Logs out a user by removing their refresh token
+ * @param {string} userId - User ID to log out
+ * @returns {Promise<void>} Promise that resolves when the user is logged out
+ */
+export const logoutService = async (userId: string) => {
+  if (!userId) throw new AppError("User ID is required", 400);
+
+  await removeRefreshToken(userId);
 };
 
 /**
