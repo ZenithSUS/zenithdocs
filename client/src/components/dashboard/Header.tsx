@@ -1,6 +1,12 @@
 "use client";
 
+import { useState } from "react";
+import HeaderDropDown from "./HeaderDropDown";
+
 interface DashboardHeaderProps {
+  userId: string;
+  plan: string;
+  refetch: () => void;
   email: string;
   nav: string;
   setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -10,6 +16,9 @@ interface DashboardHeaderProps {
 }
 
 function DashboardHeader({
+  userId,
+  plan,
+  refetch,
   email,
   nav,
   setSidebarOpen,
@@ -17,6 +26,8 @@ function DashboardHeader({
   totalSummaries,
   totalFolders,
 }: DashboardHeaderProps) {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
   return (
     <header className="px-5 sm:px-8 py-4 border-b border-white/6 flex items-center justify-between bg-background/90 backdrop-blur-sm sticky top-0 z-20">
       <div className="flex items-center gap-4">
@@ -47,8 +58,20 @@ function DashboardHeader({
         <button className="sm:hidden p-2 bg-primary text-background rounded-sm text-[14px] hover:bg-[#e0b530] transition-colors">
           ↑
         </button>
-        <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-[11px] text-primary font-bold font-sans">
-          {email.slice(0, 1).toUpperCase()}
+
+        <div className="relative">
+          {/* User dropdown */}
+          {isDropdownOpen && (
+            <HeaderDropDown userId={userId} email={email} plan={plan} />
+          )}
+
+          {/* Avatar */}
+          <div
+            className="w-8 h-8 rounded-full cursor-pointer bg-primary/20 border border-primary/30 flex items-center justify-center text-[11px] text-primary font-bold font-sans"
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+          >
+            {email.slice(0, 1).toUpperCase()}
+          </div>
         </div>
       </div>
     </header>
