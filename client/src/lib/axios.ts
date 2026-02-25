@@ -29,21 +29,34 @@ api.interceptors.response.use(
       _retry?: boolean;
     };
 
-    if (err.response?.status === 403 && !originalRequest._retry) {
+    const isRefreshRequest = originalRequest.url?.includes("/api/auth/refresh");
+    const isAuthPage =
+      window.location.pathname.startsWith("/login") ||
+      window.location.pathname.startsWith("/register");
+
+    // 403: token expired or invalid — try to refresh
+    if (
+      err.response?.status === 403 &&
+      !originalRequest._retry &&
+      !isRefreshRequest
+    ) {
       originalRequest._retry = true;
 
       try {
         const newToken = await refreshToken();
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return api(originalRequest);
-      } catch (refreshError) {
+      } catch {
         localStorage.removeItem("token");
-        return Promise.reject(refreshError);
+        if (!isAuthPage) window.location.href = "/login";
+        return Promise.reject(err);
       }
     }
 
-    if (err.response?.status === 401) {
+    // 401: no token was sent or user doesn't exist — hard redirect
+    if (err.response?.status === 401 && !isRefreshRequest && !isAuthPage) {
       localStorage.removeItem("token");
+      window.location.href = "/login";
     }
 
     return Promise.reject(err);
