@@ -6,6 +6,9 @@ const connectDB = async () => {
   try {
     const conn = await mongoose.connect(
       config.database.mongoURI || "mongodb://127.0.0.1:27017/zenithdocs",
+      {
+        dbName: "zenithdocs",
+      },
     );
 
     console.log("=".repeat(50));
