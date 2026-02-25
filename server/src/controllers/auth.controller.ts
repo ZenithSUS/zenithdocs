@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import {
   loginService,
+  logoutService,
   refreshAccessTokenService,
   registerService,
 } from "../services/auth.service.js";
@@ -61,6 +62,43 @@ export const registerUserController = async (
       success: true,
       message: "User registered successfully",
       data: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Logout user
+ * @route POST /api/auth/logout
+ */
+export const logoutController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { refreshToken } = req.cookies;
+    const { id }: { id: string } = req.body;
+
+    // If refresh token exists, invalidate it
+    if (refreshToken) {
+      if (id) {
+        await logoutService(id);
+      }
+    }
+
+    // Always clear cookie
+    res.cookie("refreshToken", "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 0,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "User logged out successfully",
     });
   } catch (error) {
     next(error);
