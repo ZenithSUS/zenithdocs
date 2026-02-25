@@ -11,29 +11,47 @@ export type LoginResponse = {
 export type RegisterResponse = ResponseWithUser;
 
 export const login = async ({ email, password }: AuthInput) => {
-  const { data } = await api.post<LoginResponse>("/api/auth/login", {
-    email,
-    password,
-  });
+  const { data } = await api.post<LoginResponse>(
+    "/api/auth/login",
+    {
+      email,
+      password,
+    },
+    { withCredentials: true },
+  );
   return data;
 };
 
 export const register = async ({ email, password }: AuthInput) => {
-  const { data } = await api.post<RegisterResponse>("/api/auth/register", {
-    email,
-    password,
-  });
+  const { data } = await api.post<RegisterResponse>(
+    "/api/auth/register",
+    {
+      email,
+      password,
+    },
+    { withCredentials: true },
+  );
   return data;
 };
 
 export const getMe = async () => {
-  const { data } =
-    await api.get<Omit<ResponseWithUser, "message">>("/api/auth/me");
+  const { data } = await api.get<Omit<ResponseWithUser, "message">>(
+    "/api/auth/me",
+    {
+      withCredentials: true,
+    },
+  );
   return data.data;
 };
 
 export const logout = async (id: string) => {
-  const { data } = await api.post<Response>("/api/auth/logout", { id });
+  const { data } = await api.post<Response>(
+    "/api/auth/logout",
+    { id },
+    {
+      withCredentials: true,
+    },
+  );
 
   // If logout is successful, remove token
   if (data.success) {
