@@ -26,7 +26,7 @@ export default function DashboardPage() {
   const mainRef = useRef<HTMLElement>(null);
 
   const { me } = useAuth();
-  const { data: user, isLoading: userLoading } = me;
+  const { data: user, isLoading: userLoading, refetch: refetchUser } = me;
 
   const { dashboardOverview } = useDashboard(user?._id || "");
   const { data: overview, isLoading: overviewLoading } = dashboardOverview;
@@ -83,7 +83,10 @@ export default function DashboardPage() {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top bar */}
         <DashboardHeader
+          refetch={refetchUser}
           email={user?.email || "..."}
+          userId={user?._id || ""}
+          plan={user?.plan || ""}
           nav={nav}
           setSidebarOpen={setSidebarOpen}
           totalDocuments={overview?.totalDocuments || 0}
