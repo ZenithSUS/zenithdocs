@@ -20,6 +20,7 @@ interface NewFolderModalProps {
   userId: string;
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  onRefresh?: (scope: "all" | "overview" | "user") => void;
 }
 
 const folderSchema = z.object({
@@ -28,7 +29,12 @@ const folderSchema = z.object({
 
 type FolderForm = z.infer<typeof folderSchema>;
 
-const NewFolderModal = ({ userId, open, setOpen }: NewFolderModalProps) => {
+const NewFolderModal = ({
+  userId,
+  open,
+  setOpen,
+  onRefresh,
+}: NewFolderModalProps) => {
   const { createFolderMutation } = useFolder();
   const {
     mutateAsync: createFolder,
@@ -47,6 +53,8 @@ const NewFolderModal = ({ userId, open, setOpen }: NewFolderModalProps) => {
         name: data.name,
         user: userId,
       });
+
+      if (onRefresh) onRefresh("overview");
 
       reset();
       toast.success("Folder created successfully!");
@@ -90,7 +98,7 @@ const NewFolderModal = ({ userId, open, setOpen }: NewFolderModalProps) => {
           )}
 
           {isError && <p className="text-red-500 text-xs">{errorMessage}</p>}
-          <div className="flex-row gap-2">
+          <div className="flex flex-row gap-2">
             <Button
               type="submit"
               className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
