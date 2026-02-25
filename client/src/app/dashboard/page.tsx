@@ -6,7 +6,14 @@ import DashboardTabLoading from "@/components/dashboard/DashBoardTabLoading";
 import DashBoardSidebar, { NavItem } from "@/components/dashboard/Sidebar";
 import useAuth from "@/features/auth/useAuth";
 
-import { useState, useEffect, useRef, lazy, Suspense } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  lazy,
+  Suspense,
+  useCallback,
+} from "react";
 import DocumentsTab from "@/components/dashboard/tabs/Documents";
 import useDashboard from "@/features/dashboard/useDashboard";
 
@@ -29,7 +36,28 @@ export default function DashboardPage() {
   const { data: user, isLoading: userLoading, refetch: refetchUser } = me;
 
   const { dashboardOverview } = useDashboard(user?._id || "");
-  const { data: overview, isLoading: overviewLoading } = dashboardOverview;
+  const {
+    data: overview,
+    isLoading: overviewLoading,
+    refetch: overViewRefetch,
+  } = dashboardOverview;
+
+  const tokenPct = user?.tokenLimit
+    ? Math.round(((overview?.tokensUsed || 0) / user.tokenLimit) * 100)
+    : 0;
+
+  const handleRefetch = useCallback(
+    async (scope: "all" | "overview" | "user") => {
+      if (scope === "all") {
+        await Promise.all([overViewRefetch(), refetchUser()]);
+      } else if (scope === "overview") {
+        await overViewRefetch();
+      } else if (scope === "user") {
+        await refetchUser();
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     const h = (e: MouseEvent) => setMousePos({ x: e.clientX, y: e.clientY });
@@ -47,10 +75,6 @@ export default function DashboardPage() {
     });
     return () => cancelAnimationFrame(frame);
   }, [nav]);
-
-  const tokenPct = user?.tokenLimit
-    ? Math.round(((overview?.tokensUsed || 0) / user.tokenLimit) * 100)
-    : 0;
 
   return (
     <div className="min-h-screen bg-background text-text font-serif flex overflow-hidden">
@@ -141,6 +165,7 @@ export default function DashboardPage() {
                 setNav={setNav}
                 userId={user?._id ?? ""}
                 setFilterFolder={setFilterFolder}
+                onRefresh={handleRefetch}
               />
             </Suspense>
           )}
