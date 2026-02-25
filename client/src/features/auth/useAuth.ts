@@ -3,6 +3,7 @@ import {
   getMe,
   login,
   LoginResponse,
+  logout,
   register,
   RegisterResponse,
 } from "@/features/auth/auth.api";
@@ -34,11 +35,20 @@ const useAuth = () => {
     queryFn: getMe,
   });
 
+  // Logout
+  const logoutMutation = useMutation({
+    mutationKey: authKeys.logout(),
+    mutationFn: (id: string) => logout(id),
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: authKeys.user() });
+    },
+  });
+
   return {
     me,
     loginMutation,
     registerMutation,
-    loginLoading: loginMutation.isPending,
+    logoutMutation,
   };
 };
 
