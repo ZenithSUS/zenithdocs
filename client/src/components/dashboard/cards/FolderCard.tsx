@@ -2,6 +2,7 @@ import STATUS_META from "@/constants/status-meta";
 import sizefmt from "@/helpers/size-format";
 import Doc, { DocStatus } from "@/types/doc";
 import { Folder } from "@/types/folder";
+import RenameFolderModal from "@/components/dashboard/modals/folder/RenameFolderModal";
 
 interface FolderCardProps {
   folder: Folder;
@@ -13,11 +14,13 @@ const FolderCard = ({ folder, docs, handleFolderClick }: FolderCardProps) => {
   const completed = docs.filter((d) => d.status === "completed").length;
   const totalSize = docs.reduce((acc, d) => acc + d.fileSize, 0);
 
+  const userId =
+    typeof folder.user === "object" ? folder.user._id : folder.user;
+
   return (
     <div
       key={folder._id}
-      onClick={() => handleFolderClick(folder._id)}
-      className="border border-white/8 rounded-sm px-6 py-6 cursor-pointer hover:border-primary/25 hover:bg-primary/3 transition-all duration-200 group"
+      className="border border-white/8 rounded-sm px-6 py-6  hover:border-primary/25 hover:bg-primary/3 transition-all duration-200 group"
     >
       <div className="flex items-start justify-between mb-5">
         <span className="text-[28px] text-primary/70 group-hover:text-primary transition-colors">
@@ -28,8 +31,20 @@ const FolderCard = ({ folder, docs, handleFolderClick }: FolderCardProps) => {
         </span>
       </div>
 
-      <div className="text-[16px] font-serif mb-1 truncate" title={folder.name}>
-        {folder.name}
+      <div className="flex justify-between items-center">
+        <div
+          className="text-[16px] font-serif mb-1 truncate cursor-pointer w-fit hover:text-[#C9A227] transition-colors duration-150"
+          title={folder.name}
+          onClick={() => handleFolderClick(folder._id)}
+        >
+          {folder.name}
+        </div>
+
+        <RenameFolderModal
+          userId={userId}
+          folderId={folder._id}
+          folderName={folder.name}
+        />
       </div>
 
       <div className="text-[12px] text-text/30 font-sans mb-5">
