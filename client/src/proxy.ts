@@ -13,18 +13,12 @@ function safeRedirect(req: NextRequest, target: string) {
 
 export default function proxy(req: NextRequest) {
   const token = req.cookies.get("refreshToken")?.value;
+  console.log(token);
   const { pathname } = req.nextUrl;
 
   const isProtectedRoute = pathname.startsWith("/dashboard");
   const isAuthRoute =
     pathname.startsWith("/login") || pathname.startsWith("/register");
-
-  // Handle root route
-  if (pathname === "/") {
-    return token
-      ? safeRedirect(req, "/dashboard")
-      : safeRedirect(req, "/login");
-  }
 
   // If not logged in and trying to access protected route
   if (!token && isProtectedRoute) {
