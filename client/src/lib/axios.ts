@@ -1,5 +1,6 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
 import config from "@/config/env";
+import handleLogout from "@/utils/logout";
 
 const api = axios.create({
   baseURL: config.api.baseUrl,
@@ -30,6 +31,7 @@ api.interceptors.response.use(
     };
 
     const isRefreshRequest = originalRequest.url?.includes("/api/auth/refresh");
+    const isMeRequest = originalRequest.url?.includes("/api/auth/me");
     const isAuthPage =
       window.location.pathname.startsWith("/login") ||
       window.location.pathname.startsWith("/register");
@@ -38,7 +40,8 @@ api.interceptors.response.use(
     if (
       err.response?.status === 403 &&
       !originalRequest._retry &&
-      !isRefreshRequest
+      !isRefreshRequest &&
+      !isMeRequest
     ) {
       originalRequest._retry = true;
 
@@ -47,16 +50,15 @@ api.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return api(originalRequest);
       } catch {
-        localStorage.removeItem("token");
-        if (!isAuthPage) window.location.href = "/login";
+        // If refresh token fails, hard redirect
+        handleLogout();
         return Promise.reject(err);
       }
     }
 
     // 401: no token was sent or user doesn't exist — hard redirect
     if (err.response?.status === 401 && !isRefreshRequest && !isAuthPage) {
-      localStorage.removeItem("token");
-      window.location.href = "/login";
+      handleLogout();
     }
 
     return Promise.reject(err);
