@@ -90,7 +90,6 @@ export default function RegisterPage() {
       const res = await mutateAsync(data);
       if (!res.success) throw new Error(res.message);
 
-      console.log("Register response →", res.data);
       toast.success(res.message);
 
       setSuccess(true);
