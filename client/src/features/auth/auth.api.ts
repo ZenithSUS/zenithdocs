@@ -1,5 +1,5 @@
 import api from "@/lib/axios";
-import { Response, ResponseWithUser } from "@/types/api";
+import { Response, ResponseWithData, ResponseWithUser } from "@/types/api";
 import { AuthInput } from "@/types/input";
 
 export type LoginResponse = {
@@ -32,7 +32,13 @@ export const getMe = async () => {
   return data.data;
 };
 
-export const logout = async () => {
-  const { data } = await api.post("/api/auth/logout");
+export const logout = async (id: string) => {
+  const { data } = await api.post<Response>("/api/auth/logout", { id });
+
+  // If logout is successful, remove token
+  if (data.success) {
+    localStorage.removeItem("token");
+  }
+
   return data;
 };
