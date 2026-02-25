@@ -19,14 +19,10 @@ export const login = async ({ email, password }: AuthInput) => {
 };
 
 export const register = async ({ email, password }: AuthInput) => {
-  const { data } = await api.post<RegisterResponse>(
-    "/api/auth/register",
-    {
-      email,
-      password,
-    },
-    { withCredentials: true },
-  );
+  const { data } = await api.post<RegisterResponse>("/api/auth/register", {
+    email,
+    password,
+  });
   return data;
 };
 
