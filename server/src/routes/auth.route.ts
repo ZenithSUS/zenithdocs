@@ -5,6 +5,7 @@ import {
   registerUserController,
   getMeController,
   refreshAccessTokenController,
+  logoutController,
 } from "../controllers/auth.controller.js";
 
 const router = Router();
@@ -12,6 +13,7 @@ const router = Router();
 // Authentication routes
 router.post("/login", loginController);
 router.post("/register", registerUserController);
+router.post("/logout", logoutController);
 router.post("/refresh", refreshAccessTokenController);
 
 // Get current user
