@@ -10,19 +10,21 @@ import useFolder from "@/features/folder/useFolder";
 import useDocument from "@/features/documents/useDocument";
 import FolderCardSkeleton from "@/components/dashboard/skeleton/FolderCardSkeleton";
 import { ThreeDot } from "react-loading-indicators";
-import NewFolderModal from "../modals/NewFolderModal";
+import NewFolderModal from "../modals/folder/NewFolderModal";
 import FolderCard from "../cards/FolderCard";
 
 interface FolderDashBoardProps {
   userId: string;
   setNav: React.Dispatch<React.SetStateAction<NavItem>>;
   setFilterFolder: React.Dispatch<React.SetStateAction<string>>;
+  onRefresh?: (scope: "all" | "overview" | "user") => void;
 }
 
 function FolderDashBoard({
   userId,
   setNav,
   setFilterFolder,
+  onRefresh,
 }: FolderDashBoardProps) {
   const [newFolderOpen, setNewFolderOpen] = useState(false);
 
@@ -130,6 +132,7 @@ function FolderDashBoard({
         userId={userId}
         open={newFolderOpen}
         setOpen={setNewFolderOpen}
+        onRefresh={onRefresh}
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
