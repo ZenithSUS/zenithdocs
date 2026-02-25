@@ -33,6 +33,9 @@ const origins = config.server.allowedOrigins.split(",");
 // Express App
 const app = express();
 
+// Set Trust Proxy
+app.set("trust proxy", 1);
+
 // Express Middleware Config
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(

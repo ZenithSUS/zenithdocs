@@ -7,6 +7,10 @@ import {
 } from "../services/auth.service.js";
 import { getUserByIdService } from "../services/user.service.js";
 import AppError from "../utils/app-error.js";
+import {
+  clearRefreshTokenCookieOptions,
+  getRefreshTokenCookieOptions,
+} from "../utils/cookie-options.js";
 
 /**
  * Login user
@@ -22,13 +26,11 @@ export const loginController = async (
 
     const result = await loginService(email, password);
 
-    res.cookie("refreshToken", result.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      path: "/",
-    });
+    res.cookie(
+      "refreshToken",
+      result.refreshToken,
+      getRefreshTokenCookieOptions(),
+    );
 
     return res.status(200).json({
       success: true,
@@ -88,12 +90,7 @@ export const logoutController = async (
     }
 
     // Always clear cookie
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-      secure: true,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      path: "/",
-    });
+    res.clearCookie("refreshToken", clearRefreshTokenCookieOptions());
 
     return res.status(200).json({
       success: true,
