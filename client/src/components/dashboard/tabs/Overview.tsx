@@ -9,7 +9,7 @@ import { ThreeDot } from "react-loading-indicators";
 import DocumentCardSkeleton from "../skeleton/DocumentCardSkeleton";
 import DocumentCard from "../cards/DocumentCard";
 import UsageCard from "../cards/UsageCard";
-import { UsageChartSkeleton } from "../DashBoardTabLoading";
+import UsageChartSkeleton from "@/components/dashboard/skeleton/UsageChartSkeleton";
 
 interface OverViewProps {
   setNav: React.Dispatch<React.SetStateAction<NavItem>>;
