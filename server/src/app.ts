@@ -37,7 +37,11 @@ const app = express();
 app.set("trust proxy", 1);
 
 // Express Middleware Config
-app.use(helmet({ crossOriginResourcePolicy: false }));
+app.use(
+  helmet({
+    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+  }),
+);
 app.use(
   cors({
     origin: (origin, callback) => {
