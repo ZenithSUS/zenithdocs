@@ -87,3 +87,9 @@ export const deleteUser = async (id: string): Promise<IUser | null> => {
     .select("-refreshToken -password")
     .lean();
 };
+
+export const removeRefreshToken = async (id: string) => {
+  if (!mongoose.Types.ObjectId.isValid(id)) return null;
+  const user = await User.findByIdAndUpdate(id, { refreshToken: null });
+  return user;
+};
