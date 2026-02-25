@@ -5,7 +5,7 @@ export interface IUser extends Document {
   password?: string;
   role: "user" | "admin";
   plan: string;
-  refreshToken?: string;
+  refreshToken?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
