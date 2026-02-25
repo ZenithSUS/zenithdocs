@@ -25,7 +25,7 @@ export const loginController = async (
     res.cookie("refreshToken", result.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "none",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       path: "/",
     });
@@ -83,18 +83,15 @@ export const logoutController = async (
     const { id }: { id: string } = req.body;
 
     // If refresh token exists, invalidate it
-    if (refreshToken) {
-      if (id) {
-        await logoutService(id);
-      }
+    if (refreshToken && id) {
+      await logoutService(id);
     }
 
     // Always clear cookie
-    res.cookie("refreshToken", "", {
+    res.clearCookie("refreshToken", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "none",
-      maxAge: 0,
+      secure: true,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       path: "/",
     });
 
