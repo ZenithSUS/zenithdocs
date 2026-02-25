@@ -1,3 +1,4 @@
+import { summarizeText } from "../lib/ai/mistral.service.js";
 import { ISummary } from "../models/Summary.js";
 import {
   createSummary,
@@ -13,13 +14,16 @@ import AppError from "../utils/app-error.js";
 import mongoose from "mongoose";
 
 /**
- * Creates a new summary with the given data
- * @param {Partial<ISummary>} data - Summary data to create
- * @returns The created summary
- * @throws {MongooseError} If summary data is invalid
+ * Creates a new summary with the given data.
+ * @param {Partial<ISummary>} data - Data to create summary
+ * @returns {Promise<ISummary>} Created summary if found, null otherwise
+ * @throws {AppError} If data is invalid or missing
+ * @throws {AppError} If document ID is invalid or missing
+ * @throws {AppError} If summary type is invalid or missing
+ * @throws {AppError} If content is invalid or missing
  */
 export const createSummaryService = async (data: Partial<ISummary>) => {
-  const validTypes = ["short", "bullet", "detailed", "executive"];
+  const validTypes = ["short", "bullet", "detailed", "executive"] as const;
 
   if (!data || typeof data !== "object") {
     throw new AppError("Data is required", 400);
@@ -29,23 +33,35 @@ export const createSummaryService = async (data: Partial<ISummary>) => {
     throw new AppError("Document ID is required", 400);
   }
 
-  if (!data.content || typeof data.content !== "string") {
-    throw new AppError("Content is required", 400);
-  }
-
   if (!mongoose.Types.ObjectId.isValid(data.document)) {
     throw new AppError("Invalid Document ID", 400);
   }
 
-  if (
-    data.type &&
-    typeof data.type !== "string" &&
-    !validTypes.includes(data.type)
-  ) {
+  if (!data.type || typeof data.type !== "string") {
+    throw new AppError("Summary Type is required", 400);
+  }
+
+  if (!validTypes.includes(data.type as any)) {
     throw new AppError("Invalid Summary Type", 400);
   }
 
-  const summary = await createSummary(data);
+  if (!data.content || typeof data.content !== "string") {
+    throw new AppError("Content is required", 400);
+  }
+
+  const { content, tokensUsed } = await summarizeText(
+    data.content,
+    data.type as any,
+  );
+
+  const summary = await createSummary({
+    user: data.user,
+    document: data.document,
+    type: data.type,
+    content: content.toString(), //  Add generated content
+    tokensUsed, // Store token usage
+  });
+
   return summary;
 };
 
