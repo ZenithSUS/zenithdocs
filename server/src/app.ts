@@ -73,6 +73,11 @@ app.get("/", (_, res) =>
     .json({ success: true, message: "Welcome to the ZenithDocs Server" }),
 );
 
+app.get("/api/auth/cookie-test", (req, res) => {
+  console.log("Cookies received:", req.cookies);
+  res.json({ cookies: req.cookies });
+});
+
 // Routes
 app.use("/api/auth", requireApiKey, authRouter);
 app.use("/api/users", requireApiKey, userRouter);
