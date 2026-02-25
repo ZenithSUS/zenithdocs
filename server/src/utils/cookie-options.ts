@@ -14,5 +14,6 @@ export const clearRefreshTokenCookieOptions = (): CookieOptions => ({
   httpOnly: true,
   secure: isProd,
   sameSite: isProd ? "none" : "lax",
+  maxAge: 0,
   path: "/",
 });

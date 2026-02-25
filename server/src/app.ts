@@ -48,6 +48,8 @@ app.use(
       }
     },
     credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   }),
 );
 app.use(express.json());
