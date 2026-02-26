@@ -11,9 +11,9 @@ const COOKIE_ROUTES: Record<string, string> = {
 
 async function handler(
   req: NextRequest,
-  { params }: { params: { path: string[] } },
+  { params }: { params: Promise<{ path: string[] }> },
 ) {
-  const { path: pathSegments } = await params; // await params
+  const { path: pathSegments } = await params;
   const path = pathSegments.join("/");
   console.log("Path:", path);
 
