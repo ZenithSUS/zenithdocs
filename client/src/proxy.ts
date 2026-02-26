@@ -13,10 +13,10 @@ function safeRedirect(req: NextRequest, target: string) {
 
 export default function proxy(req: NextRequest) {
   const token = req.cookies.get("refreshToken")?.value;
-  console.log(token);
 
   const { pathname } = req.nextUrl;
 
+  const isRootRoute = pathname === "/";
   const isProtectedRoute = pathname.startsWith("/dashboard");
   const isAuthRoute =
     pathname.startsWith("/login") || pathname.startsWith("/register");
@@ -26,8 +26,8 @@ export default function proxy(req: NextRequest) {
     return safeRedirect(req, "/login");
   }
 
-  // If logged in and trying to access auth pages
-  if (token && isAuthRoute) {
+  // If logged in and trying to access auth pages or root route
+  if (token && (isAuthRoute || isRootRoute)) {
     return safeRedirect(req, "/dashboard");
   }
 
