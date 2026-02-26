@@ -5,6 +5,7 @@ import { AuthInput } from "@/types/input";
 export type LoginResponse = {
   data: {
     accessToken: string;
+    refreshToken: string;
   };
 } & Response;
 
@@ -37,7 +38,8 @@ export const logout = async (id: string) => {
 
   // If logout is successful, remove token
   if (data.success) {
-    localStorage.removeItem("token");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
   }
 
   return data;
