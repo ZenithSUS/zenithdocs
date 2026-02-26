@@ -1,11 +1,9 @@
-const isDev = process.env.NODE_ENV === "development";
+// const isDev = process.env.NODE_ENV === "development";
 
 const config = {
   api: {
-    baseUrl: isDev
-      ? process.env.NEXT_PUBLIC_API_URL_DEV
-      : process.env.NEXT_PUBLIC_API_URL || "",
-    key: process.env.NEXT_PUBLIC_API_KEY || "",
+    baseUrl: process.env.NEXT_PUBLIC_API_URL ?? "/api",
+    key: process.env.NEXT_PUBLIC_API_KEY ?? "",
   },
 };
 
