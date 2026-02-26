@@ -104,21 +104,34 @@ function FolderDashBoard({
   // Empty state
   if (allFolders.length === 0 && unfiledDocs.length === 0) {
     return (
-      <div className="border border-white/8 rounded-sm px-8 py-16 text-center">
-        <div className="text-[48px] text-text/10 mb-4">⬡</div>
-        <h3 className="text-[18px] font-serif text-text/60 mb-2">
-          No folders yet
-        </h3>
-        <p className="text-[13px] text-text/30 font-sans max-w-sm mx-auto mb-6">
-          Create folders to organize your documents by project, client, or
-          topic.
-        </p>
-        <button
-          className="px-6 py-3 bg-primary text-background text-[12px] font-bold tracking-[0.12em] font-sans rounded-sm transition-all duration-200 hover:bg-[#e0b530] hover:-translate-y-0.5"
-          onClick={() => setNewFolderOpen(true)}
-        >
-          CREATE FOLDER
-        </button>
+      <div className="space-y-5">
+        {/* Modals */}
+        {newFolderOpen && (
+          <NewFolderModal
+            userId={userId}
+            open={newFolderOpen}
+            setOpen={setNewFolderOpen}
+            onRefresh={onRefresh}
+          />
+        )}
+
+        <div className="border border-white/8 rounded-sm px-8 py-16 text-center">
+          <div className="text-[48px] text-text/10 mb-4">⬡</div>
+          <h3 className="text-[18px] font-serif text-text/60 mb-2">
+            No folders yet
+          </h3>
+          <p className="text-[13px] text-text/30 font-sans max-w-sm mx-auto mb-6">
+            Create folders to organize your documents by project, client, or
+            topic.
+          </p>
+          <button
+            type="button"
+            className="px-6 py-3 bg-primary text-background text-[12px] font-bold tracking-[0.12em] font-sans rounded-sm transition-all duration-200 hover:bg-[#e0b530] hover:-translate-y-0.5"
+            onClick={() => setNewFolderOpen(true)}
+          >
+            CREATE FOLDER
+          </button>
+        </div>
       </div>
     );
   }
@@ -131,12 +144,14 @@ function FolderDashBoard({
   return (
     <div className="space-y-5">
       {/* Modals */}
-      <NewFolderModal
-        userId={userId}
-        open={newFolderOpen}
-        setOpen={setNewFolderOpen}
-        onRefresh={onRefresh}
-      />
+      {newFolderOpen && (
+        <NewFolderModal
+          userId={userId}
+          open={newFolderOpen}
+          setOpen={setNewFolderOpen}
+          onRefresh={onRefresh}
+        />
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {allFolders.map((folder) => {
