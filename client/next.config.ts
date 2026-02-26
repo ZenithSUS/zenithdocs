@@ -1,14 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  async rewrites() {
-    return [
-      {
-        source: "/api/:path*",
-        destination: "https://zenithdocs.onrender.com/api/:path*",
-      },
-    ];
-  },
+  reactStrictMode: true,
 };
 
 export default nextConfig;
