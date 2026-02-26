@@ -13,7 +13,6 @@ function safeRedirect(req: NextRequest, target: string) {
 
 export default function proxy(req: NextRequest) {
   const token = req.cookies.get("refreshToken")?.value;
-  console.log(token);
 
   const { pathname } = req.nextUrl;
 
