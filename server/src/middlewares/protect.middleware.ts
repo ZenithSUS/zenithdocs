@@ -9,6 +9,7 @@ const protect = async (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    res.setHeader("x-auth-error", "missing_token");
     return next(new AppError("Unauthorized access", 401));
   }
 
@@ -16,23 +17,23 @@ const protect = async (req: Request, res: Response, next: NextFunction) => {
 
   try {
     const decoded = jwt.verify(token, config.jwt.accessSecret) as JwtPayload;
-
-    // Check if user exists
     const user = await getUserById(decoded.sub);
-    if (!user) throw new AppError("Unauthorized access", 401);
+    if (!user) {
+      res.setHeader("x-auth-error", "user_not_found");
+      return next(new AppError("Unauthorized access", 401));
+    }
 
     req.user = decoded;
-
     next();
   } catch (error) {
-    if (error instanceof jwt.JsonWebTokenError) {
-      return next(new AppError("Invalid token", 403));
-    }
-
     if (error instanceof jwt.TokenExpiredError) {
-      return next(new AppError("Token expired", 403));
+      res.setHeader("x-auth-error", "token_expired");
+      return next(new AppError("Token expired", 401));
     }
-
+    if (error instanceof jwt.JsonWebTokenError) {
+      res.setHeader("x-auth-error", "invalid_token");
+      return next(new AppError("Invalid token", 401));
+    }
     return next(error);
   }
 };

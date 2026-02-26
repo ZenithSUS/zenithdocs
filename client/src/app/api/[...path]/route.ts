@@ -13,6 +13,8 @@ const COOKIE_ROUTES: Record<string, string> = {
   "auth/logout": "clear",
 };
 
+export const runtime = "edge";
+
 async function fetchBackend(
   url: string,
   method: string,
@@ -49,9 +51,17 @@ async function handler(
       body,
     );
 
+    const authError = backendRes.headers.get("x-auth-error");
+
+    const isTokenError =
+      authError === "missing_token" ||
+      authError === "token_expired" ||
+      authError === "invalid_token";
+
     // Auto refresh: if 403 and we have a refresh token cookie, try to refresh
     if (
-      backendRes.status === 403 &&
+      backendRes.status === 401 &&
+      isTokenError &&
       refreshTokenCookie &&
       path !== "auth/refresh"
     ) {
