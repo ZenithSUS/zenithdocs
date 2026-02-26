@@ -16,6 +16,7 @@ export default function proxy(req: NextRequest) {
 
   const { pathname } = req.nextUrl;
 
+  const isRootRoute = pathname === "/";
   const isProtectedRoute = pathname.startsWith("/dashboard");
   const isAuthRoute =
     pathname.startsWith("/login") || pathname.startsWith("/register");
@@ -26,7 +27,7 @@ export default function proxy(req: NextRequest) {
   }
 
   // If logged in and trying to access auth pages
-  if (token && isAuthRoute) {
+  if (token && (isAuthRoute || isRootRoute)) {
     return safeRedirect(req, "/dashboard");
   }
 
