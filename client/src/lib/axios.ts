@@ -1,6 +1,7 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
 import config from "@/config/env";
 import handleLogout from "@/utils/logout";
+import { RefreshTokenResponse } from "@/types/api";
 
 const api = axios.create({
   baseURL: config.api.baseUrl,
@@ -13,11 +14,11 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((req) => {
-  const token = localStorage.getItem("token");
+  const accessToken = localStorage.getItem("accessToken");
 
-  // If token exists, add it to the request headers
-  if (token) {
-    req.headers.Authorization = `Bearer ${token}`;
+  // If accessToken exists, add it to the request headers
+  if (accessToken) {
+    req.headers.Authorization = `Bearer ${accessToken}`;
   }
 
   return req;
@@ -66,13 +67,14 @@ api.interceptors.response.use(
 );
 
 async function refreshToken(): Promise<string> {
-  const res = await api.post<{ data: { accessToken: string } }>(
-    "/api/auth/refresh",
-  );
+  const refreshToken = localStorage.getItem("refreshToken");
+  const res = await api.post<RefreshTokenResponse>("/api/auth/refresh", {
+    refreshToken,
+  });
 
   const newToken = res.data.data.accessToken;
 
-  localStorage.setItem("token", newToken);
+  localStorage.setItem("accessToken", newToken);
 
   return newToken;
 }
