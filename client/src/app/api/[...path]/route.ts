@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BACKEND_URL = process.env.BACKEND_URL_DEV || process.env.BACKEND_URL!;
+const BACKEND_URL =
+  process.env.NODE_ENV === "development"
+    ? process.env.BACKEND_URL_DEV!
+    : process.env.BACKEND_URL!;
+
 const API_KEY = process.env.API_KEY!;
 
 const COOKIE_ROUTES: Record<string, string> = {
