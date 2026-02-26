@@ -39,7 +39,6 @@ export const logout = async (id: string) => {
   // If logout is successful, remove token
   if (data.success) {
     localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
   }
 
   return data;
