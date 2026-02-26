@@ -1,4 +1,4 @@
-import axios, { InternalAxiosRequestConfig } from "axios";
+import axios, { AxiosResponse, InternalAxiosRequestConfig } from "axios";
 import config from "@/config/env";
 import handleLogout from "@/utils/logout";
 import useAuthStore from "@/features/auth/auth.store";
@@ -30,7 +30,7 @@ const attachToken = (req: InternalAxiosRequestConfig) => {
   return req;
 };
 
-const handleNewToken = (res: any) => {
+const handleNewToken = (res: AxiosResponse) => {
   const newToken = res.headers["x-access-token"];
   if (newToken) {
     localStorage.setItem("accessToken", newToken);

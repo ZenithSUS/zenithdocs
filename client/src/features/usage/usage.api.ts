@@ -1,4 +1,4 @@
-import api from "@/lib/axios";
+import { api } from "@/lib/axios";
 import { ResponseWithData } from "@/types/api";
 import { Usage } from "@/types/usage";
 

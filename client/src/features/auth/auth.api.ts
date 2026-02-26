@@ -1,4 +1,4 @@
-import api from "@/lib/axios";
+import { authApi } from "@/lib/axios";
 import { RefreshTokenResponse, Response, ResponseWithUser } from "@/types/api";
 import { AuthInput } from "@/types/input";
 
@@ -12,7 +12,7 @@ export type LoginResponse = {
 export type RegisterResponse = ResponseWithUser;
 
 export const login = async ({ email, password }: AuthInput) => {
-  const { data } = await api.post<LoginResponse>("/api/auth/login", {
+  const { data } = await authApi.post<LoginResponse>("/api/auth/login", {
     email,
     password,
   });
@@ -20,7 +20,7 @@ export const login = async ({ email, password }: AuthInput) => {
 };
 
 export const register = async ({ email, password }: AuthInput) => {
-  const { data } = await api.post<RegisterResponse>("/api/auth/register", {
+  const { data } = await authApi.post<RegisterResponse>("/api/auth/register", {
     email,
     password,
   });
@@ -29,12 +29,12 @@ export const register = async ({ email, password }: AuthInput) => {
 
 export const getMe = async () => {
   const { data } =
-    await api.get<Omit<ResponseWithUser, "message">>("/api/auth/me");
+    await authApi.get<Omit<ResponseWithUser, "message">>("/api/auth/me");
   return data.data;
 };
 
 export const logout = async (id: string) => {
-  const { data } = await api.post<Response>("/api/auth/logout", { id });
+  const { data } = await authApi.post<Response>("/api/auth/logout", { id });
 
   // If logout is successful, remove token
   if (data.success) {
@@ -45,8 +45,11 @@ export const logout = async (id: string) => {
 };
 
 export const refreshToken = async (refreshToken: string) => {
-  const { data } = await api.post<RefreshTokenResponse>("/api/auth/refresh", {
-    refreshToken,
-  });
+  const { data } = await authApi.post<RefreshTokenResponse>(
+    "/api/auth/refresh",
+    {
+      refreshToken,
+    },
+  );
   return data.data;
 };

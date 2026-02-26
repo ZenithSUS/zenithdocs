@@ -1,4 +1,4 @@
-import api from "@/lib/axios";
+import { api } from "@/lib/axios";
 import { ResponseWithData, ResponseWithPagedData } from "@/types/api";
 import { Summary } from "@/types/summary";
 

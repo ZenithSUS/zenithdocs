@@ -1,4 +1,4 @@
-import api from "./axios";
+import { authApi } from "./axios";
 
 const initAuth = async () => {
   const token = localStorage.getItem("token");
@@ -6,16 +6,16 @@ const initAuth = async () => {
   if (token) return true;
 
   try {
-    const res = await api.post<{ data: { accessToken: string } }>(
+    const res = await authApi.post<{ data: { accessToken: string } }>(
       "/api/auth/refresh",
     );
 
     const newToken = res.data.data.accessToken;
 
-    localStorage.setItem("token", newToken);
+    localStorage.setItem("accessToken", newToken);
     return true;
   } catch {
-    localStorage.removeItem("token");
+    localStorage.removeItem("accessToken");
     return false;
   }
 };
