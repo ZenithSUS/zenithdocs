@@ -5,6 +5,12 @@ export type Response = {
   message: string;
 };
 
+export type RefreshTokenResponse = {
+  success: boolean;
+  message: string;
+  data: { accessToken: string };
+};
+
 export type AxiosError = {
   response: {
     data: {
