@@ -1,13 +1,13 @@
 import { create } from "zustand";
 
 interface AuthStore {
-  token: string | null;
-  setToken: (token: string | null) => void;
+  accessToken: string | null;
+  setAccessToken: (token: string | null) => void;
 }
 
 const useAuthStore = create<AuthStore>((set) => ({
-  token: null,
-  setToken: (token) => set({ token }),
+  accessToken: null,
+  setAccessToken: (token) => set({ accessToken: token }),
 }));
 
 export default useAuthStore;
