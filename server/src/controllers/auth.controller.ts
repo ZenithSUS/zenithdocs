@@ -7,10 +7,6 @@ import {
 } from "../services/auth.service.js";
 import { getUserByIdService } from "../services/user.service.js";
 import AppError from "../utils/app-error.js";
-import {
-  clearRefreshTokenCookieOptions,
-  getRefreshTokenCookieOptions,
-} from "../utils/cookie-options.js";
 
 /**
  * Login user
@@ -26,17 +22,12 @@ export const loginController = async (
 
     const result = await loginService(email, password);
 
-    res.cookie(
-      "refreshToken",
-      result.refreshToken,
-      getRefreshTokenCookieOptions(),
-    );
-
     return res.status(200).json({
       success: true,
       message: "User logged in successfully",
       data: {
         accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
       },
     });
   } catch (error) {
@@ -81,16 +72,9 @@ export const logoutController = async (
   next: NextFunction,
 ) => {
   try {
-    const { refreshToken } = req.cookies;
     const { id }: { id: string } = req.body;
 
-    // If refresh token exists, invalidate it
-    if (refreshToken && id) {
-      await logoutService(id);
-    }
-
-    // Always clear cookie
-    res.clearCookie("refreshToken", clearRefreshTokenCookieOptions());
+    await logoutService(id);
 
     return res.status(200).json({
       success: true,
@@ -134,8 +118,7 @@ export const refreshAccessTokenController = async (
   next: NextFunction,
 ) => {
   try {
-    // Read token from httpOnly cookie
-    const refreshToken = req.cookies?.refreshToken;
+    const { refreshToken }: { refreshToken: string } = req.body;
 
     if (!refreshToken) {
       throw new AppError("No refresh token provided", 401);
