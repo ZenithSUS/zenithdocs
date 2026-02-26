@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import useAuth from "@/features/auth/useAuth";
+import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 
 interface HeaderDropDownProps {
@@ -18,12 +19,14 @@ interface HeaderDropDownProps {
 }
 
 export function LogoutModal({ userId }: HeaderDropDownProps) {
+  const router = useRouter();
   const { logoutMutation } = useAuth();
   const { mutateAsync: logout } = logoutMutation;
 
   const handleLogout = useCallback(async () => {
     try {
       await logout(userId);
+      router.push("/login");
     } catch (error) {
       console.log("Error logging out:", error);
     }
