@@ -1,12 +1,11 @@
 import config from "@/config/env";
 
 function handleLogout() {
-  // Remove localStorage access and refresh token
+  // Remove localStorage access
   localStorage.removeItem("accessToken");
-  localStorage.removeItem("refreshToken");
 
   // Call backend logout
-  fetch(`${config.api.baseUrl}/api/auth/logout`, {
+  fetch(`${config.api.baseUrl}/auth/logout`, {
     method: "POST",
     credentials: "include", // sends httpOnly cookie
     headers: {
