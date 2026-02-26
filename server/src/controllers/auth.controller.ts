@@ -26,6 +26,7 @@ export const loginController = async (
       success: true,
       message: "User logged in successfully",
       data: {
+        accessToken: result.accessToken,
         refreshToken: result.refreshToken,
       },
     });
