@@ -26,7 +26,6 @@ export const loginController = async (
       success: true,
       message: "User logged in successfully",
       data: {
-        accessToken: result.accessToken,
         refreshToken: result.refreshToken,
       },
     });
@@ -74,7 +73,9 @@ export const logoutController = async (
   try {
     const { id }: { id: string } = req.body;
 
-    await logoutService(id);
+    if (id) {
+      await logoutService(id);
+    }
 
     return res.status(200).json({
       success: true,
