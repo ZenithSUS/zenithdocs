@@ -17,7 +17,7 @@ async function handler(
   const path = pathSegments.join("/");
   console.log("Path:", path);
 
-  const backendRes = await fetch(`${BACKEND_URL}/api/${path}`, {
+  const backendRes = await fetch(`${BACKEND_URL}/${path}`, {
     method: req.method,
     headers: {
       "Content-Type": "application/json",
