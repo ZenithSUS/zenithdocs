@@ -2,6 +2,7 @@ declare global {
   namespace Express {
     interface Request {
       user: JwtPayload;
+      refreshTokenPayload: RefreshTokenPayload;
     }
   }
 }
@@ -15,4 +16,9 @@ declare module "express-serve-static-core" {
 export interface JwtPayload {
   sub: string;
   role: "user" | "admin";
+}
+
+export interface RefreshTokenPayload {
+  userId: string;
+  tokenVersion: number;
 }
