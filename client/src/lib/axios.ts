@@ -4,7 +4,7 @@ import handleLogout from "@/utils/logout";
 import { RefreshTokenResponse } from "@/types/api";
 
 const api = axios.create({
-  baseURL: config.api.baseUrl,
+  baseURL: config.api.baseUrl ?? "/api",
   timeout: 10000, // 10 seconds
   headers: {
     "Content-Type": "application/json",
