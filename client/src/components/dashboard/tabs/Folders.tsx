@@ -113,7 +113,10 @@ function FolderDashBoard({
           Create folders to organize your documents by project, client, or
           topic.
         </p>
-        <button className="px-6 py-3 bg-primary text-background text-[12px] font-bold tracking-[0.12em] font-sans rounded-sm transition-all duration-200 hover:bg-[#e0b530] hover:-translate-y-0.5">
+        <button
+          className="px-6 py-3 bg-primary text-background text-[12px] font-bold tracking-[0.12em] font-sans rounded-sm transition-all duration-200 hover:bg-[#e0b530] hover:-translate-y-0.5"
+          onClick={() => setNewFolderOpen(true)}
+        >
           CREATE FOLDER
         </button>
       </div>
