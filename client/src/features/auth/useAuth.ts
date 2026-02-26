@@ -11,9 +11,11 @@ import { authKeys } from "@/features/auth/auth.keys";
 import { AxiosError } from "@/types/api";
 import { AuthInput } from "@/types/input";
 import { User } from "@/types/user";
+import useAuthStore from "./auth.store";
 
 const useAuth = () => {
   const queryClient = useQueryClient();
+  const { token: accessToken } = useAuthStore();
 
   // Login
   const loginMutation = useMutation<LoginResponse, AxiosError, AuthInput>({
@@ -33,6 +35,7 @@ const useAuth = () => {
   const me = useQuery<User | null, AxiosError>({
     queryKey: authKeys.user(),
     queryFn: getMe,
+    enabled: !!accessToken,
   });
 
   // Logout
