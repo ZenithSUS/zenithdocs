@@ -30,7 +30,7 @@ async function handler(
 ) {
   try {
     const { path: pathSegments } = await params;
-    const path = pathSegments.join("/");
+    const path = "auth/" + pathSegments.join("/");
 
     const authorization = req.headers.get("authorization");
     const refreshTokenCookie = req.cookies.get("refreshToken")?.value;
