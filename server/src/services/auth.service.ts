@@ -4,7 +4,7 @@ import {
   createUser,
   getUserByEmail,
   getUserRefreshToken,
-  removeRefreshToken,
+  revokeUserTokens,
   updateUser,
 } from "../repositories/user.repository.js";
 import AppError from "../utils/app-error.js";
@@ -37,7 +37,7 @@ export const loginService = async (email: string, password: string) => {
   );
 
   const refreshToken = jwt.sign(
-    { userId: user._id },
+    { userId: user._id, tokenVersion: user.tokenVersion },
     config.jwt.refreshSecret,
     {
       expiresIn: user.role === "admin" ? "30d" : "7d",
@@ -84,7 +84,7 @@ export const registerService = async (data: Partial<IUser>) => {
 export const logoutService = async (userId: string) => {
   if (!userId) throw new AppError("User ID is required", 400);
 
-  await removeRefreshToken(userId);
+  await revokeUserTokens(userId);
 };
 
 /**
@@ -110,6 +110,10 @@ export const refreshAccessTokenService = async (refreshToken: string) => {
   const user = await getUserRefreshToken(decoded.userId);
 
   if (!user) throw new AppError("User not found", 404);
+
+  if (user.tokenVersion !== decoded.tokenVersion)
+    throw new AppError("Token version mismatch", 401);
+
   if (user.refreshToken !== refreshToken)
     throw new AppError("Refresh token mismatch", 401);
 

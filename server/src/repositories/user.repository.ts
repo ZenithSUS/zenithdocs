@@ -50,7 +50,9 @@ export const getUserByEmail = async (email: string): Promise<IUser | null> => {
  * @returns Array of users
  */
 export const getAllUsers = async (): Promise<IUser[]> => {
-  return await User.find().select("-refreshToken -password").lean();
+  return await User.find()
+    .select("-refreshToken -tokenVersion -password")
+    .lean();
 };
 
 /**
@@ -70,7 +72,7 @@ export const updateUser = async (
   return await User.findByIdAndUpdate(id, data, {
     returnDocument: "after",
   })
-    .select("-refreshToken -password")
+    .select("-refreshToken -tokenVersion -password")
     .lean();
 };
 
@@ -84,12 +86,24 @@ export const deleteUser = async (id: string): Promise<IUser | null> => {
     return null;
   }
   return await User.findByIdAndDelete(id)
-    .select("-refreshToken -password")
+    .select("-refreshToken -tokenVersion -password")
     .lean();
 };
 
-export const removeRefreshToken = async (id: string) => {
+/**
+ * Revoke all tokens for a user by incrementing their token version and removing their refresh token.
+ * @param {string} id - User ID
+ * @returns {Promise<IUser | null>} Revoked user if found, null otherwise
+ */
+export const revokeUserTokens = async (id: string) => {
   if (!mongoose.Types.ObjectId.isValid(id)) return null;
-  const user = await User.findByIdAndUpdate(id, { refreshToken: null });
+  const user = await User.findByIdAndUpdate(
+    id,
+    {
+      $inc: { tokenVersion: 1 },
+      $set: { refreshToken: null },
+    },
+    { returnDocument: "after" },
+  );
   return user;
 };
