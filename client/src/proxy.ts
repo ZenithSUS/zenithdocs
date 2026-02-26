@@ -1,35 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-function safeRedirect(req: NextRequest, target: string) {
-  const currentPath = req.nextUrl.pathname;
-
-  if (currentPath === target) {
-    return NextResponse.next();
-  }
-
-  return NextResponse.redirect(new URL(target, req.url));
-}
-
 export default function proxy(req: NextRequest) {
-  const token = req.cookies.get("refreshToken")?.value;
-
   const { pathname } = req.nextUrl;
-
-  const isRootRoute = pathname === "/";
-  const isProtectedRoute = pathname.startsWith("/dashboard");
-  const isAuthRoute =
-    pathname.startsWith("/login") || pathname.startsWith("/register");
-
-  // If not logged in and trying to access protected route
-  if (!token && isProtectedRoute) {
-    return safeRedirect(req, "/login");
-  }
-
-  // If logged in and trying to access auth pages
-  if (token && (isAuthRoute || isRootRoute)) {
-    return safeRedirect(req, "/dashboard");
-  }
 
   const response = NextResponse.next();
 
