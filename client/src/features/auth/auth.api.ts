@@ -1,5 +1,5 @@
 import api from "@/lib/axios";
-import { Response, ResponseWithData, ResponseWithUser } from "@/types/api";
+import { RefreshTokenResponse, Response, ResponseWithUser } from "@/types/api";
 import { AuthInput } from "@/types/input";
 
 export type LoginResponse = {
@@ -41,4 +41,11 @@ export const logout = async (id: string) => {
   }
 
   return data;
+};
+
+export const refreshToken = async (refreshToken: string) => {
+  const { data } = await api.post<RefreshTokenResponse>("/api/auth/refresh", {
+    refreshToken,
+  });
+  return data.data;
 };
