@@ -11,15 +11,15 @@ import {
 import { Input } from "@/components/ui/input";
 import useFolder from "@/features/folder/useFolder";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import z from "zod";
 
 interface NewFolderModalProps {
   userId: string;
-  open: boolean;
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  text?: string;
+  variant?: "default" | "destructive" | "outline" | "secondary";
   onRefresh?: (scope: "all" | "overview" | "user") => void;
 }
 
@@ -31,8 +31,8 @@ type FolderForm = z.infer<typeof folderSchema>;
 
 const NewFolderModal = ({
   userId,
-  open,
-  setOpen,
+  text,
+  variant,
   onRefresh,
 }: NewFolderModalProps) => {
   const { createFolderMutation } = useFolder();
@@ -42,6 +42,8 @@ const NewFolderModal = ({
     isError,
     error,
   } = createFolderMutation(userId);
+
+  const [open, setOpen] = useState(false);
 
   const { register, handleSubmit, formState, reset } = useForm<FolderForm>({
     resolver: zodResolver(folderSchema),
@@ -72,7 +74,9 @@ const NewFolderModal = ({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger>Open</DialogTrigger>
+      <DialogTrigger asChild>
+        <Button variant={variant}>{text || "New Folder"}</Button>
+      </DialogTrigger>
       <DialogContent className="bg-background">
         <DialogHeader>
           <DialogTitle>Create Folder</DialogTitle>

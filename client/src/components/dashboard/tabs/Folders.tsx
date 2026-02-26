@@ -26,8 +26,6 @@ function FolderDashBoard({
   setFilterFolder,
   onRefresh,
 }: FolderDashBoardProps) {
-  const [newFolderOpen, setNewFolderOpen] = useState(false);
-
   const { foldersByUserPage } = useFolder();
   const {
     data: foldersData,
@@ -105,16 +103,6 @@ function FolderDashBoard({
   if (allFolders.length === 0 && unfiledDocs.length === 0) {
     return (
       <div className="space-y-5">
-        {/* Modals */}
-        {newFolderOpen && (
-          <NewFolderModal
-            userId={userId}
-            open={newFolderOpen}
-            setOpen={setNewFolderOpen}
-            onRefresh={onRefresh}
-          />
-        )}
-
         <div className="border border-white/8 rounded-sm px-8 py-16 text-center">
           <div className="text-[48px] text-text/10 mb-4">⬡</div>
           <h3 className="text-[18px] font-serif text-text/60 mb-2">
@@ -124,13 +112,11 @@ function FolderDashBoard({
             Create folders to organize your documents by project, client, or
             topic.
           </p>
-          <button
-            type="button"
-            className="px-6 py-3 bg-primary text-background text-[12px] font-bold tracking-[0.12em] font-sans rounded-sm transition-all duration-200 hover:bg-[#e0b530] hover:-translate-y-0.5"
-            onClick={() => setNewFolderOpen(true)}
-          >
-            CREATE FOLDER
-          </button>
+          <NewFolderModal
+            userId={userId}
+            text="CREATE FOLDER"
+            onRefresh={onRefresh}
+          />
         </div>
       </div>
     );
@@ -144,14 +130,6 @@ function FolderDashBoard({
   return (
     <div className="space-y-5">
       {/* Modals */}
-      {newFolderOpen && (
-        <NewFolderModal
-          userId={userId}
-          open={newFolderOpen}
-          setOpen={setNewFolderOpen}
-          onRefresh={onRefresh}
-        />
-      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {allFolders.map((folder) => {
@@ -168,14 +146,14 @@ function FolderDashBoard({
         })}
 
         {/* New folder CTA */}
-        <div
-          className="border border-dashed border-white/10 rounded-sm px-6 py-6 flex flex-col items-center justify-center gap-3 hover:border-primary/20 hover:bg-primary/3 transition-all duration-200 cursor-pointer min-h-45"
-          onClick={() => setNewFolderOpen(true)}
-        >
-          <span className="text-[28px] text-text/15">+</span>
-          <span className="text-[12px] text-text/25 font-sans tracking-wider">
-            NEW FOLDER
-          </span>
+        <div className="border border-dashed border-white/10 rounded-sm px-6 py-6 flex flex-col items-center justify-center gap-3 hover:border-primary/20 hover:bg-primary/3 transition-all duration-200 cursor-pointer min-h-45">
+          <div className="text-[48px] text-text/10">⬡</div>
+
+          <NewFolderModal
+            userId={userId}
+            text="NEW FOLDER"
+            onRefresh={onRefresh}
+          />
         </div>
       </div>
 
