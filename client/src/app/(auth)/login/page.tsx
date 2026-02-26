@@ -69,7 +69,6 @@ export default function LoginPage() {
       if (!res.success) throw new Error(res.message);
 
       localStorage.setItem("accessToken", res.data.accessToken);
-      localStorage.setItem("refreshToken", res.data.refreshToken);
 
       toast.success("Login successful!");
       router.push("/dashboard");
