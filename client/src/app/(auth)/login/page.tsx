@@ -67,7 +67,9 @@ export default function LoginPage() {
       const res = await mutateAsync(data);
 
       if (!res.success) throw new Error(res.message);
-      localStorage.setItem("token", res.data.accessToken);
+
+      localStorage.setItem("accessToken", res.data.accessToken);
+      localStorage.setItem("refreshToken", res.data.refreshToken);
 
       toast.success("Login successful!");
       router.push("/dashboard");
