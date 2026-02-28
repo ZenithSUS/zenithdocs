@@ -9,6 +9,7 @@ import {
   deleteUsageByUser,
   deleteUsage,
   getUsageById,
+  updateUsageByUserAndMonth,
 } from "../repositories/usage.repository.js";
 import AppError from "../utils/app-error.js";
 
@@ -117,6 +118,31 @@ export const updateUsageService = async (
   }
 
   const usage = await updateUsage(id, data);
+  return usage;
+};
+
+export const updateUsageByUserAndMonthService = async (
+  userId: string,
+  tokensUsed: number,
+  currentUserId: string,
+  role: "user" | "admin",
+) => {
+  if (!userId) throw new AppError("User ID is required", 400);
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    throw new AppError("Invalid user ID", 400);
+  }
+
+  if (currentUserId !== userId && role !== "admin") {
+    throw new AppError(
+      "You are not authorized to update this usage document",
+      403,
+    );
+  }
+
+  if (tokensUsed < 0) throw new AppError("Tokens used cannot be negative", 400);
+
+  const usage = await updateUsageByUserAndMonth(userId, tokensUsed);
   return usage;
 };
 
