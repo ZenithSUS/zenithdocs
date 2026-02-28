@@ -74,7 +74,6 @@ export default function SummarizePage() {
       toast.success("Summary generated successfully!");
     } catch (error) {
       const err = error as AxiosError;
-      console.error("Error generating summary:", err.response.data.message);
 
       await updateDocument({
         id: document._id,
