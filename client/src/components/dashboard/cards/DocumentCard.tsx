@@ -3,25 +3,29 @@ import { NavItem } from "../Sidebar";
 import FileIcon from "@/components/FileIcon";
 import sizefmt from "@/helpers/size-format";
 import Doc from "@/types/doc";
+import { useRouter } from "next/navigation";
 
 interface DocumentCardProps {
   document: Doc;
-  setNav: (nav: NavItem) => void;
 }
 
-function DocumentCard({ document: doc, setNav }: DocumentCardProps) {
+function DocumentCard({ document: doc }: DocumentCardProps) {
+  const router = useRouter();
+
   const sm = STATUS_META[doc.status];
   const doctype = doc.fileType;
   const folder = doc.folder;
   const folderTitle =
     typeof folder === "object" && folder !== null ? folder.name : "No folder";
 
+  const handleNavigate = () => {
+    router.push(`/dashboard/document/${doc._id}`);
+  };
+
   return (
     <div
       key={doc._id}
-      onClick={() => {
-        setNav("documents");
-      }}
+      onClick={handleNavigate}
       className="px-5 py-3.5 flex items-center gap-3 hover:bg-white/3 cursor-pointer transition-colors duration-150"
     >
       <FileIcon type={doctype} />
