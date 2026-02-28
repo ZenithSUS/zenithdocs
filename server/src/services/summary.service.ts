@@ -14,6 +14,7 @@ import AppError from "../utils/app-error.js";
 import mongoose from "mongoose";
 import { getUsageByUserAndMonthService } from "./usage.service.js";
 import PLAN_LIMITS from "../config/plans.js";
+import { updateUsageMonthByUser } from "../repositories/usage.repository.js";
 
 /**
  * Creates a new summary with the given data.
@@ -56,12 +57,8 @@ export const createSummaryService = async (data: Partial<ISummary>) => {
     throw new AppError("Content is required", 400);
   }
 
-  // Get current usage limit
-  const usageLimit = await getUsageByUserAndMonthService(data.user, month);
-
-  if (!usageLimit) {
-    throw new AppError("Usage limit not found", 404);
-  }
+  // Update usage or create a new one
+  const usageLimit = await updateUsageMonthByUser(data.user, month);
 
   if (!usageLimit.user || typeof usageLimit.user === "string") {
     throw new AppError("User not populated properly", 500);
