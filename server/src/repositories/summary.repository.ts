@@ -22,6 +22,7 @@ export const getAllSummary = async () => {
       path: "document",
       select: "_id title fileType fileSize",
     })
+    .sort({ createdAt: -1 })
     .lean();
 };
 
@@ -36,6 +37,7 @@ export const getSummaryById = async (id: string) => {
       path: "document",
       select: "_id title fileType fileSize",
     })
+    .sort({ createdAt: -1 })
     .lean();
 };
 
@@ -51,6 +53,7 @@ export const getSummaryByDocument = async (documentId: string) => {
       path: "document",
       select: "_id title fileType fileSize",
     })
+    .sort({ createdAt: -1 })
     .lean();
 };
 
@@ -90,6 +93,7 @@ export const getSummaryByDocumentPaginated = async (
       path: "document",
       select: "_id title fileType fileSize",
     })
+    .sort({ createdAt: -1 })
     .lean();
 
   const total = await Summary.countDocuments({ document: documentId });
@@ -126,6 +130,7 @@ export const getSummaryByuserPaginated = async (
       path: "document",
       select: "_id title fileType fileSize",
     })
+    .sort({ createdAt: -1 })
     .lean();
 
   const total = await Summary.countDocuments({ user: userId });
@@ -134,6 +139,32 @@ export const getSummaryByuserPaginated = async (
     summaries,
     pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
   };
+};
+
+/**
+ * Retrieves the total count of each type of summaries belonging to a user
+ * @param {string} userId - User ID
+ * @returns An array of objects containing the type of summary and the count of summaries of that type belonging to the user if found, empty array otherwise
+ * @throws {null} If the user ID is invalid
+ */
+export const getAllTotalEachSummaryTypesByUser = async (userId: string) => {
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return null;
+  }
+
+  return await Summary.aggregate([
+    {
+      $match: {
+        user: new mongoose.Types.ObjectId(userId),
+      },
+    },
+    {
+      $group: {
+        _id: "$type",
+        count: { $sum: 1 },
+      },
+    },
+  ]);
 };
 
 /**
