@@ -43,7 +43,18 @@ export default function DashboardPage() {
   } = dashboardOverview;
 
   const tokenPct = user?.tokenLimit
-    ? Math.round(((overview?.tokensUsed || 0) / user.tokenLimit) * 100)
+    ? Math.min(
+        100,
+        Math.round(((overview?.tokensUsed || 0) / user.tokenLimit) * 100),
+      )
+    : 0;
+  const documentPct = user?.documentLimit
+    ? Math.min(
+        100,
+        Math.round(
+          ((overview?.documentsUploaded || 0) / user.documentLimit) * 100,
+        ),
+      )
     : 0;
 
   const handleRefetch = useCallback(
@@ -97,10 +108,13 @@ export default function DashboardPage() {
         setNav={setNav}
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
-        tokenPct={tokenPct}
         processingDocs={overview?.processingDocuments || 0}
+        tokenPct={tokenPct}
         tokensUsed={overview?.tokensUsed || 0}
         tokenLimit={user?.tokenLimit || 0}
+        documentLimit={user?.documentLimit || 0}
+        documentUsed={overview?.documentsUploaded || 0}
+        documentPct={documentPct}
       />
 
       {/* ── MAIN ────────────────────────────────────────────────────────────── */}
@@ -136,6 +150,7 @@ export default function DashboardPage() {
                 maxUsage={user?.tokenLimit || 0}
                 overview={overview}
                 overviewLoading={overviewLoading}
+                summaryTypesOverview={overview?.totalSummaryTypes || []}
               />
             </Suspense>
           )}
@@ -179,7 +194,11 @@ export default function DashboardPage() {
                 tokenLimit={user?.tokenLimit || 0}
                 currentTokensUsed={overview?.tokensUsed || 0}
                 maxUsage={user?.tokenLimit || 0}
-                usage={overview?.usageHistory || []}
+                usage={
+                  overview?.usageHistory.filter(
+                    (u) => u.month.toString() === CURRENT_MONTH,
+                  ) || []
+                }
               />
             </Suspense>
           )}
