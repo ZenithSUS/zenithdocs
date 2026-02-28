@@ -473,7 +473,7 @@ function DocumentsTab({
                               : doc.status === "failed"
                                 ? "Processing failed. Please re-upload the document."
                                 : doc.status === "uploaded"
-                                  ? "Document queued. Processing will begin shortly."
+                                  ? "Document uploaded press more to generate a summary."
                                   : "No summary generated yet."}
                           </div>
                         );
