@@ -55,6 +55,7 @@ export const createDocumentController = async (
       fileType: req.file.mimetype.split("/")[1],
       fileSize: req.file.size,
       rawText,
+      publicId,
     };
 
     const document = await createDocumentService(finalData);
