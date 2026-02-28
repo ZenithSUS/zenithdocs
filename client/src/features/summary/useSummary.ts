@@ -12,6 +12,7 @@ import {
   fetchSummaryByUserPaginated,
   updateSummaryById,
   deleteSummaryById,
+  fetchSummaryByDocumentPaginated,
 } from "./summary.api";
 import { Summary } from "@/types/summary";
 import { AxiosError, ResponseWithPagedData } from "@/types/api";
@@ -39,7 +40,11 @@ type MutationContext = {
  *   updateSummaryMutation: A hook that provides the functionality to update a summary.
  *   deleteSummaryMutation: A hook that provides the functionality to delete a summary.
  */
-const useSummary = (userId: string, summaryId: string = "") => {
+const useSummary = (
+  userId: string,
+  documentId: string = "",
+  summaryId: string = "",
+) => {
   const queryClient = useQueryClient();
   const summaryLimit = 10;
 
@@ -50,6 +55,26 @@ const useSummary = (userId: string, summaryId: string = "") => {
     onSuccess: (newSummary: Summary) => {
       queryClient.setQueryData<SummaryByUserInfiniteData>(
         summaryKeys.byUserPage(userId, summaryLimit),
+        (oldData) => {
+          if (!oldData) return oldData;
+
+          const firstPage = oldData.pages[0];
+
+          return {
+            ...oldData,
+            pages: [
+              {
+                ...firstPage,
+                documents: [newSummary, ...firstPage.summaries],
+              },
+              ...oldData.pages.slice(1),
+            ],
+          };
+        },
+      );
+
+      queryClient.setQueryData<SummaryByUserInfiniteData>(
+        summaryKeys.byDocumentPage(documentId, summaryLimit),
         (oldData) => {
           if (!oldData) return oldData;
 
@@ -94,6 +119,25 @@ const useSummary = (userId: string, summaryId: string = "") => {
       return page < totalPages ? page + 1 : undefined;
     },
     enabled: !!userId,
+  });
+
+  // Get summaries by document paginated
+  const summariesByDocumentPage = useInfiniteQuery<
+    SummaryPage,
+    AxiosError,
+    InfiniteData<SummaryPage>,
+    ReturnType<typeof summaryKeys.byDocumentPage>,
+    number
+  >({
+    queryKey: summaryKeys.byDocumentPage(documentId, summaryLimit),
+    queryFn: ({ pageParam = 1 }) =>
+      fetchSummaryByDocumentPaginated(documentId, pageParam, summaryLimit),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const { page, totalPages } = lastPage.pagination;
+      return page < totalPages ? page + 1 : undefined;
+    },
+    enabled: !!documentId,
   });
 
   // Update Summary
@@ -194,6 +238,7 @@ const useSummary = (userId: string, summaryId: string = "") => {
 
   return {
     summariesByUserPage,
+    summariesByDocumentPage,
     summaryById,
     createSummaryMutation,
     updateSummaryMutation,
