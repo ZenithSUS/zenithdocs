@@ -10,8 +10,13 @@ import {
 import { getFolderById } from "../repositories/folder.repository.js";
 import AppError from "../utils/app-error.js";
 import mongoose from "mongoose";
-import { getUsageByUserAndMonthService } from "./usage.service.js";
 import PLAN_LIMITS from "../config/plans.js";
+import {
+  incrementUsage,
+  updateUsageMonthByUser,
+} from "../repositories/usage.repository.js";
+import { deleteFileFromCloudinary } from "../lib/cloudinary.service.js";
+import colors from "../utils/log-colors.js";
 
 /**
  * Creates a new document with the given data
@@ -61,13 +66,8 @@ export const createDocumentService = async (data: Partial<IDocument>) => {
       throw new AppError("Forbidden", 403);
   }
 
-  // Get current usage month
-  const usageLimit = await getUsageByUserAndMonthService(
-    user.toString(),
-    month,
-  );
-
-  if (!usageLimit) throw new AppError("Usage not found", 404);
+  // Update usage or create a new one
+  let usageLimit = await updateUsageMonthByUser(user.toString(), month);
 
   if (!usageLimit.user || typeof usageLimit.user === "string") {
     throw new AppError("User not populated properly", 500);
@@ -84,7 +84,10 @@ export const createDocumentService = async (data: Partial<IDocument>) => {
     throw new AppError("Document limit reached for this month", 400);
   }
 
-  return await createDocument(data);
+  const document = await createDocument(data);
+
+  await incrementUsage(user.toString(), 0);
+  return document;
 };
 
 /**
@@ -227,29 +230,38 @@ export const deleteDocumentByIdService = async (
   currentUserId: string,
   role: "user" | "admin",
 ) => {
-  if (!id) {
-    throw new AppError("Document ID is required", 400);
-  }
+  if (!id) throw new AppError("Document ID is required", 400);
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     throw new AppError("Invalid Document ID", 400);
   }
 
   const existingDocument = await getDocumentById(id);
-
-  if (!existingDocument) {
-    throw new AppError("Document not found", 404);
-  }
+  if (!existingDocument) throw new AppError("Document not found", 404);
 
   const ownerId = existingDocument.user._id.toString();
-
   if (ownerId !== currentUserId && role !== "admin") {
     throw new AppError("Unauthorized", 403);
   }
 
-  const document = await deleteDocumentById(id);
+  // Delete the file from Cloudinary if a publicId exists
+  if (existingDocument.publicId) {
+    try {
+      await deleteFileFromCloudinary(existingDocument.publicId);
+    } catch (err) {
+      console.log("=".repeat(50));
+      console.warn(
+        `${colors.yellow}Failed to delete Cloudinary file: ${existingDocument.publicId}${colors.reset}`,
+        err,
+      );
+      console.log("=".repeat(50));
+      // We ignore the error so the document can still be deleted in DB
+    }
+  }
 
-  if (!document) throw new Error("Document not found");
+  // Delete the document from database
+  const deletedDocument = await deleteDocumentById(id);
+  if (!deletedDocument) throw new AppError("Document not found", 404);
 
-  return document;
+  return deletedDocument;
 };
