@@ -9,6 +9,7 @@ export interface IDocument extends Document {
   status: "uploaded" | "processing" | "completed" | "failed";
   user: Types.ObjectId;
   folder?: Types.ObjectId;
+  publicId: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -48,6 +49,10 @@ const documentSchema = new Schema<IDocument>(
     folder: {
       type: Schema.Types.ObjectId,
       ref: "Folder",
+    },
+    publicId: {
+      type: String,
+      required: true,
     },
   },
   { timestamps: true },
