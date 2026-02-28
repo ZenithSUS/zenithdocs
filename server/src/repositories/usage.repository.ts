@@ -1,4 +1,4 @@
-import Usage, { IUsage } from "../models/Usage.js";
+import Usage, { IUsage, IUsagePopulated } from "../models/Usage.js";
 
 /**
  * Creates a new usage with the given data
@@ -9,6 +9,34 @@ import Usage, { IUsage } from "../models/Usage.js";
 export const createUsage = async (data: Partial<IUsage>) => {
   const usage = new Usage(data);
   return await usage.save();
+};
+
+/**
+ * Increments a usage document by a given amount of tokens used and documents uploaded
+ * If a usage document for the given user and month already exists, it will be updated
+ * If a usage document for the given user and month does not exist, it will be created
+ * @param {string} userId - User ID
+ * @param {number} tokensUsed - Amount of tokens used to increment the tokensUsed count by
+ * @returns {Promise<IUsage>} Updated usage document if found, created usage document if not found
+ * @throws {MongooseError} If usage data is invalid
+ */
+export const incrementUsage = async (userId: string, tokensUsed: number) => {
+  const month = new Date().toISOString().slice(0, 7);
+
+  return await Usage.findOneAndUpdate(
+    { user: userId, month },
+    {
+      $inc: {
+        tokensUsed,
+        documentsUploaded: 1,
+      },
+    },
+    {
+      upsert: true,
+      returnDocument: "after",
+      setDefaultsOnInsert: true,
+    },
+  );
 };
 
 /**
@@ -39,8 +67,7 @@ export const getUsageByUserAndMonth = async (userId: string, month: string) => {
       path: "user",
       select: "_id email plan",
     })
-    .sort({ month: -1 })
-    .lean();
+    .lean<IUsagePopulated>();
 };
 
 /**
@@ -109,15 +136,32 @@ export const updateUsage = async (id: string, data: Partial<IUsage>) => {
 };
 
 /**
- * Updates the usage document for a user in the current month by incrementing the
- * documentsUploaded count by 1 and the tokensUsed count by the given amount.
- * If no usage document exists for the user in the current month, it will be created.
+ * Updates a usage document for a given user and month, or creates a new one if it does not exist
  * @param {string} userId - User ID
- * @param {number} tokensUsed - Amount of tokens to increment the tokensUsed count by
- * @returns {Promise<IUsage>} Updated usage document if found, null otherwise
+ * @param {string} month - Month in format "YYYY-MM"
+ * @returns {Promise<IUsage>} Updated or created usage document
  * @throws {MongooseError} If usage data is invalid
  */
-export const updateUsageByUserAndMonth = async (
+export const updateUsageMonthByUser = async (userId: string, month: string) => {
+  return await Usage.findOneAndUpdate(
+    { user: userId, month },
+    {},
+    {
+      returnDocument: "after",
+      upsert: true,
+      setDefaultsOnInsert: true,
+    },
+  ).populate("user", "_id email plan");
+};
+
+/**
+ * Increments the tokensUsed count for a given user and month, or creates a new document if it does not exist
+ * @param {string} userId - User ID
+ * @param {number} tokensUsed - Amount of tokens used to increment the tokensUsed count by
+ * @returns {Promise<IUsage>} Updated or created usage document
+ * @throws {MongooseError} If usage data is invalid
+ */
+export const incrementOnlyTokensUsed = async (
   userId: string,
   tokensUsed: number,
 ) => {
@@ -127,12 +171,11 @@ export const updateUsageByUserAndMonth = async (
     { user: userId, month },
     {
       $inc: {
-        documentsUploaded: 1,
         tokensUsed,
       },
     },
     {
-      new: true,
+      returnDocument: "after",
       upsert: true,
       setDefaultsOnInsert: true,
     },
