@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import useDocument from "@/features/documents/useDocument";
+import { AxiosError } from "@/types/api";
 import { useCallback } from "react";
 import { toast } from "sonner";
 
@@ -39,8 +40,8 @@ const DeleteDocumentModal = ({
       onOpenChange(false);
       onSuccess?.();
     } catch (error) {
-      toast.error("Error deleting document");
-      console.error("Error deleting document:", error);
+      const err = error as AxiosError;
+      toast.error(err.response.data.message || "Error deleting document");
     }
   }, [documentId, deleteDoc, onOpenChange, onSuccess]);
 
