@@ -104,10 +104,10 @@ const NewFolderModal = ({
           )}
 
           {isError && <p className="text-red-500 text-xs">{errorMessage}</p>}
-          <div className="flex flex-row gap-2">
+          <div className="flex md:flex-row flex-col md:justify-end gap-2">
             <Button
               type="submit"
-              className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 text-black"
+              className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 text-black sm:flex-none flex-1"
               disabled={isPending}
             >
               Create
@@ -115,7 +115,7 @@ const NewFolderModal = ({
             <DialogClose asChild>
               <Button
                 variant="outline"
-                className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none flex-1"
                 disabled={isPending}
               >
                 Cancel
