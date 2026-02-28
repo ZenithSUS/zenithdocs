@@ -1,4 +1,5 @@
-import mongoose, { Schema, Document, Types } from "mongoose";
+import mongoose, { Schema, Types } from "mongoose";
+import Document, { IDocument } from "./Document.js";
 
 export interface IFolder extends Document {
   name: string;
@@ -24,5 +25,24 @@ const folderSchema = new Schema<IFolder>(
 );
 
 folderSchema.index({ user: 1, name: 1 }, { unique: true });
+
+// Update documents when a folder is deleted
+folderSchema.post("findOneAndDelete", async (doc: IDocument) => {
+  if (doc) {
+    await Document.updateMany({ folder: doc._id }, { $set: { folder: null } });
+  }
+});
+
+folderSchema.post("deleteMany", async (doc: IDocument) => {
+  if (doc) {
+    await Document.updateMany({ folder: doc._id }, { $set: { folder: null } });
+  }
+});
+
+folderSchema.post("deleteOne", async (doc: IDocument) => {
+  if (doc) {
+    await Document.updateMany({ folder: doc._id }, { $set: { folder: null } });
+  }
+});
 
 export default mongoose.model<IFolder>("Folder", folderSchema);
