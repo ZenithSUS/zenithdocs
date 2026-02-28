@@ -71,7 +71,6 @@ const MoveToFolderModal = ({
     } catch (error) {
       const err = error as AxiosError;
       toast.error(err?.response?.data?.message || "Error moving document");
-      console.error("Error moving document:", error);
     }
   }, [documentId, selectedFolder, updateDoc, onOpenChange, onSuccess]);
 
