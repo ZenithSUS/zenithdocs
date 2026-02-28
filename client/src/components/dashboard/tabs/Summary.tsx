@@ -88,11 +88,9 @@ function SummaryTab({ userId }: SummaryTabProps) {
     <div className="space-y-5">
       {/* Summary cards grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {allSummaries.map((s) => {
-          // Extract document info (handle both populated and unpopulated refs)
-
-          return <SummaryCard key={s._id} summary={s} />;
-        })}
+        {allSummaries.map((s) => (
+          <SummaryCard key={s._id} summary={s} />
+        ))}
       </div>
 
       {/* Load more trigger (intersection observer target) */}
