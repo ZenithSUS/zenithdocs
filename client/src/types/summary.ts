@@ -2,6 +2,7 @@ export type SummaryType = "short" | "bullet" | "detailed" | "executive";
 
 export interface Summary {
   _id: string;
+  user: string;
   document:
     | string
     | {
