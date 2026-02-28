@@ -6,6 +6,10 @@ export type DashboardOverview = {
   totalDocuments: number;
   totalFolders: number;
   totalSummary: number;
+  totalSummaryTypes: {
+    _id: string;
+    count: number;
+  }[];
   tokensUsed: number;
   usageHistory: Usage[];
   completedDocuments: number;
