@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import HeaderDropDown from "./HeaderDropDown";
+import { useRouter } from "next/navigation";
 
 interface DashboardHeaderProps {
   userId: string;
@@ -26,6 +27,7 @@ function DashboardHeader({
   totalSummaries,
   totalFolders,
 }: DashboardHeaderProps) {
+  const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   return (
@@ -52,7 +54,11 @@ function DashboardHeader({
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3">
-        <button className="hidden sm:flex items-center gap-2 px-4 py-2 bg-primary text-background rounded-sm text-[11px] font-bold tracking-widest font-sans hover:bg-[#e0b530] transition-colors duration-200">
+        <button
+          type="button"
+          className="hidden sm:flex items-center gap-2 px-4 py-2 bg-primary text-background rounded-sm text-[11px] font-bold tracking-widest font-sans hover:bg-[#e0b530] transition-colors duration-200 cursor-pointer"
+          onClick={() => router.push("/dashboard/upload")}
+        >
           <span>↑</span> UPLOAD
         </button>
         <button className="sm:hidden p-2 bg-primary text-background rounded-sm text-[14px] hover:bg-[#e0b530] transition-colors">
