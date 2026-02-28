@@ -72,13 +72,13 @@ function NavBar({
         aria-label="Toggle menu"
       >
         <span
-          className={`block w-5 h-0.5 bg-text/70 transition-all duration-200 ${mobileMenuOpen ? "rotate-45 translate-y-2" : ""}`}
+          className={`block w-5 h-0.5 bg-primary transition-all duration-200 ${mobileMenuOpen ? "rotate-45 translate-y-2" : ""}`}
         />
         <span
-          className={`block w-5 h-0.5 bg-text/70 transition-all duration-200 ${mobileMenuOpen ? "opacity-0" : ""}`}
+          className={`block w-5 h-0.5 bg-primary transition-all duration-200 ${mobileMenuOpen ? "opacity-0" : ""}`}
         />
         <span
-          className={`block w-5 h-0.5 bg-text/70 transition-all duration-200 ${mobileMenuOpen ? "-rotate-45 -translate-y-2" : ""}`}
+          className={`block w-5 h-0.5 bg-primary transition-all duration-200 ${mobileMenuOpen ? "-rotate-45 -translate-y-2" : ""}`}
         />
       </button>
     </nav>
