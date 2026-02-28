@@ -35,7 +35,7 @@ export function LogoutModal({ userId }: HeaderDropDownProps) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button>Sign out</Button>
+        <Button className="text-black">Sign out</Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -46,7 +46,9 @@ export function LogoutModal({ userId }: HeaderDropDownProps) {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleLogout}>Continue</AlertDialogAction>
+          <AlertDialogAction className="text-black" onClick={handleLogout}>
+            Sign out
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
