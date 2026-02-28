@@ -10,6 +10,8 @@ import {
   updateSummaryService,
 } from "../services/summary.service.js";
 import { ParamsDictionary } from "express-serve-static-core";
+import { updateUsageByUserAndMonthService } from "../services/usage.service.js";
+import AppError from "../utils/app-error.js";
 
 interface SummaryParams extends ParamsDictionary {
   id: string;
@@ -25,9 +27,26 @@ export const createSummaryController = async (
   next: NextFunction,
 ) => {
   try {
-    const data: Partial<ISummary> = req.body;
+    const currentUserId = req.user?.sub;
+    const role = req.user?.role;
+
+    if (!currentUserId || (role !== "admin" && role !== "user")) {
+      throw new AppError("Unauthorized", 401);
+    }
+
+    const data: Partial<ISummary> = {
+      ...req.body,
+      user: currentUserId,
+    };
 
     const summary = await createSummaryService(data);
+
+    await updateUsageByUserAndMonthService(
+      currentUserId,
+      summary.tokensUsed,
+      currentUserId,
+      role,
+    );
 
     return res.status(201).json({
       success: true,
