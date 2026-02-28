@@ -8,7 +8,7 @@ function FileIcon({ type }: { type: string }) {
   };
   return (
     <div
-      className="w-8 h-9 rounded-sm flex items-center justify-center text-[9px] font-bold tracking-wider font-sans"
+      className="w-8 h-9 rounded-sm flex items-center justify-center text-[9px] font-bold tracking-wider font-sans truncate"
       style={{
         background: `${map[type] ?? "#6b7280"}18`,
         color: map[type] ?? "#6b7280",
