@@ -39,6 +39,4 @@ const summarySchema = new Schema<ISummary>(
   { timestamps: true },
 );
 
-summarySchema.index({ document: 1, type: 1 }, { unique: true });
-
 export default mongoose.model<ISummary>("Summary", summarySchema);
