@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import colors from "../utils/log-colors.js";
 
-const sensitiveFields = ["password", "accessToken", "refreshToken"];
+const sensitiveFields = ["password", "accessToken", "refreshToken", "content"];
 
 function sanitize(obj: Record<string, unknown>): Record<string, unknown> {
   const clone = { ...obj };
