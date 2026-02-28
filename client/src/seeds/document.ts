@@ -8,6 +8,8 @@ const DOCUMENTS: Doc[] = [
     fileSize: 248000,
     status: "completed",
     folder: "f1",
+    rawText: "This Service Agreement is entered into between...",
+    user: "u1",
     createdAt: "2026-02-01",
   },
   {
@@ -17,6 +19,8 @@ const DOCUMENTS: Doc[] = [
     fileSize: 512000,
     status: "completed",
     folder: "f2",
+    rawText: "This paper explores transformer-based architectures in NLP...",
+    user: "u1",
     createdAt: "2026-02-03",
   },
   {
@@ -26,6 +30,9 @@ const DOCUMENTS: Doc[] = [
     fileSize: 32000,
     status: "completed",
     folder: "f3",
+    rawText:
+      "Meeting notes:\n- Increase marketing budget\n- Launch beta version",
+    user: "u2",
     createdAt: "2026-02-05",
   },
   {
@@ -35,6 +42,8 @@ const DOCUMENTS: Doc[] = [
     fileSize: 189000,
     status: "processing",
     folder: "f1",
+    rawText: "",
+    user: "u1",
     createdAt: "2026-02-10",
   },
   {
@@ -44,6 +53,9 @@ const DOCUMENTS: Doc[] = [
     fileSize: 876000,
     status: "completed",
     folder: "f2",
+    rawText:
+      "Artificial Intelligence ethics involves fairness, transparency...",
+    user: "u2",
     createdAt: "2026-02-11",
   },
   {
@@ -52,6 +64,8 @@ const DOCUMENTS: Doc[] = [
     fileType: "docx",
     fileSize: 340000,
     status: "failed",
+    rawText: "",
+    user: "u1",
     createdAt: "2026-02-12",
   },
   {
@@ -61,6 +75,8 @@ const DOCUMENTS: Doc[] = [
     fileSize: 155000,
     status: "uploaded",
     folder: "f1",
+    rawText: "",
+    user: "u3",
     createdAt: "2026-02-14",
   },
   {
@@ -70,6 +86,9 @@ const DOCUMENTS: Doc[] = [
     fileSize: 1240000,
     status: "completed",
     folder: "f2",
+    rawText:
+      "The transformer model relies entirely on self-attention mechanisms...",
+    user: "u1",
     createdAt: "2026-02-14",
   },
 ];
