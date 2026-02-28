@@ -21,6 +21,9 @@ interface DashboardSidebarProps {
   processingDocs: number;
   tokensUsed: number;
   tokenLimit: number;
+  documentLimit: number;
+  documentUsed: number;
+  documentPct: number;
 }
 
 const navItems: { id: NavItem; icon: string; label: string }[] = [
@@ -42,7 +45,12 @@ function DashBoardSidebar({
   processingDocs,
   tokensUsed,
   tokenLimit,
+  documentLimit,
+  documentUsed,
+  documentPct,
 }: DashboardSidebarProps) {
+  const userTokensUsed = Math.min(tokenLimit, tokensUsed);
+
   return (
     <aside
       className={`fixed lg:static inset-y-0 left-0 z-40 w-64 bg-background border-r border-white/6 flex flex-col transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
@@ -113,7 +121,31 @@ function DashBoardSidebar({
           />
         </div>
         <div className="text-[11px] text-text/35 font-sans">
-          {sizefmt.num(tokensUsed)} / {sizefmt.num(tokenLimit)}
+          {sizefmt.num(userTokensUsed)} / {sizefmt.num(tokenLimit)}
+        </div>
+      </div>
+
+      {/* Document quota widget */}
+      <div className="mx-3 mb-4 px-4 py-4 border border-primary/15 rounded-sm bg-primary/4">
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-[10px] tracking-[0.15em] text-primary font-sans">
+            DOCUMENTS UPLOADED
+          </span>
+          <span className="text-[11px] text-text/50 font-sans">
+            {documentPct}%
+          </span>
+        </div>
+        <div className="w-full h-1 bg-white/8 rounded-full overflow-hidden mb-2">
+          <div
+            className="h-full rounded-full transition-all duration-700"
+            style={{
+              width: `${documentPct}%`,
+              background: "#C9A227",
+            }}
+          />
+        </div>
+        <div className="text-[11px] text-text/35 font-sans">
+          {sizefmt.num(documentUsed)} / {sizefmt.num(documentLimit)}
         </div>
       </div>
 
