@@ -10,6 +10,9 @@ import {
 } from "../services/document.service.js";
 import { NextFunction, ParamsDictionary } from "express-serve-static-core";
 import AppError from "../utils/app-error.js";
+import cloudinary, { uploadToCloudinary } from "../lib/cloudinary.service.js";
+import extractRawText from "../lib/extract-text.js";
+import mongoose from "mongoose";
 
 interface DocumentParams extends ParamsDictionary {
   id: string;
@@ -24,20 +27,37 @@ export const createDocumentController = async (
   res: Response,
   next: NextFunction,
 ) => {
+  let uploadedPublicId: string | null = null;
+
   try {
     const userId = req.user?.sub;
 
-    // Check if user is authenticated
-    if (!userId) {
-      throw new AppError("Unauthorized", 401);
-    }
+    if (!userId) throw new AppError("Unauthorized", 401);
 
-    const data: Partial<IDocument> = {
-      ...req.body,
-      user: req.user.sub,
+    if (!req.file) throw new AppError("File is required", 400);
+
+    const data: Partial<IDocument> = req.body;
+
+    const rawText = await extractRawText(req.file.buffer, req.file.mimetype);
+
+    const { url, publicId } = await uploadToCloudinary(
+      req.file.buffer,
+      req.file.originalname,
+      userId,
+    );
+    uploadedPublicId = publicId;
+
+    const finalData: Partial<IDocument> = {
+      ...data,
+      user: new mongoose.Types.ObjectId(userId),
+      title: data.title || req.file.originalname,
+      fileUrl: url,
+      fileType: req.file.mimetype.split("/")[1],
+      fileSize: req.file.size,
+      rawText,
     };
 
-    const document = await createDocumentService(data);
+    const document = await createDocumentService(finalData);
 
     return res.status(201).json({
       success: true,
@@ -45,6 +65,12 @@ export const createDocumentController = async (
       data: document,
     });
   } catch (error) {
+    // Delete the uploaded file from Cloudinary when error occurs
+    if (uploadedPublicId) {
+      await cloudinary.uploader.destroy(uploadedPublicId, {
+        resource_type: "raw",
+      });
+    }
     next(error);
   }
 };
