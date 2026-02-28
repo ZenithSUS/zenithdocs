@@ -10,6 +10,8 @@ import {
 import { getFolderById } from "../repositories/folder.repository.js";
 import AppError from "../utils/app-error.js";
 import mongoose from "mongoose";
+import { getUsageByUserAndMonthService } from "./usage.service.js";
+import PLAN_LIMITS from "../config/plans.js";
 
 /**
  * Creates a new document with the given data
@@ -21,6 +23,8 @@ import mongoose from "mongoose";
  * @throws {AppError} If folder ID is invalid or missing, or if the folder does not exist or belongs to a different user
  */
 export const createDocumentService = async (data: Partial<IDocument>) => {
+  const month = new Date().toISOString().slice(0, 7);
+
   if (!data || typeof data !== "object") {
     throw new AppError("Data is required", 400);
   }
@@ -55,6 +59,29 @@ export const createDocumentService = async (data: Partial<IDocument>) => {
 
     if (existingFolder.user._id.toString() !== user.toString())
       throw new AppError("Forbidden", 403);
+  }
+
+  // Get current usage month
+  const usageLimit = await getUsageByUserAndMonthService(
+    user.toString(),
+    month,
+  );
+
+  if (!usageLimit) throw new AppError("Usage not found", 404);
+
+  if (!usageLimit.user || typeof usageLimit.user === "string") {
+    throw new AppError("User not populated properly", 500);
+  }
+
+  if (!("plan" in usageLimit.user)) {
+    throw new AppError("User plan not found", 500);
+  }
+
+  const userLimit =
+    PLAN_LIMITS[usageLimit.user.plan as keyof typeof PLAN_LIMITS].documentLimit;
+
+  if (usageLimit.documentsUploaded >= userLimit) {
+    throw new AppError("Document limit reached for this month", 400);
   }
 
   return await createDocument(data);
