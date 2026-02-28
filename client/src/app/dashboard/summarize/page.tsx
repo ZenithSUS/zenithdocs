@@ -24,6 +24,7 @@ export default function SummarizePage() {
   const [selectedType, setSelectedType] = useState<SummaryType>("short");
   const [generatedSummary, setGeneratedSummary] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [tokenUsed, setTokenUsed] = useState(0);
 
   const { me } = useAuth();
   const { data: user } = me;
@@ -71,6 +72,7 @@ export default function SummarizePage() {
 
       await refetchDashboard();
       setGeneratedSummary(sumary.content);
+      setTokenUsed(sumary.tokensUsed);
       toast.success("Summary generated successfully!");
     } catch (error) {
       const err = error as AxiosError;
@@ -255,8 +257,8 @@ export default function SummarizePage() {
                     {selectedType.toUpperCase()} SUMMARY
                   </span>
                 </div>
-                <span className="text-[11px] text-text/30 font-sans">
-                  ~{Math.floor(generatedSummary.length / 4)} tokens
+                <span className="text-[11px] text-text/30 font-sans tracking-[0.12em]">
+                  ~{tokenUsed} tokens used
                 </span>
               </div>
 
