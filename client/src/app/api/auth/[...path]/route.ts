@@ -24,6 +24,18 @@ async function fetchBackend(
   return fetch(url, { method, headers, body });
 }
 
+/**
+ * Edge API route handler for authentication endpoints.
+ *
+ * Handles authentication-related requests by delegating to the backend API.
+ * If the backend API returns a 401 or 403 response with an x-auth-error header
+ * indicating a missing/invalid/expired token, the handler will attempt to auto-refresh
+ * the access token if a refresh token cookie is present. If the refresh is successful,
+ * the handler will retry the original request with the new access token. If the refresh
+ * fails, the handler will clear the refresh token cookie and return a 401 response.
+ *
+ * The handler will also set or clear the refresh token cookie based on the path of the request.
+ */
 async function handler(
   req: NextRequest,
   { params }: { params: Promise<{ path: string[] }> },
