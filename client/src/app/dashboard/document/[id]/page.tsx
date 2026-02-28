@@ -66,7 +66,7 @@ export default function DocumentViewPage() {
 
   const documentSummaries = allSummaries.filter((s) => {
     const summaryDocId =
-      typeof s.document === "object"
+      s.document && typeof s.document === "object"
         ? s.document._id
         : typeof s.document === "string"
           ? s.document
