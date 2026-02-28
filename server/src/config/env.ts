@@ -1,6 +1,7 @@
 import "dotenv/config";
 
 const config = {
+  nodeEnv: process.env.NODE_ENV || "development",
   server: {
     port: process.env.PORT || 3000,
     allowedOrigins: process.env.ALLOWED_ORIGINS || "http://localhost:5000",
@@ -19,6 +20,11 @@ const config = {
         ? process.env.MONGODB_URI
         : process.env.MONGODB_URI_DEV || "",
   },
+  cloudinary: {
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME || "",
+    apiKey: process.env.CLOUDINARY_API_KEY || "",
+    apiSecret: process.env.CLOUDINARY_API_SECRET || "",
+  },
 };
 
 // Check if the required environment variables are set
@@ -29,6 +35,9 @@ const requiredEnvVars = [
   "API_KEY",
   "JWT_ACCESS_SECRET",
   "JWT_REFRESH_SECRET",
+  "CLOUDINARY_CLOUD_NAME",
+  "CLOUDINARY_API_KEY",
+  "CLOUDINARY_API_SECRET",
 ];
 
 requiredEnvVars.forEach((envVar) => {
