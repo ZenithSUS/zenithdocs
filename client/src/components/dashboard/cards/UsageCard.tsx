@@ -8,6 +8,8 @@ interface UsageCardProps {
 }
 
 function UsageCard({ usage: u, currentMonth, maxUsage }: UsageCardProps) {
+  const tokensUsed = Math.min(maxUsage, u.tokensUsed);
+
   return (
     <div key={u.month} className="flex items-center gap-3">
       <span className="text-[11px] text-text/30 font-sans w-8 shrink-0">
@@ -24,7 +26,7 @@ function UsageCard({ usage: u, currentMonth, maxUsage }: UsageCardProps) {
         />
       </div>
       <span className="text-[11px] text-text/30 font-sans w-10 text-right shrink-0">
-        {sizefmt.num(u.tokensUsed)}
+        {sizefmt.num(tokensUsed)}
       </span>
     </div>
   );
