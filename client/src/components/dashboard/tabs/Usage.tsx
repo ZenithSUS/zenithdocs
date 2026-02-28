@@ -20,6 +20,9 @@ function UsageTab({
   currentTokensUsed,
   maxUsage,
 }: UsageProps) {
+  const remainingTokens = Math.max(0, tokenLimit - currentTokensUsed);
+  const tokensUsed = Math.min(tokenLimit, currentTokensUsed);
+
   return (
     <div className="space-y-5">
       {/* Current month snapshot */}
@@ -33,13 +36,13 @@ function UsageTab({
           },
           {
             label: "Tokens This Month",
-            value: sizefmt.num(currentTokensUsed),
+            value: sizefmt.num(tokensUsed),
             icon: "◉",
             sub: `${tokenPct}% of limit`,
           },
           {
             label: "Tokens Remaining",
-            value: sizefmt.num(tokenLimit - currentTokensUsed),
+            value: sizefmt.num(remainingTokens),
             icon: "◈",
             sub: `Resets March 1`,
           },
