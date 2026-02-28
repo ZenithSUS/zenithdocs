@@ -53,10 +53,10 @@ function DashBoardSidebar({
 
   return (
     <aside
-      className={`fixed lg:static inset-y-0 left-0 z-40 w-64 bg-background border-r border-white/6 flex flex-col transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
+      className={`fixed inset-y-0 left-0 z-40 w-64 bg-background border-r border-white/6 flex flex-col transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
     >
-      {/* Logo */}
-      <div className="px-6 py-5 border-b border-white/6 flex items-center justify-between">
+      {/* Logo & close button */}
+      <div className="shrink-0 px-6 py-5 border-b border-white/6 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-[20px] text-primary">◈</span>
           <span className="text-[15px] font-bold tracking-[0.08em] font-serif">
@@ -71,8 +71,8 @@ function DashBoardSidebar({
         </button>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 px-3 py-5 flex flex-col gap-1">
+      {/* Nav — takes remaining space, scrolls if needed */}
+      <nav className="flex-1 min-h-0 overflow-y-auto px-3 py-5 flex flex-col gap-1">
         {navItems.map((item) => (
           <button
             key={item.id}
@@ -101,65 +101,68 @@ function DashBoardSidebar({
         ))}
       </nav>
 
-      {/* Token quota widget */}
-      <div className="mx-3 mb-4 px-4 py-4 border border-primary/15 rounded-sm bg-primary/4">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-[10px] tracking-[0.15em] text-primary font-sans">
-            TOKENS USED
-          </span>
-          <span className="text-[11px] text-text/50 font-sans">
-            {tokenPct}%
-          </span>
-        </div>
-        <div className="w-full h-1 bg-white/8 rounded-full overflow-hidden mb-2">
-          <div
-            className="h-full rounded-full transition-all duration-700"
-            style={{
-              width: `${tokenPct}%`,
-              background: tokenPct > 80 ? "#ef4444" : "#C9A227",
-            }}
-          />
-        </div>
-        <div className="text-[11px] text-text/35 font-sans">
-          {sizefmt.num(userTokensUsed)} / {sizefmt.num(tokenLimit)}
-        </div>
-      </div>
-
-      {/* Document quota widget */}
-      <div className="mx-3 mb-4 px-4 py-4 border border-primary/15 rounded-sm bg-primary/4">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-[10px] tracking-[0.15em] text-primary font-sans">
-            DOCUMENTS UPLOADED
-          </span>
-          <span className="text-[11px] text-text/50 font-sans">
-            {documentPct}%
-          </span>
-        </div>
-        <div className="w-full h-1 bg-white/8 rounded-full overflow-hidden mb-2">
-          <div
-            className="h-full rounded-full transition-all duration-700"
-            style={{
-              width: `${documentPct}%`,
-              background: "#C9A227",
-            }}
-          />
-        </div>
-        <div className="text-[11px] text-text/35 font-sans">
-          {sizefmt.num(documentUsed)} / {sizefmt.num(documentLimit)}
-        </div>
-      </div>
-
-      {/* User */}
-      <div className="px-4 py-4 border-t border-white/6 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-[12px] text-primary font-bold font-sans">
-          A
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="text-[13px] font-sans text-text/80 truncate">
-            {userLoading ? "Getting user info" : user?.email || "Anonymous"}
+      {/* Bottom widgets + user — always pinned at bottom */}
+      <div className="shrink-0">
+        {/* Token quota widget */}
+        <div className="mx-3 mb-4 px-4 py-4 border border-primary/15 rounded-sm bg-primary/4">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-[10px] tracking-[0.15em] text-primary font-sans">
+              TOKENS USED
+            </span>
+            <span className="text-[11px] text-text/50 font-sans">
+              {tokenPct}%
+            </span>
           </div>
-          <div className="text-[10px] text-text/30 font-sans tracking-wider">
-            {user?.plan ? user.plan.toUpperCase() + " PLAN" : "FREE PLAN"}
+          <div className="w-full h-1 bg-white/8 rounded-full overflow-hidden mb-2">
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${tokenPct}%`,
+                background: tokenPct > 80 ? "#ef4444" : "#C9A227",
+              }}
+            />
+          </div>
+          <div className="text-[11px] text-text/35 font-sans">
+            {sizefmt.num(userTokensUsed)} / {sizefmt.num(tokenLimit)}
+          </div>
+        </div>
+
+        {/* Document quota widget */}
+        <div className="mx-3 mb-4 px-4 py-4 border border-primary/15 rounded-sm bg-primary/4">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-[10px] tracking-[0.15em] text-primary font-sans">
+              DOCUMENTS UPLOADED
+            </span>
+            <span className="text-[11px] text-text/50 font-sans">
+              {documentPct}%
+            </span>
+          </div>
+          <div className="w-full h-1 bg-white/8 rounded-full overflow-hidden mb-2">
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${documentPct}%`,
+                background: "#C9A227",
+              }}
+            />
+          </div>
+          <div className="text-[11px] text-text/35 font-sans">
+            {sizefmt.num(documentUsed)} / {sizefmt.num(documentLimit)}
+          </div>
+        </div>
+
+        {/* User */}
+        <div className="px-4 py-4 border-t border-white/6 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-[12px] text-primary font-bold font-sans">
+            {user?.email ? user.email[0].toUpperCase() : "?"}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-[13px] font-sans text-text/80 truncate">
+              {userLoading ? "Getting user info" : user?.email || "Anonymous"}
+            </div>
+            <div className="text-[10px] text-text/30 font-sans tracking-wider">
+              {user?.plan ? user.plan.toUpperCase() + " PLAN" : "FREE PLAN"}
+            </div>
           </div>
         </div>
       </div>
