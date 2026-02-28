@@ -2,9 +2,21 @@ import { api } from "@/lib/axios";
 import { ResponseWithData, ResponseWithPagedData } from "@/types/api";
 import Doc from "@/types/doc";
 
-export const createDocument = async (data: Partial<Doc>) => {
-  const { data: res } = await api.post("/api/documents", data);
-  return res;
+export const createDocument = async (data: Partial<Doc> & { file?: File }) => {
+  const formData = new FormData();
+
+  if (data.file) formData.append("file", data.file);
+  if (data.title) formData.append("title", data.title);
+  if (data.user) formData.append("user", data.user as string);
+  if (data.folder) formData.append("folder", data.folder as string);
+  // append other fields as needed
+
+  const { data: res } = await api.post<ResponseWithData<Doc>>(
+    "/api/documents",
+    formData,
+    { headers: { "Content-Type": "multipart/form-data" }, timeout: 60000 },
+  );
+  return res.data;
 };
 
 export const fetchDocumentByUserPaginated = async (
