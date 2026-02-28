@@ -8,6 +8,7 @@ const documentKeys = {
   create: () => [...documentKeys.all, "create"] as const,
   update: () => [...documentKeys.all, "update"] as const,
   delete: () => [...documentKeys.all, "delete"] as const,
+  upload: () => [...documentKeys.all, "upload"] as const,
 };
 
 export type DocumentKeys = typeof documentKeys;
