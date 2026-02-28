@@ -35,12 +35,18 @@ export const uploadToCloudinary = (
   });
 };
 
-export const deleteFromCloudinary = (publicId: string): Promise<void> => {
+export const deleteFileFromCloudinary = (publicId: string): Promise<void> => {
   return new Promise((resolve, reject) => {
-    cloudinary.uploader.destroy(publicId, (error, result) => {
-      if (error || !result) return reject(error);
-      resolve();
-    });
+    cloudinary.uploader.destroy(
+      publicId,
+      {
+        resource_type: "raw",
+      },
+      (error, result) => {
+        if (error || !result) return reject(error);
+        resolve();
+      },
+    );
   });
 };
 
