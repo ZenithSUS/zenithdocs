@@ -21,7 +21,7 @@ export const getUsageById = async (id: string) => {
   return await Usage.findById(id)
     .populate({
       path: "user",
-      select: "_id email",
+      select: "_id email plan",
     })
     .lean();
 };
@@ -37,7 +37,7 @@ export const getUsageByUserAndMonth = async (userId: string, month: string) => {
   return await Usage.findOne({ user: userId, month })
     .populate({
       path: "user",
-      select: "_id email",
+      select: "_id email plan",
     })
     .sort({ month: -1 })
     .lean();
@@ -53,7 +53,7 @@ export const getLastSixMonthsUsage = async (userId: string) => {
   return await Usage.find({ user: userId })
     .populate({
       path: "user",
-      select: "_id email",
+      select: "_id email plan",
     })
     .sort({ month: -1 })
     .limit(6)
@@ -70,7 +70,7 @@ export const getUsageByUser = async (userId: string) => {
   return await Usage.find({ user: userId })
     .populate({
       path: "user",
-      select: "_id email",
+      select: "_id email plan",
     })
     .sort({ month: -1 })
     .lean();
@@ -85,7 +85,7 @@ export const getAllUsageAdmin = async () => {
   return await Usage.find()
     .populate({
       path: "user",
-      select: "_id email",
+      select: "_id email plan",
     })
     .sort({ month: -1 })
     .lean();
@@ -102,10 +102,41 @@ export const updateUsage = async (id: string, data: Partial<IUsage>) => {
   return await Usage.findByIdAndUpdate(id, data, { returnDocument: "after" })
     .populate({
       path: "user",
-      select: "_id email",
+      select: "_id email plan",
     })
     .sort({ month: -1 })
     .lean();
+};
+
+/**
+ * Updates the usage document for a user in the current month by incrementing the
+ * documentsUploaded count by 1 and the tokensUsed count by the given amount.
+ * If no usage document exists for the user in the current month, it will be created.
+ * @param {string} userId - User ID
+ * @param {number} tokensUsed - Amount of tokens to increment the tokensUsed count by
+ * @returns {Promise<IUsage>} Updated usage document if found, null otherwise
+ * @throws {MongooseError} If usage data is invalid
+ */
+export const updateUsageByUserAndMonth = async (
+  userId: string,
+  tokensUsed: number,
+) => {
+  const month = new Date().toISOString().slice(0, 7); // YYYY-MM
+
+  return await Usage.findOneAndUpdate(
+    { user: userId, month },
+    {
+      $inc: {
+        documentsUploaded: 1,
+        tokensUsed,
+      },
+    },
+    {
+      new: true,
+      upsert: true,
+      setDefaultsOnInsert: true,
+    },
+  ).lean();
 };
 
 /**
