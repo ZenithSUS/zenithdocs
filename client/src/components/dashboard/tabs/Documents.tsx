@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import Doc from "@/types/doc";
 import sizefmt from "@/helpers/size-format";
 import { Folder } from "@/types/folder";
@@ -11,8 +12,17 @@ import useDocument from "@/features/documents/useDocument";
 import useFolder from "@/features/folder/useFolder";
 import useSummary from "@/features/summary/useSummary";
 import DocumentCardSkeleton from "@/components/dashboard/skeleton/DocumentCardSkeleton";
+import DeleteDocumentModal from "@/components/dashboard/modals/document/DeleteDocumentModal";
+import MoveToFolderModal from "@/components/dashboard/modals/document/MoveToFolderModal";
 import { ThreeDot } from "react-loading-indicators";
-import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import {
+  EyeIcon,
+  FolderPlus,
+  MoreHorizontal,
+  SparkleIcon,
+  TrashIcon,
+} from "lucide-react";
 
 interface DocumentsTabProps {
   userId: string;
@@ -25,19 +35,71 @@ function DocumentsTab({
   filterFolder,
   setFilterFolder,
 }: DocumentsTabProps) {
-  const searchParams = useSearchParams();
+  const router = useRouter();
+
   const [selectedDoc, setSelectedDoc] = useState<Doc | null>(null);
+  const [actionsMenuOpen, setActionsMenuOpen] = useState<string | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [moveModalOpen, setMoveModalOpen] = useState(false);
+  const [documentToDelete, setDocumentToDelete] = useState<{
+    id: string;
+    title: string;
+  } | null>(null);
+  const [documentToMove, setDocumentToMove] = useState<{
+    id: string;
+    title: string;
+    folderId?: string | null;
+  } | null>(null);
+  const [isNavigating, setIsNavigating] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
 
   const [filterStatus, setFilterStatus] = useState<Doc["status"] | "all">(
     "all",
   );
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const actionsButtonRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
 
-  // Filter if the url has a query
+  // Close actions menu when clicking outside
   useEffect(() => {
-    if (searchParams.get("folder"))
-      setFilterFolder(searchParams.get("folder") || "all");
-  }, [searchParams]);
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
+
+      // Check if click is inside any actions button or the dropdown menu
+      const clickedInsideButton = Array.from(
+        actionsButtonRefs.current.values(),
+      ).some((button) => button && button.contains(target));
+
+      const dropdownMenu = document.getElementById("actions-dropdown-menu");
+      const clickedInsideDropdown =
+        dropdownMenu && dropdownMenu.contains(target);
+
+      if (!clickedInsideButton && !clickedInsideDropdown) {
+        setActionsMenuOpen(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Update dropdown position when menu opens
+  useEffect(() => {
+    if (actionsMenuOpen && actionsButtonRefs.current.has(actionsMenuOpen)) {
+      const button = actionsButtonRefs.current.get(actionsMenuOpen);
+      if (button) {
+        const rect = button.getBoundingClientRect();
+        setDropdownPosition({
+          top: rect.bottom + window.scrollY + 4,
+          left: rect.right + window.scrollX - 192, // 192px = w-48
+        });
+      }
+    } else {
+      setDropdownPosition(null);
+    }
+  }, [actionsMenuOpen]);
 
   // Fetch documents with pagination
   const { documentsByUserPage } = useDocument(userId, "");
@@ -66,7 +128,6 @@ function DocumentsTab({
 
   // Client-side filtering
   const filteredDocs = allDocs.filter((doc) => {
-    // Handle both populated folder objects and string IDs
     const docFolderId =
       typeof doc.folder === "object"
         ? doc.folder?._id
@@ -74,23 +135,60 @@ function DocumentsTab({
           ? doc.folder
           : undefined;
 
-    // Folder filter
     if (filterFolder !== "all") {
       if (filterFolder === "") {
-        // "No Folder" option selected
         if (docFolderId) return false;
       } else {
         if (docFolderId !== filterFolder) return false;
       }
     }
 
-    // Status filter
     if (filterStatus !== "all" && doc.status !== filterStatus) {
       return false;
     }
 
     return true;
   });
+
+  // Handle delete click
+  const handleDeleteClick = (docId: string, docTitle: string) => {
+    setDocumentToDelete({ id: docId, title: docTitle });
+    setDeleteModalOpen(true);
+    setActionsMenuOpen(null);
+  };
+
+  // Handle move click
+  const handleMoveClick = (
+    docId: string,
+    docTitle: string,
+    folderId?: string | null,
+  ) => {
+    setDocumentToMove({ id: docId, title: docTitle, folderId });
+    setMoveModalOpen(true);
+    setActionsMenuOpen(null);
+  };
+
+  // Handle successful deletion
+  const handleDeleteSuccess = () => {
+    if (selectedDoc?._id === documentToDelete?.id) {
+      setSelectedDoc(null);
+    }
+    setDocumentToDelete(null);
+  };
+
+  // Handle successful move
+  const handleMoveSuccess = () => {
+    setDocumentToMove(null);
+  };
+
+  // Handle navigation with blocking
+  const handleNavigate = (path: string) => {
+    if (isNavigating) return;
+    setIsNavigating(true);
+    setActionsMenuOpen(null);
+    router.push(path);
+    setTimeout(() => setIsNavigating(false), 1000);
+  };
 
   // Intersection observer for infinite scroll
   useEffect(() => {
@@ -119,17 +217,14 @@ function DocumentsTab({
   if (documentsLoading || foldersLoading) {
     return (
       <div className="space-y-5">
-        {/* Skeleton filters */}
         <div className="flex flex-wrap gap-3 items-center">
           <div className="w-64 h-9 bg-white/6 rounded-sm animate-pulse" />
           <div className="w-32 h-9 bg-white/6 rounded-sm animate-pulse" />
           <div className="ml-auto w-24 h-4 bg-white/6 rounded-sm animate-pulse" />
         </div>
-
-        {/* Skeleton table */}
         <div className="border border-white/8 rounded-sm overflow-hidden">
-          <div className="hidden sm:grid grid-cols-[auto_1fr_auto_auto_auto] gap-4 px-5 py-3 border-b border-white/6 bg-white/2">
-            {["TYPE", "DOCUMENT", "SIZE", "STATUS", "DATE"].map((h) => (
+          <div className="hidden sm:grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-5 py-3 border-b border-white/6 bg-white/2">
+            {["TYPE", "DOCUMENT", "SIZE", "STATUS", "DATE", ""].map((h) => (
               <span
                 key={h}
                 className="text-[9px] tracking-[0.18em] text-text/25 font-sans"
@@ -148,7 +243,7 @@ function DocumentsTab({
     );
   }
 
-  // Empty state - no documents at all
+  // Empty state
   if (allDocs.length === 0) {
     return (
       <div className="border border-white/8 rounded-sm px-8 py-16 text-center">
@@ -160,7 +255,11 @@ function DocumentsTab({
           Upload your first document to start generating AI-powered summaries
           and insights.
         </p>
-        <button className="px-6 py-3 bg-primary text-background text-[12px] font-bold tracking-[0.12em] font-sans rounded-sm transition-all duration-200 hover:bg-[#e0b530] hover:-translate-y-0.5">
+        <button
+          type="button"
+          className="px-6 py-3 bg-primary text-background text-[12px] font-bold tracking-[0.12em] font-sans rounded-sm transition-all duration-200 hover:bg-[#e0b530] hover:-translate-y-0.5 cursor-pointer"
+          onClick={() => router.replace("/dashboard/upload")}
+        >
           UPLOAD DOCUMENT
         </button>
       </div>
@@ -171,7 +270,6 @@ function DocumentsTab({
     <div className="space-y-5">
       {/* Filters */}
       <div className="flex flex-wrap gap-3 items-center">
-        {/* Status filter */}
         <div className="flex gap-1 p-1 bg-white/4 border border-white/8 rounded-sm">
           {(
             ["all", "uploaded", "processing", "completed", "failed"] as const
@@ -180,7 +278,7 @@ function DocumentsTab({
               key={s}
               onClick={() => {
                 setFilterStatus(s);
-                setSelectedDoc(null); // Clear selection on filter change
+                setSelectedDoc(null);
               }}
               className={`px-3 py-1.5 text-[10px] tracking-[0.08em] font-sans rounded-sm transition-all duration-150 capitalize ${
                 filterStatus === s
@@ -193,7 +291,6 @@ function DocumentsTab({
           ))}
         </div>
 
-        {/* Folder filter */}
         <select
           value={filterFolder}
           onChange={(e) => {
@@ -211,7 +308,6 @@ function DocumentsTab({
           <option value="">No Folder</option>
         </select>
 
-        {/* Clear filters */}
         {(filterStatus !== "all" || filterFolder !== "all") && (
           <button
             onClick={() => {
@@ -225,17 +321,16 @@ function DocumentsTab({
           </button>
         )}
 
-        {/* Results count */}
         <span className="text-[11px] text-text/25 font-sans ml-auto">
           {filteredDocs.length} document{filteredDocs.length !== 1 ? "s" : ""}
         </span>
       </div>
 
       {/* Document table */}
-      <div className="border border-white/8 rounded-sm overflow-hidden">
+      <div className="border border-white/8 rounded-sm overflow-visible">
         {/* Table header */}
-        <div className="hidden sm:grid grid-cols-[auto_1fr_auto_auto_auto] gap-4 px-5 py-3 border-b border-white/6 bg-white/2">
-          {["TYPE", "DOCUMENT", "SIZE", "STATUS", "DATE"].map((h) => (
+        <div className="hidden sm:grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-5 py-3 border-b border-white/6 bg-white/2">
+          {["TYPE", "DOCUMENT", "SIZE", "STATUS", "DATE", ""].map((h) => (
             <span
               key={h}
               className="text-[9px] tracking-[0.18em] text-text/25 font-sans"
@@ -263,30 +358,28 @@ function DocumentsTab({
           ) : (
             filteredDocs.map((doc) => {
               const sm = STATUS_META[doc.status];
-
-              // Handle both populated and string folder refs
               const folder =
                 typeof doc.folder === "object"
                   ? doc.folder
                   : allFolders.find((f) => f._id === doc.folder);
-
               const isSelected = selectedDoc?._id === doc._id;
+              const isActionsOpen = actionsMenuOpen === doc._id;
 
               return (
                 <div
                   key={doc._id}
-                  onClick={() => setSelectedDoc(isSelected ? null : doc)}
-                  className={`grid grid-cols-1 sm:grid-cols-[auto_1fr_auto_auto_auto] gap-2 sm:gap-4 px-5 py-4 cursor-pointer transition-all duration-150 ${
+                  className={`grid grid-cols-1 sm:grid-cols-[auto_1fr_auto_auto_auto_auto] gap-2 sm:gap-4 px-5 py-4 transition-all duration-150 ${
                     isSelected
                       ? "bg-primary/8 border-l-2 border-l-primary"
                       : "hover:bg-white/3"
                   }`}
                 >
-                  <div className="flex items-center gap-3 sm:contents">
-                    {/* File icon */}
+                  <div
+                    className="flex items-center gap-3 sm:contents cursor-pointer"
+                    onClick={() => setSelectedDoc(isSelected ? null : doc)}
+                  >
                     <FileIcon type={doc.fileType} />
 
-                    {/* Title + folder */}
                     <div className="sm:col-start-2 min-w-0">
                       <div className="text-[13px] font-sans text-text/80 truncate">
                         {doc.title}
@@ -300,12 +393,10 @@ function DocumentsTab({
                       </div>
                     </div>
 
-                    {/* File size */}
                     <span className="text-[12px] text-text/35 font-sans my-auto hidden sm:block">
                       {sizefmt.bytes(doc.fileSize)}
                     </span>
 
-                    {/* Status */}
                     <div
                       className={`flex items-center gap-1.5 text-[11px] font-sans ${sm.text}`}
                     >
@@ -317,22 +408,43 @@ function DocumentsTab({
                       <span className="hidden sm:inline">{sm.label}</span>
                     </div>
 
-                    {/* Date */}
                     <span className="text-[11px] text-text/25 text-right my-auto font-sans hidden sm:block">
                       {sizefmt.date(doc.createdAt)}
                     </span>
+                  </div>
+
+                  {/* Actions button */}
+                  <div className="sm:col-start-6 flex justify-end">
+                    <button
+                      ref={(el) => {
+                        if (el) {
+                          actionsButtonRefs.current.set(doc._id, el);
+                        } else {
+                          actionsButtonRefs.current.delete(doc._id);
+                        }
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActionsMenuOpen(isActionsOpen ? null : doc._id);
+                      }}
+                      className="p-2 text-text/30 hover:text-text/70 transition-colors disabled:opacity-50"
+                      disabled={isNavigating}
+                    >
+                      <MoreHorizontal />
+                    </button>
                   </div>
 
                   {/* Expanded summary panel */}
                   {isSelected && (
                     <div className="col-span-full mt-3 pt-3 border-t border-primary/10">
                       {(() => {
-                        // Find summary for this document (handle both populated and string refs)
                         const summary = allSummaries.find((s) => {
                           const summaryDocId =
-                            typeof s.document === "object"
+                            s.document && typeof s.document === "object"
                               ? s.document._id
-                              : s.document;
+                              : typeof s.document === "string"
+                                ? s.document
+                                : null;
                           return summaryDocId === doc._id;
                         });
 
@@ -375,7 +487,87 @@ function DocumentsTab({
         </div>
       </div>
 
-      {/* Load more trigger (intersection observer target) */}
+      {/* Actions dropdown menu - rendered via Portal */}
+      {actionsMenuOpen &&
+        dropdownPosition &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            id="actions-dropdown-menu"
+            style={{
+              position: "absolute",
+              top: `${dropdownPosition.top}px`,
+              left: `${dropdownPosition.left}px`,
+            }}
+            className="w-48 bg-[#1a1a1a] border border-white/12 rounded-sm shadow-xl z-9999 overflow-hidden"
+          >
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleNavigate(`/dashboard/document/${actionsMenuOpen}`);
+              }}
+              disabled={isNavigating}
+              className="w-full px-4 py-2.5 text-left text-[12px] font-sans text-text/70 hover:bg-white/5 hover:text-text transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span>
+                <EyeIcon className="w-4 h-4" />
+              </span>{" "}
+              View Document
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleNavigate(`/dashboard/summarize?doc=${actionsMenuOpen}`);
+              }}
+              disabled={isNavigating}
+              className="w-full px-4 py-2.5 text-left text-[12px] font-sans text-text/70 hover:bg-white/5 hover:text-text transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span>
+                <SparkleIcon className="w-4 h-4" />
+              </span>{" "}
+              Summarize
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const doc = filteredDocs.find((d) => d._id === actionsMenuOpen);
+                if (doc) {
+                  const folderId =
+                    typeof doc.folder === "object"
+                      ? doc.folder?._id
+                      : doc.folder;
+                  handleMoveClick(doc._id, doc.title, folderId);
+                }
+              }}
+              className="w-full px-4 py-2.5 text-left text-[12px] font-sans text-text/70 hover:bg-white/5 hover:text-text transition-colors flex items-center gap-2"
+            >
+              <span>
+                <FolderPlus className="w-4 h-4" />
+              </span>{" "}
+              Move to Folder
+            </button>
+            <div className="border-t border-white/8" />
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const doc = filteredDocs.find((d) => d._id === actionsMenuOpen);
+                if (doc) {
+                  handleDeleteClick(doc._id, doc.title);
+                }
+              }}
+              disabled={isNavigating}
+              className="w-full px-4 py-2.5 text-left text-[12px] font-sans text-red-400/70 hover:bg-red-500/10 hover:text-red-400 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span>
+                <TrashIcon className="w-4 h-4" />
+              </span>{" "}
+              Delete
+            </button>
+          </div>,
+          document.body,
+        )}
+
+      {/* Load more */}
       {hasNextDocPage && (
         <div
           ref={loadMoreRef}
@@ -401,11 +593,35 @@ function DocumentsTab({
         </div>
       )}
 
-      {/* End of list indicator */}
       {!hasNextDocPage && filteredDocs.length > 0 && (
         <div className="text-center py-6 text-[11px] text-text/20 font-sans tracking-wider">
           — END OF DOCUMENTS —
         </div>
+      )}
+
+      {/* Delete Modal */}
+      {documentToDelete && (
+        <DeleteDocumentModal
+          documentId={documentToDelete.id}
+          documentTitle={documentToDelete.title}
+          userId={userId}
+          open={deleteModalOpen}
+          onOpenChange={setDeleteModalOpen}
+          onSuccess={handleDeleteSuccess}
+        />
+      )}
+
+      {/* Move to Folder Modal */}
+      {documentToMove && (
+        <MoveToFolderModal
+          documentId={documentToMove.id}
+          documentTitle={documentToMove.title}
+          currentFolderId={documentToMove.folderId}
+          userId={userId}
+          open={moveModalOpen}
+          onOpenChange={setMoveModalOpen}
+          onSuccess={handleMoveSuccess}
+        />
       )}
     </div>
   );
