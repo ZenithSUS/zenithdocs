@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
+import Summary, { ISummary } from "./Summary.js";
 
 export interface IDocument extends Document {
   title: string;
@@ -60,5 +61,18 @@ const documentSchema = new Schema<IDocument>(
 
 documentSchema.index({ user: 1, createdAt: -1 });
 documentSchema.index({ folder: 1 });
+
+// Cascasde summary when document is deleted
+documentSchema.post("findOneAndDelete", async (doc: ISummary) => {
+  await Summary.deleteMany({ document: doc._id });
+});
+
+documentSchema.post("deleteOne", async (doc: ISummary) => {
+  await Summary.deleteMany({ document: doc._id });
+});
+
+documentSchema.post("deleteMany", async (doc: ISummary) => {
+  await Summary.deleteMany({ document: doc._id });
+});
 
 export default mongoose.model<IDocument>("Document", documentSchema);
