@@ -7,6 +7,14 @@ export interface IUsage extends Document {
   tokensUsed: number;
 }
 
+export interface IUsagePopulated extends Omit<IUsage, "user"> {
+  user: {
+    _id: string;
+    email: string;
+    plan: string;
+  };
+}
+
 const usageSchema = new Schema<IUsage>({
   user: {
     type: Schema.Types.ObjectId,
