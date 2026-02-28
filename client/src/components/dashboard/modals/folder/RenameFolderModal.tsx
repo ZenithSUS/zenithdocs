@@ -10,6 +10,7 @@ import {
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import useFolder from "@/features/folder/useFolder";
+import { AxiosError } from "@/types/api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Pencil } from "lucide-react";
 import { useCallback, useState } from "react";
@@ -55,8 +56,8 @@ function RenameFolderModal({
       toast.success("Folder renamed successfully!");
       setIsOpen(false);
     } catch (error) {
-      toast.error("Error renaming folder");
-      console.error("Error renaming folder:", error);
+      const err = error as AxiosError;
+      toast.error(err.response?.data.message || "Something went wrong.");
     }
   }, []);
 
@@ -92,11 +93,20 @@ function RenameFolderModal({
               </div>
             )}
 
-            <div className="flex justify-start gap-2">
-              <Button type="submit" disabled={formState.isSubmitting}>
+            <div className="flex md:flex-row flex-col md:justify-end gap-2">
+              <Button
+                type="submit"
+                disabled={formState.isSubmitting}
+                className="flex-1 sm:flex-none"
+              >
                 {formState.isSubmitting ? "Renaming..." : "Rename"}
               </Button>
-              <Button variant="outline" type="button" onClick={closeModal}>
+              <Button
+                variant="outline"
+                type="button"
+                onClick={closeModal}
+                className="flex-1 sm:flex-none"
+              >
                 Cancel
               </Button>
             </div>
