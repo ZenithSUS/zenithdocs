@@ -11,6 +11,7 @@ import {
   getUsageByUserAndMonth,
 } from "../repositories/usage.repository.js";
 import {
+  getAllTotalEachSummaryTypesByUser,
   getRecentSummaryByUser,
   getTotalSummaryByUser,
 } from "../repositories/summary.repository.js";
@@ -36,6 +37,7 @@ export const getDashboardOverviewService = async (userId: string) => {
     totalDocuments,
     totalFolders,
     totalSummary,
+    totalSummaryTypes,
     usage,
     usageHistory,
     completedDocuments,
@@ -46,6 +48,7 @@ export const getDashboardOverviewService = async (userId: string) => {
     getTotalDocumentsByUser(userId),
     getTotalFoldersByUser(userId),
     getTotalSummaryByUser(userId),
+    getAllTotalEachSummaryTypesByUser(userId),
     getUsageByUserAndMonth(userId, month),
     getLastSixMonthsUsage(userId),
     getTotalStatusDocumentsByUser(userId, "completed"),
@@ -58,6 +61,7 @@ export const getDashboardOverviewService = async (userId: string) => {
     totalDocuments,
     totalFolders,
     totalSummary,
+    totalSummaryTypes,
     tokensUsed: usage?.tokensUsed || 0,
     documentsUploaded: usage?.documentsUploaded || 0,
     completedDocuments,
