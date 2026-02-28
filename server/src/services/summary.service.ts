@@ -12,6 +12,8 @@ import {
 } from "../repositories/summary.repository.js";
 import AppError from "../utils/app-error.js";
 import mongoose from "mongoose";
+import { getUsageByUserAndMonthService } from "./usage.service.js";
+import PLAN_LIMITS from "../config/plans.js";
 
 /**
  * Creates a new summary with the given data.
@@ -23,10 +25,15 @@ import mongoose from "mongoose";
  * @throws {AppError} If content is invalid or missing
  */
 export const createSummaryService = async (data: Partial<ISummary>) => {
+  const month = new Date().toISOString().slice(0, 7);
   const validTypes = ["short", "bullet", "detailed", "executive"] as const;
 
   if (!data || typeof data !== "object") {
     throw new AppError("Data is required", 400);
+  }
+
+  if (!data.user || typeof data.user !== "string") {
+    throw new AppError("User ID is required", 400);
   }
 
   if (!data.document || typeof data.document !== "string") {
@@ -47,6 +54,28 @@ export const createSummaryService = async (data: Partial<ISummary>) => {
 
   if (!data.content || typeof data.content !== "string") {
     throw new AppError("Content is required", 400);
+  }
+
+  // Get current usage limit
+  const usageLimit = await getUsageByUserAndMonthService(data.user, month);
+
+  if (!usageLimit) {
+    throw new AppError("Usage limit not found", 404);
+  }
+
+  if (!usageLimit.user || typeof usageLimit.user === "string") {
+    throw new AppError("User not populated properly", 500);
+  }
+
+  if (!("plan" in usageLimit.user)) {
+    throw new AppError("User plan not found", 500);
+  }
+
+  const userLimit =
+    PLAN_LIMITS[usageLimit.user.plan as keyof typeof PLAN_LIMITS];
+
+  if (usageLimit.tokensUsed >= userLimit.tokenLimit) {
+    throw new AppError("You have reached your usage limit for this month", 400);
   }
 
   const { content, tokensUsed } = await summarizeText(
