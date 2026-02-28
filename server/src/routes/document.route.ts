@@ -10,6 +10,7 @@ import {
 } from "../controllers/document.controller.js";
 import protect from "../middlewares/protect.middleware.js";
 import requireAdmin from "../middlewares/require-admin.middleware.js";
+import upload from "../middlewares/upload.middleware.js";
 
 const router = Router();
 
@@ -20,10 +21,10 @@ router.get(
   authorizeSelfOrAdmin,
   getDocumentsByUserPaginatedController,
 );
-
 router.get("/:id", protect, getDocumentByIdController);
 
-router.post("/", protect, createDocumentController);
+router.post("/", protect, upload.single("file"), createDocumentController);
+
 router.put("/:id", protect, updateDocumentController);
 router.delete("/:id", protect, deleteDocumentByIdController);
 
