@@ -65,7 +65,7 @@ const useSummary = (
             pages: [
               {
                 ...firstPage,
-                documents: [newSummary, ...firstPage.summaries],
+                summaries: [newSummary, ...firstPage.summaries],
               },
               ...oldData.pages.slice(1),
             ],
@@ -85,7 +85,7 @@ const useSummary = (
             pages: [
               {
                 ...firstPage,
-                documents: [newSummary, ...firstPage.summaries],
+                summaries: [newSummary, ...firstPage.summaries],
               },
               ...oldData.pages.slice(1),
             ],
