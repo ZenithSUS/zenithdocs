@@ -5,7 +5,10 @@ export interface Doc {
   title: string;
   fileType: string;
   fileSize: number;
+  fileUrl?: string;
+  rawText: string;
   status: DocStatus;
+  user: string;
   folder?:
     | string
     | {
@@ -16,5 +19,9 @@ export interface Doc {
   createdAt: string;
   updatedAt?: string;
 }
+
+export type CreateDoc = Omit<Doc, "_id" | "createdAt" | "updatedAt"> & {
+  file?: File;
+};
 
 export default Doc;
