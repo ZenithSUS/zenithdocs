@@ -9,7 +9,7 @@ import {
   deleteUsageByUser,
   deleteUsage,
   getUsageById,
-  updateUsageByUserAndMonth,
+  incrementOnlyTokensUsed,
 } from "../repositories/usage.repository.js";
 import AppError from "../utils/app-error.js";
 
@@ -142,7 +142,7 @@ export const updateUsageByUserAndMonthService = async (
 
   if (tokensUsed < 0) throw new AppError("Tokens used cannot be negative", 400);
 
-  const usage = await updateUsageByUserAndMonth(userId, tokensUsed);
+  const usage = await incrementOnlyTokensUsed(userId, tokensUsed);
   return usage;
 };
 
