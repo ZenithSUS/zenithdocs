@@ -75,7 +75,9 @@ const NewFolderModal = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant={variant}>{text || "New Folder"}</Button>
+        <Button variant={variant} className="text-black font-semibold">
+          {text || "New Folder"}
+        </Button>
       </DialogTrigger>
       <DialogContent className="bg-background">
         <DialogHeader>
@@ -105,7 +107,7 @@ const NewFolderModal = ({
           <div className="flex flex-row gap-2">
             <Button
               type="submit"
-              className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+              className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 text-black"
               disabled={isPending}
             >
               Create
