@@ -20,6 +20,7 @@ interface OverViewProps {
   maxUsage: number;
   overview: DashboardOverview | undefined;
   overviewLoading: boolean;
+  summaryTypesOverview: DashboardOverview["totalSummaryTypes"];
 }
 
 function OverViewTab({
@@ -32,6 +33,8 @@ function OverViewTab({
   overview,
   overviewLoading,
 }: OverViewProps) {
+  const tokensUsed = Math.min(maxUsage, currentTokensUsed);
+
   return (
     <div className="space-y-6 sm:space-y-8">
       {/* Stat cards */}
@@ -58,7 +61,7 @@ function OverViewTab({
           {
             icon: "◉",
             label: "Tokens This Month",
-            value: sizefmt.num(currentTokensUsed),
+            value: sizefmt.num(tokensUsed),
             sub: `${tokenPct}% of limit`,
           },
         ].map((s, i) => (
@@ -153,22 +156,17 @@ function OverViewTab({
                 SUMMARY TYPES
               </div>
               <div className="grid grid-cols-2 gap-2">
-                {(
-                  ["short", "bullet", "detailed", "executive"] as SummaryType[]
-                ).map((t) => {
-                  const count = overview?.recentSummary.filter(
-                    (s) => s.type === t,
-                  ).length;
+                {overview?.totalSummaryTypes.map((t) => {
                   return (
                     <div
-                      key={t}
+                      key={t._id}
                       className="flex items-center gap-2 text-[11px] font-sans"
                     >
                       <span className="text-primary text-[13px]">
-                        {SUMMARY_ICONS[t]}
+                        {SUMMARY_ICONS[t._id as SummaryType]}
                       </span>
-                      <span className="text-text/45 capitalize">{t}</span>
-                      <span className="ml-auto text-text/25">{count}</span>
+                      <span className="text-text/45 capitalize">{t._id}</span>
+                      <span className="ml-auto text-text/25">{t.count}</span>
                     </div>
                   );
                 })}
