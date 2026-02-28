@@ -10,7 +10,11 @@ import {
 import AppError from "../utils/app-error.js";
 import { hashPassword } from "../utils/bcrypt-password.js";
 import PLAN_LIMITS from "../config/plans.js";
-import { getUsageByUserAndMonth } from "../repositories/usage.repository.js";
+import {
+  createUsageService,
+  getUsageByUserAndMonthService,
+} from "./usage.service.js";
+import { updateUsageMonthByUser } from "../repositories/usage.repository.js";
 
 /**
  * Get user by ID
@@ -34,6 +38,9 @@ export const getUserByIdService = async (id: string) => {
     documentLimit:
       PLAN_LIMITS[user.plan as keyof typeof PLAN_LIMITS].documentLimit,
   };
+
+  // Update usage
+  await updateUsageMonthByUser(user._id.toString(), month);
 
   const userWithTokenLimit = { ...user, ...userLimits };
 
