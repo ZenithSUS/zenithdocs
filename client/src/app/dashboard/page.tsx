@@ -88,7 +88,7 @@ export default function DashboardPage() {
   }, [nav]);
 
   return (
-    <div className="min-h-screen bg-background text-text font-serif flex overflow-hidden">
+    <div className="h-screen bg-background text-text font-serif flex overflow-hidden">
       {/* Ambient cursor glow */}
       <CursorGlow mousePos={mousePos} />
 
@@ -118,7 +118,8 @@ export default function DashboardPage() {
       />
 
       {/* ── MAIN ────────────────────────────────────────────────────────────── */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      {/* Main content */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden lg:pl-64">
         {/* Top bar */}
         <DashboardHeader
           refetch={refetchUser}
@@ -130,9 +131,15 @@ export default function DashboardPage() {
           totalDocuments={overview?.totalDocuments || 0}
           totalSummaries={overview?.totalSummary || 0}
           totalFolders={overview?.totalFolders || 0}
+          tokensUsed={overview?.tokensUsed || 0}
+          tokenLimit={user?.tokenLimit || 0}
+          tokenPct={tokenPct}
+          documentUsed={overview?.documentsUploaded || 0}
+          documentLimit={user?.documentLimit || 0}
+          documentPct={documentPct}
         />
 
-        {/* Page content */}
+        {/* Page content — this is the ONLY scrollable area */}
         <main
           ref={mainRef}
           className="content-enter flex-1 overflow-y-auto px-5 sm:px-8 py-6 sm:py-8"
