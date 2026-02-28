@@ -10,6 +10,7 @@ import {
 import AppError from "../utils/app-error.js";
 import { hashPassword } from "../utils/bcrypt-password.js";
 import PLAN_LIMITS from "../config/plans.js";
+import { getUsageByUserAndMonth } from "../repositories/usage.repository.js";
 
 /**
  * Get user by ID
@@ -19,17 +20,22 @@ import PLAN_LIMITS from "../config/plans.js";
  *
  */
 export const getUserByIdService = async (id: string) => {
+  const month = new Date().toISOString().slice(0, 7);
+
   if (!id) throw new AppError("User ID is required", 400);
 
   const user = await getUserById(id);
 
   if (!user) throw new AppError("User not found", 404);
 
-  // Get the token limit based on the user's plan
-  const tokenLimit =
-    PLAN_LIMITS[user.plan as keyof typeof PLAN_LIMITS].tokenLimit;
+  // Add tokenLimit and documentLimit to user
+  const userLimits = {
+    tokenLimit: PLAN_LIMITS[user.plan as keyof typeof PLAN_LIMITS].tokenLimit,
+    documentLimit:
+      PLAN_LIMITS[user.plan as keyof typeof PLAN_LIMITS].documentLimit,
+  };
 
-  const userWithTokenLimit = { ...user, tokenLimit };
+  const userWithTokenLimit = { ...user, ...userLimits };
 
   return userWithTokenLimit;
 };
