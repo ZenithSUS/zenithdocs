@@ -88,7 +88,9 @@ export const createSummaryService = async (data: Partial<ISummary>) => {
     tokensUsed, // Store token usage
   });
 
-  return summary;
+  const populatedSummary = await getSummaryById(summary._id.toString());
+
+  return populatedSummary;
 };
 
 /**
