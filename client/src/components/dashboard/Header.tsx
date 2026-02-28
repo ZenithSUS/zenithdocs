@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import HeaderDropDown from "./HeaderDropDown";
 import { useRouter } from "next/navigation";
 
@@ -14,6 +14,12 @@ interface DashboardHeaderProps {
   totalDocuments: number;
   totalSummaries: number;
   totalFolders: number;
+  tokensUsed: number;
+  tokenLimit: number;
+  tokenPct: number;
+  documentUsed: number;
+  documentLimit: number;
+  documentPct: number;
 }
 
 function DashboardHeader({
@@ -26,6 +32,12 @@ function DashboardHeader({
   totalDocuments,
   totalSummaries,
   totalFolders,
+  tokensUsed,
+  tokenLimit,
+  tokenPct,
+  documentUsed,
+  documentLimit,
+  documentPct,
 }: DashboardHeaderProps) {
   const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -56,19 +68,32 @@ function DashboardHeader({
       <div className="flex items-center gap-2 sm:gap-3">
         <button
           type="button"
-          className="hidden sm:flex items-center gap-2 px-4 py-2 bg-primary text-background rounded-sm text-[11px] font-bold tracking-widest font-sans hover:bg-[#e0b530] transition-colors duration-200 cursor-pointer"
+          className="hidden sm:flex items-center gap-2 px-4 py-2 bg-primary text-black rounded-sm text-[11px] font-bold tracking-widest font-sans hover:bg-[#e0b530] transition-colors duration-200 cursor-pointer"
           onClick={() => router.push("/dashboard/upload")}
         >
-          <span>↑</span> UPLOAD
+          <span className="text-[10px] font-bold">↑</span> UPLOAD
         </button>
-        <button className="sm:hidden p-2 bg-primary text-background rounded-sm text-[14px] hover:bg-[#e0b530] transition-colors">
+        <button
+          className="sm:hidden text-black font-bold p-2 bg-primary text-background rounded-sm text-[14px] hover:bg-[#e0b530] transition-colors"
+          onClick={() => router.push("/dashboard/upload")}
+        >
           ↑
         </button>
 
         <div className="relative">
           {/* User dropdown */}
           {isDropdownOpen && (
-            <HeaderDropDown userId={userId} email={email} plan={plan} />
+            <HeaderDropDown
+              userId={userId}
+              email={email}
+              plan={plan}
+              tokensUsed={tokensUsed}
+              tokenLimit={tokenLimit}
+              tokenPct={tokenPct}
+              documentUsed={documentUsed}
+              documentLimit={documentLimit}
+              documentPct={documentPct}
+            />
           )}
 
           {/* Avatar */}
