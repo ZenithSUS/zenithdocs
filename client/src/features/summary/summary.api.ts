@@ -6,6 +6,7 @@ export const createSummary = async (data: Partial<Summary>) => {
   const { data: res } = await api.post<ResponseWithData<Summary>>(
     "/api/summaries",
     data,
+    { timeout: 60000 }, // 60 seconds timeout
   );
 
   return res.data;
@@ -35,6 +36,23 @@ export const fetchSummaryByUserPaginated = async (
   const { data: res } = await api.get<
     ResponseWithPagedData<Summary, "summaries">
   >(`/api/summaries/user/${userId}`, {
+    params: {
+      page,
+      limit,
+    },
+  });
+
+  return res.data;
+};
+
+export const fetchSummaryByDocumentPaginated = async (
+  documentId: string,
+  page: number,
+  limit: number,
+) => {
+  const { data: res } = await api.get<
+    ResponseWithPagedData<Summary, "summaries">
+  >(`/api/summaries/document/${documentId}`, {
     params: {
       page,
       limit,
