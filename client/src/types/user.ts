@@ -8,6 +8,7 @@ export type User = {
   createdAt: Date;
   updatedAt: Date;
   tokenLimit: number;
+  documentLimit: number;
   __v: number;
 };
 
