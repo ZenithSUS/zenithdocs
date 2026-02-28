@@ -1,10 +1,9 @@
 import { useEffect, useRef } from "react";
-import { Summary, SummaryType } from "@/types/summary";
-import FileIcon from "@/components/FileIcon";
-import sizefmt from "@/helpers/size-format";
+import { SummaryType } from "@/types/summary";
 import useSummary from "@/features/summary/useSummary";
 import SummaryCardSkeleton from "../skeleton/SummaryCardSkeleton";
 import { ThreeDot } from "react-loading-indicators";
+import SummaryCard from "../cards/SummaryCard";
 
 export const SUMMARY_ICONS: Record<SummaryType, string> = {
   short: "◎",
@@ -91,42 +90,8 @@ function SummaryTab({ userId }: SummaryTabProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {allSummaries.map((s) => {
           // Extract document info (handle both populated and unpopulated refs)
-          const doc = typeof s.document === "object" ? s.document : null;
-          const fileType = doc?.fileType ?? "txt";
-          const title = doc?.title ?? "Unknown document";
 
-          return (
-            <div
-              key={s._id}
-              className="border border-white/8 rounded-sm overflow-hidden hover:border-primary/20 transition-colors duration-200"
-            >
-              <div className="px-5 py-3.5 border-b border-white/6 bg-white/2 flex items-center gap-2">
-                <span className="text-primary text-[15px]">
-                  {SUMMARY_ICONS[s.type]}
-                </span>
-                <span className="text-[10px] tracking-[0.12em] text-primary font-sans">
-                  {s.type.toUpperCase()}
-                </span>
-                <div className="ml-auto flex items-center gap-3">
-                  <span className="text-[10px] text-text/25 font-sans">
-                    {s.tokensUsed} tokens
-                  </span>
-                  <span className="text-[10px] text-text/20 font-sans">
-                    {sizefmt.date(s.createdAt)}
-                  </span>
-                </div>
-              </div>
-              <div className="px-5 py-4">
-                <div className="text-[11px] text-text/30 font-sans mb-3 flex items-center gap-2">
-                  <FileIcon type={fileType} />
-                  <span className="truncate">{title}</span>
-                </div>
-                <p className="text-[13px] text-text/65 font-sans leading-[1.7] whitespace-pre-line">
-                  {s.content}
-                </p>
-              </div>
-            </div>
-          );
+          return <SummaryCard key={s._id} summary={s} />;
         })}
       </div>
 
