@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { AxiosError } from "@/types/api";
 import Doc from "@/types/doc";
 import useDashboard from "@/features/dashboard/useDashboard";
+import { LightbulbIcon } from "lucide-react";
 
 export default function SummarizePage() {
   const router = useRouter();
@@ -235,7 +236,10 @@ export default function SummarizePage() {
                   GENERATING SUMMARY...
                 </span>
               ) : (
-                "GENERATE SUMMARY ✨"
+                <div className="flex items-center gap-2">
+                  <p>GENERATE SUMMARY</p>
+                  <LightbulbIcon className="w-4 h-4" fill="#C9A227" />
+                </div>
               )}
             </button>
           </div>
