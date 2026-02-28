@@ -117,7 +117,7 @@ function OverViewTab({
               </div>
             ) : (
               overview?.recentDocuments.map((doc) => (
-                <DocumentCard key={doc._id} document={doc} setNav={setNav} />
+                <DocumentCard key={doc._id} document={doc} />
               ))
             )}
           </div>
@@ -208,7 +208,7 @@ function OverViewTab({
                   </span>
                 </div>
                 <div className="text-[11px] text-text/35 font-sans mb-2 truncate">
-                  {doc?.title}
+                  {doc?.title ?? "Unknown document"}
                 </div>
                 <p className="text-[13px] text-text/60 font-sans leading-[1.65] line-clamp-3">
                   {s.content}
