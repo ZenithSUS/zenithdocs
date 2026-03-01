@@ -10,6 +10,7 @@ import {
   deleteUsage,
   getUsageById,
   incrementOnlyTokensUsed,
+  getLastSixMonthsUsageByUser,
 } from "../repositories/usage.repository.js";
 import AppError from "../utils/app-error.js";
 
@@ -83,6 +84,19 @@ export const getUsageByUserService = async (userId: string) => {
   if (!userId) throw new AppError("User ID is required", 400);
 
   const usage = await getUsageByUser(userId);
+  return usage;
+};
+
+/**
+ * Retrieves the last six months of usage documents belonging to a user
+ * @param {string} userId - User ID
+ * @returns {Promise<IUsage[]>} Array of usage documents if found, empty array otherwise
+ * @throws {AppError} If user ID is invalid or missing
+ */
+export const getLastSixMonthsUsageByUserService = async (userId: string) => {
+  if (!userId) throw new AppError("User ID is required", 400);
+
+  const usage = await getLastSixMonthsUsageByUser(userId);
   return usage;
 };
 
