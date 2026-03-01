@@ -76,7 +76,8 @@ export default function LoginPage() {
       const axiosError = err as AxiosError;
 
       setServerError(
-        axiosError.response.data.message || "Invalid email or password.",
+        axiosError?.response?.data?.message ||
+          "Something went wrong try again.",
       );
     }
   };

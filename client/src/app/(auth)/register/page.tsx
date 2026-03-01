@@ -97,7 +97,7 @@ export default function RegisterPage() {
     } catch (err: unknown) {
       const axiosError = err as AxiosError;
       setServerError(
-        axiosError.response.data.message ||
+        axiosError?.response?.data?.message ||
           "Something went wrong. Please try again.",
       );
     }
