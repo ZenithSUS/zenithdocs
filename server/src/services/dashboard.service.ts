@@ -7,7 +7,7 @@ import {
 } from "../repositories/document.repository.js";
 import { getTotalFoldersByUser } from "../repositories/folder.repository.js";
 import {
-  getLastSixMonthsUsage,
+  getLastSixMonthsUsageByUser,
   getUsageByUserAndMonth,
 } from "../repositories/usage.repository.js";
 import {
@@ -50,7 +50,7 @@ export const getDashboardOverviewService = async (userId: string) => {
     getTotalSummaryByUser(userId),
     getAllTotalEachSummaryTypesByUser(userId),
     getUsageByUserAndMonth(userId, month),
-    getLastSixMonthsUsage(userId),
+    getLastSixMonthsUsageByUser(userId),
     getTotalStatusDocumentsByUser(userId, "completed"),
     getTotalStatusDocumentsByUser(userId, "processing"),
     getRecentDocumentsByUser(userId),
