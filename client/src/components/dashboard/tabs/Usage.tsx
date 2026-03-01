@@ -97,10 +97,9 @@ function UsageTab({
         </div>
         <div className="flex justify-between text-[10px] text-text/25 font-sans">
           <span>0</span>
-          <span>2,500</span>
-          <span>5,000</span>
-          <span>7,500</span>
-          <span>10,000</span>
+          <span>{sizefmt.num(tokenLimit / 4)}</span>
+          <span>{sizefmt.num(tokenLimit / 2)}</span>
+          <span>{sizefmt.num(tokenLimit)}</span>
         </div>
       </div>
 
