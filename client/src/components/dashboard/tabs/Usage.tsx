@@ -114,8 +114,9 @@ function UsageTab({
           {/* Bar chart */}
           <div className="flex items-end gap-2 sm:gap-3 h-32 mb-3">
             {usage.slice(0, 6).map((u) => {
-              const h = (u.tokensUsed / maxUsage) * 100;
+              const h = Math.round((u.tokensUsed / maxUsage) * 100);
               const isCurrent = u.month === currentMonth;
+
               return (
                 <div
                   key={u.month}
