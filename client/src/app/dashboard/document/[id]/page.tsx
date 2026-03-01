@@ -28,7 +28,10 @@ import {
   HardDrive,
   FileType,
   ScrollText,
+  FileX2Icon,
 } from "lucide-react";
+import LoadingScreen from "@/components/dashboard/LoadingScreen";
+import ErrorScreen from "@/components/dashboard/ErrorScreen";
 
 // Map summary types to lucide icons
 const SUMMARY_ICONS: Record<string, React.ReactNode> = {
@@ -53,7 +56,13 @@ export default function DocumentViewPage() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const { me } = useAuth();
-  const { data: user } = me;
+  const {
+    data: user,
+    isLoading: userLoading,
+    refetch: refetchUser,
+    isError: userError,
+    error: userErrorData,
+  } = me;
 
   const { documentById } = useDocument(user?._id || "", documentId);
   const { data: document, isLoading: docLoading } = documentById;
@@ -95,34 +104,21 @@ export default function DocumentViewPage() {
     return () => window.removeEventListener("mousemove", h);
   }, []);
 
-  // ── Loading state ──────────────────────────────────────────────────────────
-  if (docLoading) {
-    return (
-      <div className="min-h-screen bg-[#111111] text-[#F5F5F5] font-serif">
-        <CursorGlow mousePos={mousePos} />
-        <header className="fixed top-0 left-0 right-0 z-50 px-5 sm:px-8 md:px-12 py-5 bg-[#111111]/92 backdrop-blur-xl border-b border-[#C9A227]/12">
-          <div className="flex items-center gap-4 max-w-7xl mx-auto">
-            <div className="w-20 h-5 bg-white/6 rounded animate-pulse" />
-            <div className="h-5 w-px bg-[#F5F5F5]/10" />
-            <div className="w-48 h-6 bg-white/6 rounded animate-pulse" />
-          </div>
-        </header>
-        <main className="pt-24 pb-12 px-5 sm:px-8 md:px-12 max-w-5xl mx-auto">
-          <div className="space-y-6">
-            <div className="h-32 bg-white/6 rounded-lg animate-pulse" />
-            <div className="h-96 bg-white/6 rounded-lg animate-pulse" />
-          </div>
-        </main>
-      </div>
-    );
+  if (userError) {
+    return <ErrorScreen error={userErrorData} onRetry={refetchUser} />;
   }
 
-  // ── Not found ──────────────────────────────────────────────────────────────
+  if (docLoading || userLoading) {
+    return <LoadingScreen />;
+  }
+
   if (!document) {
     return (
       <div className="min-h-screen bg-[#111111] text-[#F5F5F5] font-serif flex items-center justify-center">
         <div className="text-center">
-          <div className="text-5xl mb-4">📄</div>
+          <div className="text-5xl mb-4 flex items-center justify-center">
+            <FileX2Icon size={50} />
+          </div>
           <h2 className="text-xl font-normal mb-2">Document not found</h2>
           <button
             onClick={() => router.push("/dashboard")}
