@@ -6,7 +6,7 @@ export const createSummary = async (data: Partial<Summary>) => {
   const { data: res } = await api.post<ResponseWithData<Summary>>(
     "/api/summaries",
     data,
-    { timeout: 120000 }, // 2 minutes timeout
+    { timeout: 300000 }, // 5 minutes timeout
   );
 
   return res.data;
