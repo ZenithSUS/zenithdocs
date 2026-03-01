@@ -3,6 +3,7 @@ import sizefmt from "@/helpers/size-format";
 import Doc, { DocStatus } from "@/types/doc";
 import { Folder } from "@/types/folder";
 import RenameFolderModal from "@/components/dashboard/modals/folder/RenameFolderModal";
+import DeleteFolderModal from "../modals/folder/DeleteFolderModal";
 
 interface FolderCardProps {
   folder: Folder;
@@ -40,11 +41,14 @@ const FolderCard = ({ folder, docs, handleFolderClick }: FolderCardProps) => {
           {folder.name}
         </div>
 
-        <RenameFolderModal
-          userId={userId}
-          folderId={folder._id}
-          folderName={folder.name}
-        />
+        <div className="flex items-center gap-2">
+          <RenameFolderModal
+            userId={userId}
+            folderId={folder._id}
+            folderName={folder.name}
+          />
+          <DeleteFolderModal userId={userId} folderId={folder._id} />
+        </div>
       </div>
 
       <div className="text-[12px] text-text/30 font-sans mb-5">
