@@ -76,7 +76,7 @@ export const getUsageByUserAndMonth = async (userId: string, month: string) => {
  * @returns {Promise<IUsage[]>} Array of usage documents if found, empty array otherwise
  * @throws {MongooseError} If usage data is invalid
  */
-export const getLastSixMonthsUsage = async (userId: string) => {
+export const getLastSixMonthsUsageByUser = async (userId: string) => {
   return await Usage.find({ user: userId })
     .populate({
       path: "user",
