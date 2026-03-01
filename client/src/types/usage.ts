@@ -1,11 +1,6 @@
 export interface Usage {
+  user: string;
   month: string;
   documentsUploaded: number;
   tokensUsed: number;
-}
-
-export interface UsageResponse {
-  success: boolean;
-  message: string;
-  data: Usage[];
 }
