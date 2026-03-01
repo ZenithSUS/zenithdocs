@@ -11,7 +11,6 @@ import { authKeys } from "@/features/auth/auth.keys";
 import { AxiosError } from "@/types/api";
 import { AuthInput } from "@/types/input";
 import { User } from "@/types/user";
-import useAuthStore from "./auth.store";
 
 const useAuth = () => {
   const queryClient = useQueryClient();
