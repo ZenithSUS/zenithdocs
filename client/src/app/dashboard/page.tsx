@@ -16,6 +16,7 @@ import {
 } from "react";
 import DocumentsTab from "@/components/dashboard/tabs/Documents";
 import useDashboard from "@/features/dashboard/useDashboard";
+import DashboardLoading from "@/components/dashboard/DashboardLoading";
 
 // Lazy-load dashboard tab components for code splitting
 const OverViewTab = lazy(() => import("@/components/dashboard/tabs/Overview"));
@@ -78,6 +79,7 @@ export default function DashboardPage() {
 
   // Animate main content on nav change
   useEffect(() => {
+    if (userLoading) return;
     const el = mainRef.current;
     if (!el) return;
     el.classList.remove("content-in");
@@ -85,7 +87,11 @@ export default function DashboardPage() {
       el.classList.add("content-in");
     });
     return () => cancelAnimationFrame(frame);
-  }, [nav]);
+  }, [nav, userLoading]);
+
+  if (userLoading) {
+    return <DashboardLoading />;
+  }
 
   return (
     <div className="h-screen bg-background text-text font-serif flex overflow-hidden">
