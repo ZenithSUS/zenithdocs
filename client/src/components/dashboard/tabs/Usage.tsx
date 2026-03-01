@@ -1,11 +1,11 @@
 "use client";
 
+import useUsage from "@/features/usage/useUsage";
 import sizefmt from "@/helpers/size-format";
-import { Usage } from "@/types/usage";
 
 interface UsageProps {
+  userId: string;
   currentMonth: string;
-  usage: Usage[];
   tokenPct: number;
   tokenLimit: number;
   currentTokensUsed: number;
@@ -13,40 +13,46 @@ interface UsageProps {
 }
 
 function UsageTab({
+  userId,
   currentMonth,
-  usage,
   tokenPct,
   tokenLimit,
   currentTokensUsed,
   maxUsage,
 }: UsageProps) {
+  const { usageByUserSixMonths } = useUsage(userId, currentMonth);
+  const nextMonth = new Date(new Date().setMonth(new Date().getMonth() + 1));
+
+  const { data: usage = [] } = usageByUserSixMonths;
   const remainingTokens = Math.max(0, tokenLimit - currentTokensUsed);
   const tokensUsed = Math.min(tokenLimit, currentTokensUsed);
+
+  const stats = [
+    {
+      label: "Documents This Month",
+      value: usage.reduce((acc, u) => acc + u.documentsUploaded, 0),
+      icon: "▣",
+      sub: `vs ${usage.reduce((acc, u) => acc + u.documentsUploaded, 0)} last month`,
+    },
+    {
+      label: "Tokens This Month",
+      value: sizefmt.num(tokensUsed),
+      icon: "◉",
+      sub: `${tokenPct}% of limit`,
+    },
+    {
+      label: "Tokens Remaining",
+      value: sizefmt.num(remainingTokens),
+      icon: "◈",
+      sub: `Resets on ${nextMonth.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`,
+    },
+  ];
 
   return (
     <div className="space-y-5">
       {/* Current month snapshot */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {[
-          {
-            label: "Documents This Month",
-            value: usage.reduce((acc, u) => acc + u.documentsUploaded, 0),
-            icon: "▣",
-            sub: "vs 9 last month",
-          },
-          {
-            label: "Tokens This Month",
-            value: sizefmt.num(tokensUsed),
-            icon: "◉",
-            sub: `${tokenPct}% of limit`,
-          },
-          {
-            label: "Tokens Remaining",
-            value: sizefmt.num(remainingTokens),
-            icon: "◈",
-            sub: `Resets March 1`,
-          },
-        ].map((s, i) => (
+        {stats.map((s, i) => (
           <div
             key={i}
             className="px-6 py-5 border border-white/8 rounded-sm bg-white/2 hover:border-primary/20 transition-colors duration-200"
@@ -108,7 +114,7 @@ function UsageTab({
         <div className="px-5 sm:px-7 py-6">
           {/* Bar chart */}
           <div className="flex items-end gap-2 sm:gap-3 h-32 mb-3">
-            {usage.map((u) => {
+            {usage.slice(0, 6).map((u) => {
               const h = (u.tokensUsed / maxUsage) * 100;
               const isCurrent = u.month === currentMonth;
               return (
@@ -166,38 +172,41 @@ function UsageTab({
               </span>
             ))}
           </div>
-          {[...usage].reverse().map((u, idx) => {
-            const prev = usage[usage.length - 2 - idx];
-            const trend = prev ? u.tokensUsed - prev.tokensUsed : 0;
-            return (
-              <div
-                key={u.month}
-                className={`grid grid-cols-2 sm:grid-cols-4 px-5 sm:px-7 py-3.5 text-[13px] ${u.month === currentMonth ? "bg-primary/5" : ""}`}
-              >
-                <span className="font-sans text-text/70 flex items-center gap-2">
-                  {u.month === currentMonth && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                  )}
-                  {u.month}
-                </span>
-                <span className="font-sans text-text/50">
-                  {u.documentsUploaded} docs
-                </span>
-                <span className="font-sans text-text/50 hidden sm:block">
-                  {sizefmt.num(u.tokensUsed)}
-                </span>
-                <span
-                  className={`font-sans hidden sm:block text-[12px] ${trend > 0 ? "text-red-400" : trend < 0 ? "text-green-400" : "text-text/20"}`}
+          {[...usage]
+            .reverse()
+            .slice(0, 6)
+            .map((u, idx) => {
+              const prev = usage[usage.length - 2 - idx];
+              const trend = prev ? u.tokensUsed - prev.tokensUsed : 0;
+              return (
+                <div
+                  key={u.month}
+                  className={`grid grid-cols-2 sm:grid-cols-4 px-5 sm:px-7 py-3.5 text-[13px] ${u.month === currentMonth ? "bg-primary/5" : ""}`}
                 >
-                  {trend > 0
-                    ? `↑ +${sizefmt.num(trend)}`
-                    : trend < 0
-                      ? `↓ ${sizefmt.num(trend)}`
-                      : "—"}
-                </span>
-              </div>
-            );
-          })}
+                  <span className="font-sans text-text/70 flex items-center gap-2">
+                    {u.month === currentMonth && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                    )}
+                    {u.month}
+                  </span>
+                  <span className="font-sans text-text/50">
+                    {u.documentsUploaded} docs
+                  </span>
+                  <span className="font-sans text-text/50 hidden sm:block">
+                    {sizefmt.num(u.tokensUsed)}
+                  </span>
+                  <span
+                    className={`font-sans hidden sm:block text-[12px] ${trend > 0 ? "text-red-400" : trend < 0 ? "text-green-400" : "text-text/20"}`}
+                  >
+                    {trend > 0
+                      ? `↑ +${sizefmt.num(trend)}`
+                      : trend < 0
+                        ? `↓ ${sizefmt.num(trend)}`
+                        : "—"}
+                  </span>
+                </div>
+              );
+            })}
         </div>
       </div>
     </div>
