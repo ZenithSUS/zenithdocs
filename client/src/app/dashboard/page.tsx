@@ -4,19 +4,12 @@ import CursorGlow from "@/components/CursorGlow";
 import DashboardHeader from "@/components/dashboard/Header";
 import DashboardTabLoading from "@/components/dashboard/DashBoardTabLoading";
 import DashBoardSidebar, { NavItem } from "@/components/dashboard/Sidebar";
-import useAuth from "@/features/auth/useAuth";
 
-import {
-  useState,
-  useEffect,
-  useRef,
-  lazy,
-  Suspense,
-  useCallback,
-} from "react";
+import { lazy, Suspense } from "react";
 import DocumentsTab from "@/components/dashboard/tabs/Documents";
-import useDashboard from "@/features/dashboard/useDashboard";
-import DashboardLoading from "@/components/dashboard/DashboardLoading";
+import DashboardLoading from "@/components/dashboard/LoadingScreen";
+import ErrorScreen from "@/components/dashboard/ErrorScreen";
+import useDashboardPage from "./useDashboard";
 
 // Lazy-load dashboard tab components for code splitting
 const OverViewTab = lazy(() => import("@/components/dashboard/tabs/Overview"));
@@ -27,67 +20,35 @@ const SummaryTab = lazy(() => import("@/components/dashboard/tabs/Summary"));
 const CURRENT_MONTH = new Date().toISOString().slice(0, 7); // YYYY-MM
 
 export default function DashboardPage() {
-  const [nav, setNav] = useState<NavItem>("overview");
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [filterFolder, setFilterFolder] = useState<string>("all");
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const mainRef = useRef<HTMLElement>(null);
-
-  const { me } = useAuth();
-  const { data: user, isLoading: userLoading, refetch: refetchUser } = me;
-
-  const { dashboardOverview } = useDashboard(user?._id || "");
   const {
-    data: overview,
-    isLoading: overviewLoading,
-    refetch: overViewRefetch,
-  } = dashboardOverview;
+    user,
+    userLoading,
+    userError,
+    userErrorData,
+    overview,
+    tokenPct,
+    documentPct,
+    handleRefetch,
+    refetchUser,
+    nav,
+    setNav,
+    sidebarOpen,
+    setSidebarOpen,
+    mousePos,
+    filterFolder,
+    setFilterFolder,
+    mainRef,
+    overviewLoading,
+  } = useDashboardPage();
 
-  const tokenPct = user?.tokenLimit
-    ? Math.min(
-        100,
-        Math.round(((overview?.tokensUsed || 0) / user.tokenLimit) * 100),
-      )
-    : 0;
-  const documentPct = user?.documentLimit
-    ? Math.min(
-        100,
-        Math.round(
-          ((overview?.documentsUploaded || 0) / user.documentLimit) * 100,
-        ),
-      )
-    : 0;
-
-  const handleRefetch = useCallback(
-    async (scope: "all" | "overview" | "user") => {
-      if (scope === "all") {
-        await Promise.all([overViewRefetch(), refetchUser()]);
-      } else if (scope === "overview") {
-        await overViewRefetch();
-      } else if (scope === "user") {
-        await refetchUser();
-      }
-    },
-    [],
-  );
-
-  useEffect(() => {
-    const h = (e: MouseEvent) => setMousePos({ x: e.clientX, y: e.clientY });
-    window.addEventListener("mousemove", h);
-    return () => window.removeEventListener("mousemove", h);
-  }, []);
-
-  // Animate main content on nav change
-  useEffect(() => {
-    if (userLoading) return;
-    const el = mainRef.current;
-    if (!el) return;
-    el.classList.remove("content-in");
-    const frame = requestAnimationFrame(() => {
-      el.classList.add("content-in");
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [nav, userLoading]);
+  if (userError) {
+    return (
+      <ErrorScreen
+        error={userErrorData}
+        onRetry={() => handleRefetch("user")}
+      />
+    );
+  }
 
   if (userLoading) {
     return <DashboardLoading />;
@@ -202,16 +163,12 @@ export default function DashboardPage() {
           {nav === "usage" && (
             <Suspense fallback={<DashboardTabLoading />}>
               <UsageTab
+                userId={user?._id ?? ""}
                 currentMonth={CURRENT_MONTH}
                 tokenPct={tokenPct}
                 tokenLimit={user?.tokenLimit || 0}
                 currentTokensUsed={overview?.tokensUsed || 0}
                 maxUsage={user?.tokenLimit || 0}
-                usage={
-                  overview?.usageHistory.filter(
-                    (u) => u.month.toString() === CURRENT_MONTH,
-                  ) || []
-                }
               />
             </Suspense>
           )}
