@@ -20,12 +20,14 @@ import { removeInfiniteSummary, updateInfiniteSummary } from "./summary.cache";
 
 type SummaryPage = ResponseWithPagedData<Summary, "summaries">["data"];
 type SummaryByUserInfiniteData = InfiniteData<SummaryPage>;
+type SummaryByDocumentInfiniteData = InfiniteData<SummaryPage>;
 type UpdateVariables = {
   id: string;
   data: Partial<Summary>;
 };
 type MutationContext = {
-  previousSummary?: SummaryByUserInfiniteData;
+  previousSummaryByUser?: SummaryByUserInfiniteData;
+  previousSummaryByDocument?: SummaryByDocumentInfiniteData;
 };
 
 /**
@@ -159,12 +161,12 @@ const useSummary = (
         queryKey: summaryKeys.byUserPage(userId, summaryLimit),
       });
 
-      const previousSummary =
+      const previousSummaryByUser =
         queryClient.getQueryData<SummaryByUserInfiniteData>(
           summaryKeys.byUserPage(userId, summaryLimit),
         );
 
-      if (previousSummary) {
+      if (previousSummaryByUser) {
         queryClient.setQueryData<SummaryByUserInfiniteData>(
           summaryKeys.byUserPage(userId, summaryLimit),
           (oldData) => {
@@ -183,13 +185,46 @@ const useSummary = (
           },
         );
       }
-      return { previousSummary };
+
+      const previousSummaryByDocument =
+        queryClient.getQueryData<SummaryByDocumentInfiniteData>(
+          summaryKeys.byDocumentPage(documentId, summaryLimit),
+        );
+
+      if (previousSummaryByDocument) {
+        queryClient.setQueryData<SummaryByDocumentInfiniteData>(
+          summaryKeys.byDocumentPage(documentId, summaryLimit),
+          (oldData) => {
+            if (!oldData) return oldData;
+
+            // Update the summary in the cache then append the rest of the pages
+            return {
+              ...oldData,
+              pages: oldData.pages.map((page) => ({
+                ...page,
+                summaries: page.summaries.map((summary) =>
+                  summary._id === id ? { ...summary, ...data } : summary,
+                ),
+              })),
+            };
+          },
+        );
+      }
+
+      return { previousSummaryByUser, previousSummaryByDocument };
     },
     onError: (_, __, context) => {
-      if (context?.previousSummary) {
-        queryClient.setQueryData(
+      if (context?.previousSummaryByUser) {
+        queryClient.setQueryData<SummaryByUserInfiniteData>(
           summaryKeys.byUserPage(userId, summaryLimit),
-          context.previousSummary,
+          context.previousSummaryByUser,
+        );
+      }
+
+      if (context?.previousSummaryByDocument) {
+        queryClient.setQueryData<SummaryByDocumentInfiniteData>(
+          summaryKeys.byDocumentPage(documentId, summaryLimit),
+          context.previousSummaryByDocument,
         );
       }
     },
@@ -226,12 +261,38 @@ const useSummary = (
         deletedId,
       );
 
-      const previousSummary =
+      removeInfiniteSummary(
+        queryClient,
+        summaryKeys.byDocumentPage(documentId, summaryLimit),
+        deletedId,
+      );
+
+      const previousSummaryByUser =
         queryClient.getQueryData<SummaryByUserInfiniteData>(
           summaryKeys.byUserPage(userId, summaryLimit),
         );
 
-      return { previousSummary };
+      const previousSummaryByDocument =
+        queryClient.getQueryData<SummaryByDocumentInfiniteData>(
+          summaryKeys.byDocumentPage(documentId, summaryLimit),
+        );
+
+      return { previousSummaryByUser, previousSummaryByDocument };
+    },
+    onError: (_, __, context) => {
+      if (context?.previousSummaryByUser) {
+        queryClient.setQueryData(
+          summaryKeys.byUserPage(userId, summaryLimit),
+          context.previousSummaryByUser,
+        );
+      }
+
+      if (context?.previousSummaryByDocument) {
+        queryClient.setQueryData(
+          summaryKeys.byDocumentPage(documentId, summaryLimit),
+          context.previousSummaryByDocument,
+        );
+      }
     },
     onSuccess: (_, deletedId: string) => {
       queryClient.removeQueries({
