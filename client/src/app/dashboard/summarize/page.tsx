@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import CursorGlow from "@/components/CursorGlow";
 import useAuth from "@/features/auth/useAuth";
@@ -46,7 +46,7 @@ const SUMMARY_TYPES = [
   },
 ];
 
-export default function SummarizePage() {
+function SummarizePageContent() {
   const queryClient = useQueryClient();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -329,5 +329,13 @@ export default function SummarizePage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function SummarizePage() {
+  return (
+    <Suspense fallback={<LoadingScreen />}>
+      <SummarizePageContent />
+    </Suspense>
   );
 }
