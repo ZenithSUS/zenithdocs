@@ -4,6 +4,7 @@ import {
   getAllUsageAdminController,
   getUsageByUserAndMonthController,
   getUsageByUserController,
+  getLastSixMonthsUsageByUserController,
   updateUsageController,
   deleteUsageController,
   deleteUsageByUserController,
@@ -15,7 +16,12 @@ import authorizeSelfOrAdmin from "../middlewares/authorize-self-or-admin.middlew
 const router = Router();
 
 // Usage routes
-router.get("/", protect, requireAdmin, getAllUsageAdminController);
+router.get(
+  "/user/:id/last-six-months",
+  protect,
+  authorizeSelfOrAdmin,
+  getLastSixMonthsUsageByUserController,
+);
 router.get(
   "/user/:id/:month",
   protect,
@@ -28,8 +34,11 @@ router.get(
   authorizeSelfOrAdmin,
   getUsageByUserController,
 );
+router.get("/", protect, requireAdmin, getAllUsageAdminController);
+
 router.post("/", protect, createUsageController);
 router.put("/:id", protect, updateUsageController);
+
 router.delete(
   "/user/:id",
   protect,
