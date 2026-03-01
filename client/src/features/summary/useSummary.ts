@@ -49,7 +49,11 @@ const useSummary = (
   const summaryLimit = 10;
 
   // Create summary
-  const createSummaryMutation = useMutation({
+  const createSummaryMutation = useMutation<
+    Summary,
+    AxiosError,
+    Partial<Summary>
+  >({
     mutationKey: summaryKeys.create(),
     mutationFn: (data: Partial<Summary>) => createSummary(data),
     onSuccess: (newSummary: Summary) => {
