@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import CursorGlow from "@/components/CursorGlow";
 import useAuth from "@/features/auth/useAuth";
@@ -13,9 +13,41 @@ import { toast } from "sonner";
 import { AxiosError } from "@/types/api";
 import Doc from "@/types/doc";
 import useDashboard from "@/features/dashboard/useDashboard";
-import { LightbulbIcon } from "lucide-react";
+import { LightbulbIcon, XCircleIcon } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import usageKeys from "@/features/usage/usage.key";
+import LoadingScreen from "@/components/dashboard/LoadingScreen";
+import ErrorScreen from "@/components/dashboard/ErrorScreen";
+
+const SUMMARY_TYPES = [
+  {
+    type: "short" as SummaryType,
+    icon: "⚡",
+    label: "Short",
+    desc: "Concise overview of the key points",
+  },
+  {
+    type: "bullet" as SummaryType,
+    icon: "📋",
+    label: "Bullet Points",
+    desc: "Key takeaways in scannable list format",
+  },
+  {
+    type: "detailed" as SummaryType,
+    icon: "📖",
+    label: "Detailed",
+    desc: "In-depth analysis with full context",
+  },
+  {
+    type: "executive" as SummaryType,
+    icon: "💼",
+    label: "Executive",
+    desc: "High-level overview for decision makers",
+  },
+];
 
 export default function SummarizePage() {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const searchParams = useSearchParams();
   const docId = searchParams?.get("doc");
@@ -23,11 +55,16 @@ export default function SummarizePage() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [selectedType, setSelectedType] = useState<SummaryType>("short");
   const [generatedSummary, setGeneratedSummary] = useState<string>("");
-  const [isGenerating, setIsGenerating] = useState(false);
   const [tokenUsed, setTokenUsed] = useState(0);
 
   const { me } = useAuth();
-  const { data: user } = me;
+  const {
+    data: user,
+    isLoading: userLoading,
+    refetch: refetchUser,
+    isError: userError,
+    error: userErrorData,
+  } = me;
 
   const { documentById, updateDocumentMutation } = useDocument(
     user?._id || "",
@@ -37,11 +74,26 @@ export default function SummarizePage() {
   const { mutateAsync: updateDocument } = updateDocumentMutation;
 
   const { createSummaryMutation } = useSummary(user?._id || "", docId || "");
-  const { mutateAsync: createSummary, isPending: isCreating } =
-    createSummaryMutation;
+  const {
+    mutateAsync: createSummary,
+    isPending: isCreating,
+    error: createError,
+    isError: isCreateError,
+  } = createSummaryMutation;
 
   const { dashboardOverview } = useDashboard(user?._id || "");
   const { refetch: refetchDashboard } = dashboardOverview;
+
+  const refetchLastSixMonthsUsage = useCallback(async () => {
+    await queryClient.refetchQueries({
+      queryKey: usageKeys.byUserSixMonths(user?._id || ""),
+    });
+  }, [queryClient]);
+
+  const createErrorMessage = useMemo(
+    () => createError?.response?.data?.message || "Something went wrong.",
+    [createError],
+  );
 
   useEffect(() => {
     const h = (e: MouseEvent) => setMousePos({ x: e.clientX, y: e.clientY });
@@ -52,58 +104,42 @@ export default function SummarizePage() {
   const handleGenerate = useCallback(async () => {
     if (!document || !user) return;
 
-    setIsGenerating(true);
-
     try {
-      const sumary = await createSummary({
+      const summary = await createSummary({
         user: user._id,
         document: document._id,
         content: document.rawText,
         type: selectedType,
       });
 
-      const documentId = document._id;
-      const updatedDocument: Partial<Doc> = {
-        user: user._id,
-        status: "completed",
-      };
+      await updateDocument({
+        id: document._id,
+        data: { user: user._id, status: "completed" } as Partial<Doc>,
+      });
 
-      await updateDocument({ id: documentId, data: updatedDocument });
+      await Promise.all([refetchLastSixMonthsUsage(), refetchDashboard()]);
 
-      await refetchDashboard();
-      setGeneratedSummary(sumary.content);
-      setTokenUsed(sumary.tokensUsed);
+      setGeneratedSummary(summary.content);
+      setTokenUsed(summary.tokensUsed);
       toast.success("Summary generated successfully!");
     } catch (error) {
       const err = error as AxiosError;
 
       await updateDocument({
         id: document._id,
-        data: { status: "failed" },
-      }).catch(() => {
-        // Ignore
-      });
+        data: { status: "failed" } as Partial<Doc>,
+      }).catch(() => {});
 
-      toast.error(err.response.data.message);
-    } finally {
-      setIsGenerating(false);
+      toast.error(err.response?.data?.message || "Something went wrong.");
     }
   }, [document, user, selectedType]);
 
-  if (docLoading) {
-    return (
-      <div className="min-h-screen bg-[#111111] text-[#F5F5F5] font-serif">
-        <CursorGlow mousePos={mousePos} />
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="text-4xl mb-4 animate-pulse">✨</div>
-            <p className="text-[14px] text-text/50 font-sans">
-              Loading document...
-            </p>
-          </div>
-        </div>
-      </div>
-    );
+  if (userError) {
+    return <ErrorScreen error={userErrorData} onRetry={refetchUser} />;
+  }
+
+  if (userLoading || docLoading) {
+    return <LoadingScreen />;
   }
 
   if (!document) {
@@ -150,9 +186,7 @@ export default function SummarizePage() {
         {/* Document Info Card */}
         <div className="bg-[rgba(31,41,55,0.4)] border border-[#C9A227]/18 rounded-lg p-5 mb-8">
           <div className="flex items-center gap-4">
-            <div className="text-2xl">
-              <FileIcon type={document.fileType} />
-            </div>
+            <FileIcon type={document.fileType} />
             <div className="flex-1 min-w-0">
               <div className="text-[15px] font-sans text-text/80 truncate">
                 {document.title}
@@ -172,36 +206,12 @@ export default function SummarizePage() {
           </label>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              {
-                type: "short" as SummaryType,
-                icon: "⚡",
-                label: "Short",
-                desc: "Concise overview of the key points",
-              },
-              {
-                type: "bullet" as SummaryType,
-                icon: "📋",
-                label: "Bullet Points",
-                desc: "Key takeaways in scannable list format",
-              },
-              {
-                type: "detailed" as SummaryType,
-                icon: "📖",
-                label: "Detailed",
-                desc: "In-depth analysis with full context",
-              },
-              {
-                type: "executive" as SummaryType,
-                icon: "💼",
-                label: "Executive",
-                desc: "High-level overview for decision makers",
-              },
-            ].map(({ type, icon, label, desc }) => (
+            {SUMMARY_TYPES.map(({ type, icon, label, desc }) => (
               <button
                 key={type}
                 onClick={() => setSelectedType(type)}
-                className={`p-5 rounded-lg border-2 transition-all text-left ${
+                disabled={isCreating}
+                className={`p-5 rounded-lg border-2 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed ${
                   selectedType === type
                     ? "border-[#C9A227] bg-[#C9A227]/10"
                     : "border-white/10 bg-[rgba(31,41,55,0.3)] hover:border-white/20"
@@ -224,14 +234,14 @@ export default function SummarizePage() {
           <div className="text-center mb-8">
             <button
               onClick={handleGenerate}
-              disabled={isGenerating}
+              disabled={isCreating}
               className={`px-10 py-4 rounded-sm text-[13px] font-bold tracking-[0.12em] font-sans transition-all duration-200 ${
-                isGenerating
+                isCreating
                   ? "bg-[#C9A227]/50 text-[#111111]/50 cursor-not-allowed"
                   : "bg-[#C9A227] text-[#111111] hover:bg-[#e0b530] hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(201,162,39,0.35)]"
               }`}
             >
-              {isGenerating ? (
+              {isCreating ? (
                 <span className="flex items-center gap-2">
                   <span className="inline-block w-4 h-4 border-2 border-[#111111]/30 border-t-[#111111] rounded-full animate-spin" />
                   GENERATING SUMMARY...
@@ -269,15 +279,38 @@ export default function SummarizePage() {
               </div>
             </div>
 
-            {/* Action Buttons */}
+            {/* Regenerate Button */}
             <button
-              onClick={() => {
-                setGeneratedSummary("");
-              }}
-              className="flex-1 sm:flex-initial bg-[#C9A227] px-8 py-4 font-bold tracking-widest border border-[#F5F5F5]/15 text-[#F5F5F5] rounded-sm text-[13px] w-full  font-sans transition-all duration-200 hover:border-[#F5F5F5]/40"
+              onClick={() => setGeneratedSummary("")}
+              disabled={isCreating}
+              className={`w-full px-8 py-4 font-bold tracking-widest border rounded-sm text-[13px] font-sans transition-all duration-200 ${
+                isCreating
+                  ? "bg-[#C9A227]/50 border-[#F5F5F5]/5 text-[#111111]/50 cursor-not-allowed"
+                  : "bg-[#C9A227] border-[#F5F5F5]/15 text-[#F5F5F5] hover:border-[#F5F5F5]/40"
+              }`}
             >
-              REGENERATE
+              {isCreating ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="inline-block w-4 h-4 border-2 border-[#111111]/30 border-t-[#111111] rounded-full animate-spin" />
+                  REGENERATING...
+                </span>
+              ) : (
+                "REGENERATE"
+              )}
             </button>
+          </div>
+        )}
+
+        {/* Error Message */}
+        {isCreateError && (
+          <div className="mt-8 p-5 bg-red-500/5 border border-red-600 rounded-lg">
+            <div className="flex gap-3">
+              <XCircleIcon className="w-5 h-5 text-red-600 shrink-0" />
+              <div className="text-[12px] text-text/60 font-sans leading-[1.7]">
+                <strong className="text-text/80">Error:</strong>{" "}
+                {createErrorMessage}
+              </div>
+            </div>
           </div>
         )}
 
