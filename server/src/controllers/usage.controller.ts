@@ -5,6 +5,7 @@ import {
   deleteUsageById,
   deleteUsageByUserService,
   getAllUsageServiceAdmin,
+  getLastSixMonthsUsageByUserService,
   getUsageByUserAndMonthService,
   getUsageByUserService,
   updateUsageService,
@@ -56,6 +57,7 @@ export const getUsageByUserAndMonthController = async (
 
     return res.status(200).json({
       success: true,
+      message: "Usage fetched successfully",
       data: usage,
     });
   } catch (error) {
@@ -64,7 +66,7 @@ export const getUsageByUserAndMonthController = async (
 };
 
 /** Retrieves a usage document by user ID
- * @route GET /api/usage/:id
+ * @route GET /api/usage/user/:id
  */
 export const getUsageByUserController = async (
   req: Request<UsageParams>,
@@ -77,6 +79,7 @@ export const getUsageByUserController = async (
 
     return res.status(200).json({
       success: true,
+      message: "Usage fetched successfully",
       data: usage,
     });
   } catch (error) {
@@ -94,8 +97,33 @@ export const getAllUsageAdminController = async (
 ) => {
   try {
     const usage = await getAllUsageServiceAdmin();
+
     return res.status(200).json({
       success: true,
+      message: "Usage fetched successfully",
+      data: usage,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/** Retrieves last six months of usage documents belonging to a user
+ * @route GET /api/usage/user/:id/last-six-months
+ */
+export const getLastSixMonthsUsageByUserController = async (
+  req: Request<UsageParams>,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { id } = req.params;
+
+    const usage = await getLastSixMonthsUsageByUserService(id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Usage fetched successfully",
       data: usage,
     });
   } catch (error) {
