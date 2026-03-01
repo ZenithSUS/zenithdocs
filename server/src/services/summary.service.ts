@@ -12,9 +12,8 @@ import {
 } from "../repositories/summary.repository.js";
 import AppError from "../utils/app-error.js";
 import mongoose from "mongoose";
-import { getUsageByUserAndMonthService } from "./usage.service.js";
-import PLAN_LIMITS from "../config/plans.js";
 import { updateUsageMonthByUser } from "../repositories/usage.repository.js";
+import PLAN_LIMITS from "../config/plans.js";
 
 /**
  * Creates a new summary with the given data.
@@ -77,7 +76,9 @@ export const createSummaryService = async (data: Partial<ISummary>) => {
 
   const { content, tokensUsed } = await summarizeText(
     data.content,
-    data.type as any,
+    data.type as ISummary["type"],
+    usageLimit.tokensUsed, // current usage
+    userLimit.tokenLimit, // max allowed
   );
 
   const summary = await createSummary({
@@ -89,6 +90,10 @@ export const createSummaryService = async (data: Partial<ISummary>) => {
   });
 
   const populatedSummary = await getSummaryById(summary._id.toString());
+
+  if (!populatedSummary) {
+    throw new AppError("Summary not found", 500);
+  }
 
   return populatedSummary;
 };
