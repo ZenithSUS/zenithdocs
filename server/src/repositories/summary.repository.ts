@@ -170,7 +170,7 @@ export const getAllTotalEachSummaryTypesByUser = async (userId: string) => {
 /**
  * Retrieves the 6 most recent summaries belonging to a user
  * @param {string} userId - User ID
- * @returns An array of the 5 most recent summaries belonging to the user if found, empty array otherwise
+ * @returns An array of the 6 most recent summaries belonging to the user if found, empty array otherwise
  * @throws {null} If the user ID is invalid
  */
 export const getRecentSummaryByUser = async (userId: string) => {
