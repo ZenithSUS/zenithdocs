@@ -80,7 +80,7 @@ function UsageTab({
             MONTHLY TOKEN QUOTA
           </span>
           <span className="text-[13px] font-sans text-text/60">
-            {sizefmt.num(currentTokensUsed)} / {sizefmt.num(tokenLimit)}
+            {sizefmt.num(tokensUsed)} / {sizefmt.num(tokenLimit)}
           </span>
         </div>
         <div className="w-full h-3 bg-white/6 rounded-full overflow-hidden mb-3">
