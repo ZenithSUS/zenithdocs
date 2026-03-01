@@ -61,8 +61,14 @@ function DocumentSummaryCard({
       {/* Footer */}
       <div className="mt-4 pt-3 border-t border-white/6 flex items-center justify-between text-[11px] text-text/30 font-sans">
         <div className="flex items-center gap-2">
-          <CalendarDays size={10} />
-          Created {sizefmt.date(summary.createdAt)}
+          <div className="flex items-center gap-1">
+            <CalendarDays size={10} />
+            Created {sizefmt.date(summary.createdAt)}
+          </div>
+
+          <div className="font-semibold text-primary">
+            {summary.content.split(" ").length} words
+          </div>
         </div>
 
         <DeleteSummaryModal
