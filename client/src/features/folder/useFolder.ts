@@ -152,7 +152,7 @@ const useFolder = () => {
       },
     });
 
-  const deletFolderMutation = (userId: string) =>
+  const deleteFolderMutation = (userId: string) =>
     useMutation<Folder, AxiosError, string, MutateContext>({
       mutationKey: folderKeys.delete(),
       mutationFn: (id) => deleteFolderById(id),
@@ -193,7 +193,7 @@ const useFolder = () => {
     foldersByUserPage,
     folderById,
     updateFolderMutation,
-    deletFolderMutation,
+    deleteFolderMutation,
   };
 };
 
