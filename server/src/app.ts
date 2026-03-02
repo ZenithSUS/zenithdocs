@@ -25,6 +25,10 @@ import summaryRouter from "./routes/summary.route.js";
 import usageRouter from "./routes/usage.route.js";
 import dashboardRouter from "./routes/dashboard.route.js";
 
+// Sessions
+import session from "express-session";
+import passport from "./config/passport.js";
+
 // Config
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -64,6 +68,16 @@ app.use(compression());
 app.use(requestLogger);
 app.use(express.static(path.join(__dirname, "public")));
 app.use(favicon(path.join(__dirname, "public", "favicon.ico")));
+app.use(
+  session({
+    secret: "keyboardcat",
+    resave: false,
+    saveUninitialized: false,
+  }),
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Health Check
 app.get("/health", (_, res) =>
@@ -79,13 +93,17 @@ app.get("/", (_, res) =>
     .json({ success: true, message: "Welcome to the ZenithDocs Server" }),
 );
 
+// Cookie Test
 app.get("/api/auth/cookie-test", (req, res) => {
-  console.log("Cookies received:", req.cookies);
-  res.json({ cookies: req.cookies });
+  res.json({
+    success: true,
+    message: "Cookies are working",
+    cookies: req.cookies,
+  });
 });
 
 // Routes
-app.use("/api/auth", requireApiKey, authRouter);
+app.use("/api/auth", authRouter);
 app.use("/api/users", requireApiKey, userRouter);
 app.use("/api/documents", requireApiKey, documentRouter);
 app.use("/api/folders", requireApiKey, folderRouter);
