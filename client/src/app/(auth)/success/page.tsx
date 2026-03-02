@@ -56,7 +56,7 @@ function AuthSuccessContent() {
 
       // Store refresh token in httpOnly-like cookie (secure)
       Cookies.set("refreshToken", refreshToken, {
-        expires: 30, // 30 days
+        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
         secure: process.env.NODE_ENV === "production", // HTTPS only in production
         sameSite: "strict", // CSRF protection
         path: "/",
