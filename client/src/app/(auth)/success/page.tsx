@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import CursorGlow from "@/components/CursorGlow";
 import Cookies from "js-cookie";
+import { FourSquare } from "react-loading-indicators";
 
-export default function AuthSuccessPage() {
+function AuthSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -332,5 +333,24 @@ export default function AuthSuccessPage() {
         }
       `}</style>
     </div>
+  );
+}
+
+export default function AuthSuccessPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#111111] flex items-center justify-center">
+          <FourSquare
+            color="#c9a227"
+            size="medium"
+            text="Please wait..."
+            textColor="#c9a227"
+          />
+        </div>
+      }
+    >
+      <AuthSuccessContent />
+    </Suspense>
   );
 }
