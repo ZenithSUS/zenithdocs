@@ -12,6 +12,17 @@ export const createUser = async (data: Partial<IUser>): Promise<IUser> => {
 };
 
 /**
+ * Creates a new user if not found, or returns an existing user based on their email.
+ * @param {string} email - User email
+ * @returns {Promise<IUser>} User if found or created, null otherwise
+ */
+export const oauthCreateOrGetUser = async (email: string) => {
+  const user = await getUserByEmail(email);
+  if (user) return user;
+  return await createUser({ email });
+};
+
+/**
  * Get user by ID
  * @param id - User ID
  * @returns User if found, null otherwise
