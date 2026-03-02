@@ -70,7 +70,7 @@ async function handler(
       authError === "token_expired" ||
       authError === "invalid_token";
 
-    // Auto refresh: if 403 and we have a refresh token cookie, try to refresh
+    // Auto refresh: if 401 and we have a refresh token cookie, try to refresh
     if (
       backendRes.status === 401 &&
       isTokenError &&
