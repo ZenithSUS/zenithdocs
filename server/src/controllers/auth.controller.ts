@@ -2,11 +2,14 @@ import { NextFunction, Request, Response } from "express";
 import {
   loginService,
   logoutService,
+  oauthLoginService,
   refreshAccessTokenService,
   registerService,
 } from "../services/auth.service.js";
 import { getUserByIdService } from "../services/user.service.js";
 import AppError from "../utils/app-error.js";
+import { IUser } from "../models/User.js";
+import config from "../config/env.js";
 
 /**
  * Login user
@@ -30,6 +33,39 @@ export const loginController = async (
         refreshToken: result.refreshToken,
       },
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Login user using OAuth credentials
+ * @route POST /api/auth/google/callback
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @param {NextFunction} next - Express next function (for error handling)
+ * @returns {Promise<Response>} - Response object with logged in user data
+ */
+
+export const oauthLoginController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const user = req.user as unknown as Omit<IUser, "password">;
+
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    const result = await oauthLoginService(user);
+
+    const { accessToken, refreshToken } = result;
+
+    return res.redirect(
+      `${config.client.baseUrl}/success?accessToken=${accessToken}&refreshToken=${refreshToken}`,
+    );
   } catch (error) {
     next(error);
   }
