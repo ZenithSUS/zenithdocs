@@ -54,6 +54,39 @@ export const loginService = async (email: string, password: string) => {
 };
 
 /**
+ * Log in a user using OAuth.
+ * @param user - User object
+ * @returns - Object containing access token and refresh token
+ * @throws AppError - If user not found
+ */
+export const oauthLoginService = async (user: IUser) => {
+  if (!user) throw new AppError("User not found", 404);
+
+  // Generate access token and refresh token
+  const accessToken = jwt.sign(
+    { sub: user._id, role: user.role },
+    config.jwt.accessSecret,
+    { expiresIn: user.role === "admin" ? "7d" : "1h" },
+  );
+
+  const refreshToken = jwt.sign(
+    { userId: user._id, tokenVersion: user.tokenVersion },
+    config.jwt.refreshSecret,
+    {
+      expiresIn: user.role === "admin" ? "30d" : "7d",
+    },
+  );
+
+  // Update user refresh token
+  await updateUser(user._id.toString(), { refreshToken });
+
+  return {
+    accessToken,
+    refreshToken,
+  };
+};
+
+/**
  * Register a new user
  * @param data - User data to create
  * @returns Created user
