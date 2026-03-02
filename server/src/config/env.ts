@@ -6,6 +6,16 @@ const config = {
     port: process.env.PORT || 3000,
     allowedOrigins: process.env.ALLOWED_ORIGINS || "http://localhost:5000",
     apikey: process.env.API_KEY || "",
+    backendUrl:
+      process.env.NODE_ENV === "development"
+        ? process.env.BACKEND_URL_DEV
+        : process.env.BACKEND_URL || "",
+  },
+  client: {
+    baseUrl:
+      process.env.NODE_ENV === "development"
+        ? process.env.CLIENT_URL_DEV
+        : process.env.CLIENT_URL || "",
   },
   jwt: {
     accessSecret: process.env.JWT_ACCESS_SECRET || "",
@@ -25,6 +35,11 @@ const config = {
     apiKey: process.env.CLOUDINARY_API_KEY || "",
     apiSecret: process.env.CLOUDINARY_API_SECRET || "",
   },
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID || "",
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+    callbackUrl: process.env.GOOGLE_CALLBACK_URL || "",
+  },
 };
 
 // Check if the required environment variables are set
@@ -38,6 +53,13 @@ const requiredEnvVars = [
   "CLOUDINARY_CLOUD_NAME",
   "CLOUDINARY_API_KEY",
   "CLOUDINARY_API_SECRET",
+  "GOOGLE_CLIENT_ID",
+  "GOOGLE_CLIENT_SECRET",
+  "GOOGLE_CALLBACK_URL",
+  "BACKEND_URL_DEV",
+  "BACKEND_URL",
+  "CLIENT_URL_DEV",
+  "CLIENT_URL",
 ];
 
 requiredEnvVars.forEach((envVar) => {
