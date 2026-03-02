@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,6 +12,7 @@ import useAuth from "@/features/auth/useAuth";
 import { AxiosError } from "@/types/api";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import config from "@/config/env";
 
 const registerSchema = z
   .object({
@@ -102,6 +103,10 @@ export default function RegisterPage() {
       );
     }
   };
+
+  const handleOAuthRegister = useCallback(() => {
+    window.location.href = `${config.api.baseUrl}/api/auth/google`;
+  }, []);
 
   // ── Success screen ───────────────────────────────────────────────────────
   if (success) {
@@ -476,6 +481,7 @@ export default function RegisterPage() {
           <button
             type="button"
             className="w-full py-3.5 bg-transparent border border-white/10 text-text/60 rounded-sm cursor-pointer text-[12px] tracking-widest font-sans transition-all duration-200 hover:border-white/25 hover:text-text/90 flex items-center justify-center gap-3"
+            onClick={handleOAuthRegister}
           >
             <GoogleIcon />
             SIGN UP WITH GOOGLE

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,6 +11,7 @@ import useAuth from "@/features/auth/useAuth";
 import { toast } from "sonner";
 import { AxiosError } from "@/types/api";
 import { useRouter } from "next/navigation";
+import config from "@/config/env";
 
 const loginSchema = z.object({
   email: z
@@ -81,6 +82,10 @@ export default function LoginPage() {
       );
     }
   };
+
+  const handleOAuthLogin = useCallback(() => {
+    window.location.href = `${config.api.baseUrl}/api/auth/google`;
+  }, []);
 
   return (
     <div className="min-h-screen bg-background text-text font-serif overflow-hidden flex">
@@ -352,6 +357,7 @@ export default function LoginPage() {
           <button
             type="button"
             className="w-full py-3.5 bg-transparent border border-white/10 text-text/60 rounded-sm cursor-pointer text-[12px] tracking-widest font-sans transition-all duration-200 hover:border-white/25 hover:text-text/90 flex items-center justify-center gap-3"
+            onClick={handleOAuthLogin}
           >
             <GoogleIcon />
             CONTINUE WITH GOOGLE
