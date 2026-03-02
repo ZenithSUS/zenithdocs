@@ -117,11 +117,10 @@ function SummarizePageContent() {
         data: { user: user._id, status: "completed" } as Partial<Doc>,
       });
 
-      await Promise.all([refetchLastSixMonthsUsage(), refetchDashboard()]);
-
       setGeneratedSummary(summary.content);
       setTokenUsed(summary.tokensUsed);
       toast.success("Summary generated successfully!");
+      await Promise.all([refetchLastSixMonthsUsage(), refetchDashboard()]);
     } catch (error) {
       const err = error as AxiosError;
 
