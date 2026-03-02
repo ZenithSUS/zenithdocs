@@ -6,6 +6,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import folderKeys from "./folder.keys";
+import documentKeys from "../documents/document.keys";
 import {
   createFolder,
   deleteFolderById,
@@ -17,6 +18,7 @@ import { Folder } from "@/types/folder";
 import { ResponseWithPagedData } from "@/types/api";
 import { AxiosError } from "@/types/api";
 import { removeInfiniteFolder, updateInfiniteFolder } from "./folder.cache";
+import { removeDocumentFolderInfiniteDocument } from "../documents/document.cache";
 
 type FolderPage = ResponseWithPagedData<Folder, "folders">["data"];
 type FoldersInfiniteData = InfiniteData<FolderPage>;
@@ -164,6 +166,12 @@ const useFolder = () => {
         removeInfiniteFolder(
           queryClient,
           folderKeys.byUserPage(userId, folderLimit),
+          deletedId,
+        );
+
+        removeDocumentFolderInfiniteDocument(
+          queryClient,
+          documentKeys.byUserPage(userId, folderLimit),
           deletedId,
         );
 

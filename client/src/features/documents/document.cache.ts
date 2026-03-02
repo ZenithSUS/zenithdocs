@@ -1,3 +1,4 @@
+import queryClient from "@/lib/tanstack";
 import { ResponseWithPagedData } from "@/types/api";
 import Doc from "@/types/doc";
 import { InfiniteData, QueryClient } from "@tanstack/react-query";
@@ -39,6 +40,35 @@ export const removeInfiniteDocument = (
         ...page,
         documents: page.documents.filter((doc) => doc._id !== deletedId),
       })),
+    };
+  });
+};
+
+export const removeDocumentFolderInfiniteDocument = (
+  queryClient: QueryClient,
+  querkey: readonly unknown[],
+  deletedId: string,
+) => {
+  queryClient.setQueryData<DocumentsInfiniteData>(querkey, (oldData) => {
+    if (!oldData) return oldData;
+
+    return {
+      ...oldData,
+      pages: oldData.pages.map((page) => {
+        return {
+          ...page,
+          documents: page.documents.map((doc) => {
+            // Update the folder of the document in the cache
+            const folderId =
+              doc.folder && typeof doc.folder === "object"
+                ? doc.folder._id
+                : doc.folder || null;
+
+            if (folderId === deletedId) return { ...doc, folder: null };
+            return doc;
+          }),
+        };
+      }),
     };
   });
 };
