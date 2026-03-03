@@ -8,12 +8,25 @@ import useDocument from "@/features/documents/useDocument";
 import useSummary from "@/features/summary/useSummary";
 import FileIcon from "@/components/FileIcon";
 import sizefmt from "@/helpers/size-format";
-import { SummaryType } from "@/types/summary";
+import { Summary, SummaryType } from "@/types/summary";
 import { toast } from "sonner";
 import { AxiosError } from "@/types/api";
 import Doc from "@/types/doc";
 import useDashboard from "@/features/dashboard/useDashboard";
-import { LightbulbIcon, XCircleIcon } from "lucide-react";
+import {
+  AlertTriangle,
+  Building2,
+  Coins,
+  FileText,
+  RotateCcw,
+  Sparkles,
+  XCircle,
+  Zap,
+  AlignLeft,
+  List,
+  Briefcase,
+  ChevronRight,
+} from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import usageKeys from "@/features/usage/usage.key";
 import LoadingScreen from "@/components/dashboard/LoadingScreen";
@@ -22,25 +35,25 @@ import ErrorScreen from "@/components/dashboard/ErrorScreen";
 const SUMMARY_TYPES = [
   {
     type: "short" as SummaryType,
-    icon: "⚡",
+    icon: <Zap size={16} />,
     label: "Short",
     desc: "Concise overview of the key points",
   },
   {
     type: "bullet" as SummaryType,
-    icon: "📋",
+    icon: <List size={16} />,
     label: "Bullet Points",
     desc: "Key takeaways in scannable list format",
   },
   {
     type: "detailed" as SummaryType,
-    icon: "📖",
+    icon: <FileText size={16} />,
     label: "Detailed",
     desc: "In-depth analysis with full context",
   },
   {
     type: "executive" as SummaryType,
-    icon: "💼",
+    icon: <Briefcase size={16} />,
     label: "Executive",
     desc: "High-level overview for decision makers",
   },
@@ -55,6 +68,9 @@ function SummarizePageContent() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [selectedType, setSelectedType] = useState<SummaryType>("short");
   const [generatedSummary, setGeneratedSummary] = useState<string>("");
+  const [additionalDetails, setAdditionalDetails] = useState<
+    Summary["additionalDetails"] | null
+  >(null);
   const [tokenUsed, setTokenUsed] = useState(0);
 
   const { me } = useAuth();
@@ -103,7 +119,6 @@ function SummarizePageContent() {
 
   const handleGenerate = useCallback(async () => {
     if (!document || !user) return;
-
     try {
       const summary = await createSummary({
         user: user._id,
@@ -118,35 +133,38 @@ function SummarizePageContent() {
       });
 
       setGeneratedSummary(summary.content);
+      setAdditionalDetails(summary.additionalDetails ?? null);
       setTokenUsed(summary.tokensUsed);
       toast.success("Summary generated successfully!");
       await Promise.all([refetchLastSixMonthsUsage(), refetchDashboard()]);
     } catch (error) {
       const err = error as AxiosError;
-
       await updateDocument({
         id: document._id,
         data: { status: "failed" } as Partial<Doc>,
       }).catch(() => {});
-
       toast.error(err.response?.data?.message || "Something went wrong.");
     }
   }, [document, user, selectedType]);
 
-  if (userError) {
-    return <ErrorScreen error={userErrorData} onRetry={refetchUser} />;
-  }
+  const handleRegenerate = useCallback(() => {
+    setGeneratedSummary("");
+    setAdditionalDetails(null);
+    setTokenUsed(0);
+  }, []);
 
-  if (userLoading || docLoading) {
-    return <LoadingScreen />;
-  }
+  if (userError)
+    return <ErrorScreen error={userErrorData} onRetry={refetchUser} />;
+  if (userLoading || docLoading) return <LoadingScreen />;
 
   if (!document) {
     return (
-      <div className="min-h-screen bg-[#111111] text-[#F5F5F5] font-serif flex items-center justify-center">
+      <div className="min-h-screen bg-[#111111] text-[#F5F5F5] flex items-center justify-center">
         <div className="text-center">
-          <div className="text-5xl mb-4">📄</div>
-          <h2 className="text-xl font-normal mb-2">Document not found</h2>
+          <div className="text-5xl mb-4">404</div>
+          <h2 className="text-xl font-normal mb-2 font-serif">
+            Document not found
+          </h2>
           <button
             onClick={() => router.push("/dashboard")}
             className="mt-4 px-6 py-2.5 bg-primary text-background text-[12px] font-bold tracking-widest font-sans rounded-sm hover:bg-[#e0b530] transition-colors"
@@ -158,173 +176,244 @@ function SummarizePageContent() {
     );
   }
 
+  const hasRisk =
+    additionalDetails?.risk &&
+    additionalDetails.risk !== "No significant risk identified";
+
+  const hasAction =
+    additionalDetails?.action &&
+    additionalDetails.action !== "No immediate action required";
+
+  const hasEntities =
+    additionalDetails?.entity && additionalDetails.entity.length > 0;
+
+  const hasAnyDetails = hasRisk || hasAction || hasEntities;
+
   return (
     <div className="min-h-screen bg-[#111111] text-[#F5F5F5] font-serif">
       <CursorGlow mousePos={mousePos} />
 
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 px-5 sm:px-8 md:px-12 py-5 bg-[#111111]/92 backdrop-blur-xl border-b border-[#C9A227]/12">
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.push("/dashboard")}
-              className="text-[#F5F5F5]/60 hover:text-[#C9A227] transition-colors duration-200 flex items-center gap-2 text-sm tracking-widest font-sans"
-            >
-              ← BACK
-            </button>
-            <div className="h-5 w-px bg-[#F5F5F5]/10" />
-            <h1 className="text-lg font-bold tracking-[0.08em] font-serif">
-              AI <span className="text-[#C9A227]">SUMMARIZE</span>
-            </h1>
-          </div>
+        <div className="flex items-center gap-4 max-w-5xl mx-auto">
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="text-[#F5F5F5]/50 hover:text-[#C9A227] transition-colors duration-200 flex items-center gap-1.5 text-[11px] tracking-widest font-sans"
+          >
+            ← BACK
+          </button>
+          <div className="h-4 w-px bg-[#F5F5F5]/10" />
+          <h1 className="text-[15px] font-bold tracking-[0.08em] font-serif">
+            AI <span className="text-[#C9A227]">SUMMARIZE</span>
+          </h1>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="pt-24 pb-12 px-5 sm:px-8 md:px-12 max-w-5xl mx-auto">
-        {/* Document Info Card */}
-        <div className="bg-[rgba(31,41,55,0.4)] border border-[#C9A227]/18 rounded-lg p-5 mb-8">
-          <div className="flex items-center gap-4">
-            <FileIcon type={document.fileType} />
-            <div className="flex-1 min-w-0">
-              <div className="text-[15px] font-sans text-text/80 truncate">
-                {document.title}
-              </div>
-              <div className="text-[11px] text-text/30 font-sans mt-1">
-                {sizefmt.bytes(document.fileSize)} •{" "}
-                {sizefmt.date(document.createdAt)}
-              </div>
+      <main className="pt-24 pb-16 px-5 sm:px-8 md:px-12 max-w-5xl mx-auto">
+        {/* Document Info */}
+        <div className="bg-[rgba(31,41,55,0.4)] border border-[#C9A227]/15 rounded-lg p-4 mb-8 flex items-center gap-4">
+          <FileIcon type={document.fileType} />
+          <div className="flex-1 min-w-0">
+            <div className="text-[14px] font-sans text-text/80 truncate">
+              {document.title}
+            </div>
+            <div className="text-[11px] text-text/30 font-sans mt-0.5">
+              {sizefmt.bytes(document.fileSize)} ·{" "}
+              {sizefmt.date(document.createdAt)}
             </div>
           </div>
         </div>
 
-        {/* Summary Type Selection */}
-        <div className="mb-8">
-          <label className="text-[11px] tracking-[0.15em] text-[#C9A227] mb-4 block font-sans">
-            SELECT SUMMARY TYPE
-          </label>
+        {/* Pre-generate: type selector + button */}
+        {!generatedSummary && (
+          <>
+            <div className="mb-8">
+              <label className="text-[10px] tracking-[0.18em] text-[#C9A227]/70 mb-4 block font-sans">
+                SELECT SUMMARY TYPE
+              </label>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                {SUMMARY_TYPES.map(({ type, icon, label, desc }) => (
+                  <button
+                    key={type}
+                    onClick={() => setSelectedType(type)}
+                    disabled={isCreating}
+                    className={`p-4 rounded-lg border-2 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed group ${
+                      selectedType === type
+                        ? "border-[#C9A227] bg-[#C9A227]/8"
+                        : "border-white/8 bg-[rgba(31,41,55,0.3)] hover:border-white/18"
+                    }`}
+                  >
+                    <div
+                      className={`mb-3 transition-colors ${
+                        selectedType === type
+                          ? "text-[#C9A227]"
+                          : "text-text/30 group-hover:text-text/50"
+                      }`}
+                    >
+                      {icon}
+                    </div>
+                    <div className="text-[13px] font-sans text-text/80 mb-1">
+                      {label}
+                    </div>
+                    <div className="text-[11px] text-text/35 font-sans leading-[1.6]">
+                      {desc}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {SUMMARY_TYPES.map(({ type, icon, label, desc }) => (
+            <div className="text-center mb-8">
               <button
-                key={type}
-                onClick={() => setSelectedType(type)}
+                onClick={handleGenerate}
                 disabled={isCreating}
-                className={`p-5 rounded-lg border-2 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed ${
-                  selectedType === type
-                    ? "border-[#C9A227] bg-[#C9A227]/10"
-                    : "border-white/10 bg-[rgba(31,41,55,0.3)] hover:border-white/20"
+                className={`inline-flex items-center gap-2.5 px-10 py-3.5 rounded-sm text-[12px] font-bold tracking-[0.14em] font-sans transition-all duration-200 ${
+                  isCreating
+                    ? "bg-[#C9A227]/40 text-[#111111]/50 cursor-not-allowed"
+                    : "bg-[#C9A227] text-[#111111] hover:bg-[#e0b530] hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(201,162,39,0.3)]"
                 }`}
               >
-                <div className="text-2xl mb-2">{icon}</div>
-                <div className="text-[14px] font-sans text-text/80 mb-1">
-                  {label}
-                </div>
-                <div className="text-[11px] text-text/40 font-sans leading-[1.6]">
-                  {desc}
-                </div>
+                {isCreating ? (
+                  <>
+                    <span className="w-3.5 h-3.5 border-2 border-[#111111]/30 border-t-[#111111] rounded-full animate-spin" />
+                    GENERATING...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={14} />
+                    GENERATE SUMMARY
+                  </>
+                )}
               </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Generate Button */}
-        {!generatedSummary && (
-          <div className="text-center mb-8">
-            <button
-              onClick={handleGenerate}
-              disabled={isCreating}
-              className={`px-10 py-4 rounded-sm text-[13px] font-bold tracking-[0.12em] font-sans transition-all duration-200 ${
-                isCreating
-                  ? "bg-[#C9A227]/50 text-[#111111]/50 cursor-not-allowed"
-                  : "bg-[#C9A227] text-[#111111] hover:bg-[#e0b530] hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(201,162,39,0.35)]"
-              }`}
-            >
-              {isCreating ? (
-                <span className="flex items-center gap-2">
-                  <span className="inline-block w-4 h-4 border-2 border-[#111111]/30 border-t-[#111111] rounded-full animate-spin" />
-                  GENERATING SUMMARY...
-                </span>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <p>GENERATE SUMMARY</p>
-                  <LightbulbIcon className="w-4 h-4" fill="#C9A227" />
-                </div>
-              )}
-            </button>
-          </div>
+            </div>
+          </>
         )}
 
-        {/* Generated Summary */}
+        {/* Post-generate: result */}
         {generatedSummary && (
-          <div className="space-y-4">
-            <div className="bg-[rgba(31,41,55,0.4)] border border-[#C9A227]/18 rounded-lg p-6 sm:p-8">
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#C9A227]/10">
+          <div className="space-y-3">
+            {/* Summary card */}
+            <div className="bg-[rgba(31,41,55,0.4)] border border-[#C9A227]/15 rounded-lg overflow-hidden">
+              {/* Header strip */}
+              <div className="flex items-center justify-between px-6 py-3.5 border-b border-white/6">
                 <div className="flex items-center gap-2">
-                  <span className="text-[#C9A227] text-xl">✨</span>
-                  <span className="text-[11px] tracking-[0.12em] text-[#C9A227] font-sans">
+                  <Sparkles size={12} className="text-[#C9A227]" />
+                  <span className="text-[10px] tracking-[0.16em] text-[#C9A227] font-sans">
                     {selectedType.toUpperCase()} SUMMARY
                   </span>
                 </div>
-                <span className="text-[11px] text-text/30 font-sans tracking-[0.12em]">
-                  ~{tokenUsed} tokens used
-                </span>
-              </div>
-
-              <div className="prose prose-invert max-w-none">
-                <div className="text-[14px] text-text/70 font-sans leading-[1.8] whitespace-pre-line">
-                  {generatedSummary}
+                <div className="flex items-center gap-1 text-[10px] text-text/25 font-sans">
+                  <Coins size={10} />
+                  {tokenUsed.toLocaleString()} tokens
                 </div>
               </div>
+
+              {/* Summary text */}
+              <div className="px-6 py-5">
+                <p className="text-[14px] text-text/70 font-sans leading-[1.9] whitespace-pre-line">
+                  {generatedSummary}
+                </p>
+              </div>
+
+              {/* Additional Details inline */}
+              {hasAnyDetails && (
+                <div className="mx-5 mb-5 rounded-md border border-white/6 bg-white/[0.018] overflow-hidden">
+                  {hasRisk && (
+                    <div className="flex items-start gap-4 px-4 py-3 border-b border-white/5">
+                      <div className="flex items-center gap-1.5 w-17 shrink-0 pt-px">
+                        <AlertTriangle
+                          size={10}
+                          className="text-amber-400/70 shrink-0"
+                        />
+                        <span className="text-[9px] tracking-widest font-bold text-amber-400/70 font-sans uppercase">
+                          Risk
+                        </span>
+                      </div>
+                      <p className="text-[12.5px] text-text/55 font-sans leading-relaxed">
+                        {additionalDetails!.risk}
+                      </p>
+                    </div>
+                  )}
+
+                  {hasAction && (
+                    <div
+                      className={`flex items-start gap-4 px-4 py-3 ${hasEntities ? "border-b border-white/5" : ""}`}
+                    >
+                      <div className="flex items-center gap-1.5 w-17 shrink-0 pt-px">
+                        <ChevronRight
+                          size={10}
+                          className="text-emerald-400/70 shrink-0"
+                        />
+                        <span className="text-[9px] tracking-widest font-bold text-emerald-400/70 font-sans uppercase">
+                          Action
+                        </span>
+                      </div>
+                      <p className="text-[12.5px] text-text/55 font-sans leading-relaxed">
+                        {additionalDetails!.action}
+                      </p>
+                    </div>
+                  )}
+
+                  {hasEntities && (
+                    <div className="flex items-start gap-4 px-4 py-3">
+                      <div className="flex items-center gap-1.5 w-17 shrink-0 pt-0.75">
+                        <Building2
+                          size={10}
+                          className="text-sky-400/70 shrink-0"
+                        />
+                        <span className="text-[9px] tracking-widest font-bold text-sky-400/70 font-sans uppercase">
+                          Entity
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {additionalDetails!.entity.map((e, i) => (
+                          <span
+                            key={i}
+                            className="px-2 py-0.5 rounded text-[11px] text-text/50 font-sans bg-white/[4 border border-white/8"
+                          >
+                            {e}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
-            {/* Regenerate Button */}
+            {/* Regenerate */}
             <button
-              onClick={() => setGeneratedSummary("")}
+              onClick={handleRegenerate}
               disabled={isCreating}
-              className={`w-full px-8 py-4 font-bold tracking-widest border rounded-sm text-[13px] font-sans transition-all duration-200 ${
-                isCreating
-                  ? "bg-[#C9A227]/50 border-[#F5F5F5]/5 text-[#111111]/50 cursor-not-allowed"
-                  : "bg-[#C9A227] border-[#F5F5F5]/15 text-[#F5F5F5] hover:border-[#F5F5F5]/40"
-              }`}
+              className="w-full flex items-center justify-center gap-2 px-8 py-3.5 rounded-sm text-[11.5px] font-bold tracking-[0.14em] font-sans border border-white/8 text-text/40 bg-transparent hover:border-white/18 hover:text-text/60 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              {isCreating ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="inline-block w-4 h-4 border-2 border-[#111111]/30 border-t-[#111111] rounded-full animate-spin" />
-                  REGENERATING...
-                </span>
-              ) : (
-                "REGENERATE"
-              )}
+              <RotateCcw size={12} />
+              REGENERATE
             </button>
           </div>
         )}
 
-        {/* Error Message */}
+        {/* Error */}
         {isCreateError && (
-          <div className="mt-8 p-5 bg-red-500/5 border border-red-600 rounded-lg">
-            <div className="flex gap-3">
-              <XCircleIcon className="w-5 h-5 text-red-600 shrink-0" />
-              <div className="text-[12px] text-text/60 font-sans leading-[1.7]">
-                <strong className="text-text/80">Error:</strong>{" "}
-                {createErrorMessage}
-              </div>
-            </div>
+          <div className="mt-6 p-4 bg-red-500/5 border border-red-500/25 rounded-lg flex gap-3">
+            <XCircle size={15} className="text-red-500/60 shrink-0 mt-px" />
+            <p className="text-[12px] text-text/50 font-sans leading-[1.7]">
+              <span className="text-text/70 font-semibold">Error: </span>
+              {createErrorMessage}
+            </p>
           </div>
         )}
 
-        {/* Info Box */}
-        <div className="mt-8 p-5 bg-[#C9A227]/5 border border-[#C9A227]/20 rounded-lg">
-          <div className="flex gap-3">
-            <span className="text-[#C9A227] text-lg shrink-0">💡</span>
-            <div className="text-[12px] text-text/60 font-sans leading-[1.7]">
-              <strong className="text-text/80">Tip:</strong> Different summary
-              types are optimized for different audiences. Short summaries give
-              a quick overview, bullet points are great for scanning, detailed
-              summaries provide full context, and executive summaries focus on
-              business impact.
-            </div>
-          </div>
+        {/* Tip */}
+        <div className="mt-8 p-4 bg-[#C9A227]/4 border border-[#C9A227]/12 rounded-lg flex gap-3">
+          <span className="text-[#C9A227]/50 shrink-0">💡</span>
+          <p className="text-[11.5px] text-text/40 font-sans leading-[1.75]">
+            <span className="text-text/60 font-semibold">Tip: </span>
+            Different summary types are optimized for different audiences. Short
+            gives a quick overview, bullet points are great for scanning,
+            detailed provides full context, and executive focuses on business
+            impact.
+          </p>
         </div>
       </main>
     </div>
