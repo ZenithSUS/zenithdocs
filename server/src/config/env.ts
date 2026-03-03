@@ -21,6 +21,9 @@ const config = {
     accessSecret: process.env.JWT_ACCESS_SECRET || "",
     refreshSecret: process.env.JWT_REFRESH_SECRET || "",
   },
+  session: {
+    secret: process.env.SESSION_SECRET || "",
+  },
   ai: {
     mistralai: process.env.MISTRALAI_API_KEY || "",
   },

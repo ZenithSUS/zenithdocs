@@ -26,6 +26,7 @@ import usageRouter from "./routes/usage.route.js";
 import dashboardRouter from "./routes/dashboard.route.js";
 
 // Passport
+import session from "express-session";
 import passport from "./config/passport.js";
 
 // Config
@@ -67,6 +68,13 @@ app.use(compression());
 app.use(requestLogger);
 app.use(express.static(path.join(__dirname, "public")));
 app.use(favicon(path.join(__dirname, "public", "favicon.ico")));
+app.use(
+  session({
+    secret: config.session.secret,
+    resave: false,
+    saveUninitialized: false,
+  }),
+);
 app.use(passport.initialize());
 app.use(passport.session());
 
