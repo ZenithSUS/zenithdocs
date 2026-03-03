@@ -74,7 +74,7 @@ export const createSummaryService = async (data: Partial<ISummary>) => {
     throw new AppError("You have reached your usage limit for this month", 400);
   }
 
-  const { content, tokensUsed } = await summarizeText(
+  const { content, tokensUsed, additionalDetails } = await summarizeText(
     data.content,
     data.type as ISummary["type"],
     usageLimit.tokensUsed, // current usage
@@ -86,6 +86,7 @@ export const createSummaryService = async (data: Partial<ISummary>) => {
     document: data.document,
     type: data.type,
     content: content.toString(), //  Add generated content
+    additionalDetails,
     tokensUsed, // Store token usage
   });
 

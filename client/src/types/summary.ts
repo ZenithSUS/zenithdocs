@@ -13,6 +13,11 @@ export interface Summary {
       };
   type: SummaryType;
   content: string;
+  additionalDetails: {
+    risk: string;
+    action: string;
+    entity: string[];
+  };
   tokensUsed: number;
   createdAt: string;
 }
