@@ -1,0 +1,341 @@
+"use client";
+
+import { createPortal } from "react-dom";
+import { Folder } from "@/types/folder";
+import STATUS_META from "@/constants/status-meta";
+
+import DeleteDocumentModal from "@/components/dashboard/modals/document/DeleteDocumentModal";
+import MoveToFolderModal from "@/components/dashboard/modals/document/MoveToFolderModal";
+import { ThreeDot } from "react-loading-indicators";
+
+import DocumentsLoadingSkeleton from "@/components/dashboard/tabs/documents/DocumentsLoadingSkeleton";
+import ActionsDropDown from "./ActionsDropDown";
+import SummaryContents from "./SummaryContents";
+import DocumentRowCard from "./DocumentRowCard";
+import ActionButton from "./ActionButton";
+import useDocumentTab from "./useDocumentTab";
+
+interface DocumentsTabProps {
+  userId: string;
+  filterFolder: string;
+  setFilterFolder: React.Dispatch<React.SetStateAction<string>>;
+}
+
+function DocumentsTab({
+  userId,
+  filterFolder,
+  setFilterFolder,
+}: DocumentsTabProps) {
+  const {
+    router,
+
+    // Loading States
+    documentsLoading,
+    foldersLoading,
+
+    // Data
+    allDocs,
+    allFolders,
+    allSummaries,
+
+    // States
+    selectedDoc,
+    actionsMenuOpen,
+    filteredDocs,
+    filterStatus,
+    isFetchingNextDocPage,
+    hasNextDocPage,
+    isNavigating,
+    dropdownPosition,
+    documentToMove,
+    documentToDelete,
+    moveModalOpen,
+    deleteModalOpen,
+
+    // Actions
+    setSelectedDoc,
+    setFilterStatus,
+    setActionsMenuOpen,
+    setMoveModalOpen,
+    setDeleteModalOpen,
+    handleNavigate,
+    handleMoveClick,
+    handleDeleteClick,
+    handleMoveSuccess,
+    fetchNextDocPage,
+    handleDeleteSuccess,
+
+    // Refs
+    actionsButtonRefs,
+    loadMoreRef,
+  } = useDocumentTab(userId, filterFolder);
+
+  // Loading state
+  if (documentsLoading || foldersLoading) {
+    return <DocumentsLoadingSkeleton />;
+  }
+
+  // Empty state
+  if (allDocs.length === 0) {
+    return (
+      <div className="border border-white/8 rounded-sm px-8 py-16 text-center">
+        <div className="text-[48px] text-text/10 mb-4">▣</div>
+        <h3 className="text-[18px] font-serif text-text/60 mb-2">
+          No documents yet
+        </h3>
+        <p className="text-[13px] text-text/30 font-sans max-w-sm mx-auto mb-6">
+          Upload your first document to start generating AI-powered summaries
+          and insights.
+        </p>
+        <button
+          type="button"
+          className="px-6 py-3 bg-primary text-background text-[12px] font-bold tracking-[0.12em] font-sans rounded-sm transition-all duration-200 hover:bg-[#e0b530] hover:-translate-y-0.5 cursor-pointer"
+          onClick={() => router.replace("/dashboard/upload")}
+        >
+          UPLOAD DOCUMENT
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-5">
+      {/* Filters */}
+      <div className="flex flex-wrap gap-3 items-center">
+        <div className="flex gap-1 p-1 bg-white/4 border border-white/8 rounded-sm">
+          {(
+            ["all", "uploaded", "processing", "completed", "failed"] as const
+          ).map((s) => (
+            <button
+              key={s}
+              onClick={() => {
+                setFilterStatus(s);
+                setSelectedDoc(null);
+              }}
+              className={`px-3 py-1.5 text-[10px] tracking-[0.08em] font-sans rounded-sm transition-all duration-150 capitalize ${
+                filterStatus === s
+                  ? "bg-primary text-background font-bold"
+                  : "text-text/45 hover:text-text/70"
+              }`}
+            >
+              {s === "all" ? "ALL" : STATUS_META[s].label.toUpperCase()}
+            </button>
+          ))}
+        </div>
+
+        <select
+          value={filterFolder}
+          onChange={(e) => {
+            setFilterFolder(e.target.value);
+            setSelectedDoc(null);
+          }}
+          className="px-3 py-2 bg-white/4 border border-white/8 rounded-sm text-[11px] font-sans text-text/60 outline-none hover:border-primary/30 transition-colors cursor-pointer"
+        >
+          <option value="all">All Folders</option>
+          {allFolders.map((f: Folder) => (
+            <option key={f._id} value={f._id}>
+              {f.name}
+            </option>
+          ))}
+          <option value="">No Folder</option>
+        </select>
+
+        {(filterStatus !== "all" || filterFolder !== "all") && (
+          <button
+            onClick={() => {
+              setFilterStatus("all");
+              setFilterFolder("all");
+              setSelectedDoc(null);
+            }}
+            className="px-3 py-2 text-[11px] text-text/40 font-sans hover:text-primary transition-colors duration-200"
+          >
+            Clear filters
+          </button>
+        )}
+
+        <span className="text-[11px] text-text/25 font-sans ml-auto">
+          {filteredDocs.length} document{filteredDocs.length !== 1 ? "s" : ""}
+        </span>
+      </div>
+
+      {/* Document table */}
+      <div className="border border-white/8 rounded-sm overflow-visible">
+        {/* Table header */}
+        <div className="hidden sm:grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-5 py-3 border-b border-white/6 bg-white/2">
+          {["TYPE", "DOCUMENT", "SIZE", "STATUS", "DATE", ""].map((h) => (
+            <span
+              key={h}
+              className="text-[9px] tracking-[0.18em] text-text/25 font-sans"
+            >
+              {h}
+            </span>
+          ))}
+        </div>
+
+        {/* Document rows */}
+        <div className="divide-y divide-white/4">
+          {filteredDocs.length === 0 ? (
+            <div className="px-5 py-12 text-center text-text/25 text-[13px] font-sans">
+              No documents match the current filters.
+              <button
+                onClick={() => {
+                  setFilterStatus("all");
+                  setFilterFolder("all");
+                }}
+                className="block mx-auto mt-3 text-primary hover:text-[#e0b530] transition-colors text-[12px]"
+              >
+                Clear all filters
+              </button>
+            </div>
+          ) : (
+            filteredDocs.map((doc) => {
+              const folder =
+                typeof doc.folder === "object"
+                  ? doc.folder
+                  : allFolders.find((f) => f._id === doc.folder);
+              const isSelected = selectedDoc?._id === doc._id;
+              const isActionsOpen = actionsMenuOpen === doc._id;
+
+              return (
+                <div
+                  key={doc._id}
+                  className={`grid grid-cols-1 sm:grid-cols-[auto_1fr_auto_auto_auto_auto] gap-2 sm:gap-4 px-5 py-4 transition-all duration-150 ${
+                    isSelected
+                      ? "bg-primary/8 border-l-2 border-l-primary"
+                      : "hover:bg-white/3"
+                  }`}
+                >
+                  <DocumentRowCard
+                    document={doc}
+                    isSelected={isSelected}
+                    setSelectedDoc={setSelectedDoc}
+                    folder={folder}
+                  />
+
+                  {/* Actions button */}
+                  <ActionButton
+                    document={doc}
+                    actionsButtonRefs={actionsButtonRefs}
+                    setActionsMenuOpen={setActionsMenuOpen}
+                    isNavigating={isNavigating}
+                    isActionsOpen={isActionsOpen}
+                  />
+
+                  {/* Expanded summary panel */}
+                  {isSelected && (
+                    <div className="col-span-full mt-3 pt-3 border-t border-primary/10">
+                      {(() => {
+                        const summary = allSummaries.find((s) => {
+                          const summaryDocId =
+                            s.document && typeof s.document === "object"
+                              ? s.document._id
+                              : typeof s.document === "string"
+                                ? s.document
+                                : null;
+                          return summaryDocId === doc._id;
+                        });
+
+                        if (!summary) {
+                          return (
+                            <div className="text-[12px] text-text/30 font-sans flex items-center gap-2">
+                              <span className="text-text/20">◎</span>
+                              {doc.status === "processing"
+                                ? "Processing — summary will appear when complete."
+                                : doc.status === "failed"
+                                  ? "Processing failed. Please re-upload the document."
+                                  : doc.status === "uploaded"
+                                    ? "Document uploaded press more to generate a summary."
+                                    : "No summary generated yet."}
+                            </div>
+                          );
+                        }
+
+                        return <SummaryContents summary={summary} />;
+                      })()}
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+
+      {/* Actions dropdown menu - rendered via Portal */}
+      {actionsMenuOpen &&
+        dropdownPosition &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <ActionsDropDown
+            actionsMenuOpen={actionsMenuOpen}
+            isNavigating={isNavigating}
+            dropdownPosition={dropdownPosition}
+            handleNavigate={handleNavigate}
+            handleMoveClick={handleMoveClick}
+            handleDeleteClick={handleDeleteClick}
+            filteredDocs={filteredDocs}
+          />,
+          document.body,
+        )}
+
+      {/* Load more */}
+      {hasNextDocPage && (
+        <div
+          ref={loadMoreRef}
+          className="flex items-center justify-center py-8"
+        >
+          {isFetchingNextDocPage ? (
+            <div className="flex items-center gap-2 text-[12px] text-text/40 font-sans">
+              <ThreeDot
+                color="#c9a227"
+                size="small"
+                text="Loading more documents..."
+                textColor=""
+              />
+            </div>
+          ) : (
+            <button
+              onClick={() => fetchNextDocPage()}
+              className="px-6 py-2.5 border border-white/10 text-text/50 rounded-sm text-[11px] tracking-widest font-sans transition-all duration-200 hover:border-primary/30 hover:text-text/70"
+            >
+              LOAD MORE
+            </button>
+          )}
+        </div>
+      )}
+
+      {!hasNextDocPage && filteredDocs.length > 0 && (
+        <div className="text-center py-6 text-[11px] text-text/20 font-sans tracking-wider">
+          — END OF DOCUMENTS —
+        </div>
+      )}
+
+      {/* Delete Modal */}
+      {documentToDelete && (
+        <DeleteDocumentModal
+          documentId={documentToDelete.id}
+          documentTitle={documentToDelete.title}
+          userId={userId}
+          open={deleteModalOpen}
+          onOpenChange={setDeleteModalOpen}
+          onSuccess={handleDeleteSuccess}
+        />
+      )}
+
+      {/* Move to Folder Modal */}
+      {documentToMove && (
+        <MoveToFolderModal
+          documentId={documentToMove.id}
+          documentTitle={documentToMove.title}
+          currentFolderId={documentToMove.folderId}
+          userId={userId}
+          open={moveModalOpen}
+          onOpenChange={setMoveModalOpen}
+          onSuccess={handleMoveSuccess}
+        />
+      )}
+    </div>
+  );
+}
+
+export default DocumentsTab;
