@@ -44,4 +44,5 @@ router.delete(
   rateLimit("deleteUser"),
   deleteUserController,
 );
+
 export default router;
