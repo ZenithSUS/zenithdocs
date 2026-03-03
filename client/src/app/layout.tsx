@@ -68,17 +68,6 @@ export const metadata: Metadata = {
     ],
   },
 
-  // Twitter / X Card
-  twitter: {
-    card: "summary_large_image",
-    site: "@zenithdocs", // Replace with your actual handle
-    creator: "@zenithdocs",
-    title: "ZenithDocs — AI-Powered Document Manager",
-    description:
-      "Organize, search, and collaborate on documents with the power of AI.",
-    images: ["/og-image.png"],
-  },
-
   // Robots
   robots: {
     index: true,
