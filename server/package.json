@@ -1,6 +1,8 @@
 {
   "dependencies": {
     "@mistralai/mistralai": "^1.14.0",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.36.3",
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.9.0",
     "compression": "^1.8.1",
