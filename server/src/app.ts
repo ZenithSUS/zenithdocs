@@ -71,7 +71,11 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(favicon(path.join(__dirname, "public", "favicon.ico")));
 app.use(
   session({
-    store: MongoStore.create({ mongoUrl: config.database.mongoURI }),
+    store: MongoStore.create({
+      mongoUrl: config.database.mongoURI,
+      dbName: "zenithdocs",
+      collectionName: "sessions",
+    }),
     secret: config.session.secret,
     resave: false,
     saveUninitialized: false,
