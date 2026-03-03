@@ -10,24 +10,33 @@ import {
 } from "../controllers/auth.controller.js";
 import passport from "../config/passport.js";
 import config from "../config/env.js";
+import rateLimit from "../middlewares/ratelimit.middleware.js";
 
 const router = Router();
 
 // Authentication routes
-router.post("/login", loginController);
-router.post("/register", registerUserController);
-router.post("/logout", logoutController);
-router.post("/refresh", refreshAccessTokenController);
+router.post("/login", rateLimit("login"), loginController);
 
-// Google OAuth
+router.post("/register", rateLimit("register"), registerUserController);
+
+router.post("/logout", rateLimit("logout"), logoutController);
+
+router.post(
+  "/refresh",
+  rateLimit("refreshToken"),
+  refreshAccessTokenController,
+);
+
 router.get(
   "/google",
   passport.authenticate("google", {
     scope: ["profile", "email"],
   }),
 );
+
 router.get(
   "/google/callback",
+  rateLimit("oauthLogin"),
   passport.authenticate("google", {
     session: false,
     failureRedirect: `${config.client.baseUrl}/login`,
@@ -35,7 +44,6 @@ router.get(
   oauthLoginController,
 );
 
-// Get current user
-router.get("/me", protect, getMeController);
+router.get("/me", protect, rateLimit("fetchMe"), getMeController);
 
 export default router;
