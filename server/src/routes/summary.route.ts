@@ -11,7 +11,7 @@ import {
   getSummaryByUserPaginatedController,
 } from "../controllers/summary.controller.js";
 import authorizeSelfOrAdmin from "../middlewares/authorize-self-or-admin.middleware.js";
-import rateLimit from "../middlewares/ratelimit.middleware.js";
+import limiter from "../middlewares/limiter.middleware.js";
 
 const router = Router();
 
@@ -20,14 +20,14 @@ router.get(
   "/",
   protect,
   requireAdmin,
-  rateLimit("fetchSummary"),
+  limiter("fetchSummary"),
   getAllSummaryController,
 );
 
 router.get(
   "/document/:id",
   protect,
-  rateLimit("getSummaryByDocumentPaginated"),
+  limiter("getSummaryByDocumentPaginated"),
   getSummaryByDocumentPaginatedController,
 );
 
@@ -35,30 +35,20 @@ router.get(
   "/user/:id",
   protect,
   authorizeSelfOrAdmin,
-  rateLimit("getSummaryByUserPaginated"),
+  limiter("getSummaryByUserPaginated"),
   getSummaryByUserPaginatedController,
 );
 
-router.get(
-  "/:id",
-  protect,
-  rateLimit("fetchSummary"),
-  getSummaryByIdController,
-);
+router.get("/:id", protect, limiter("fetchSummary"), getSummaryByIdController);
 
-router.post("/", protect, rateLimit("createSummary"), createSummaryController);
+router.post("/", protect, limiter("createSummary"), createSummaryController);
 
-router.put(
-  "/:id",
-  protect,
-  rateLimit("updateSummary"),
-  updateSummaryController,
-);
+router.put("/:id", protect, limiter("updateSummary"), updateSummaryController);
 
 router.delete(
   "/:id",
   protect,
-  rateLimit("deleteSummary"),
+  limiter("deleteSummary"),
   deleteSummaryController,
 );
 

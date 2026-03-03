@@ -11,7 +11,7 @@ import {
 import protect from "../middlewares/protect.middleware.js";
 import authorizeSelfOrAdmin from "../middlewares/authorize-self-or-admin.middleware.js";
 import requireAdmin from "../middlewares/require-admin.middleware.js";
-import rateLimit from "../middlewares/ratelimit.middleware.js";
+import limiter from "../middlewares/limiter.middleware.js";
 
 const router = Router();
 
@@ -20,7 +20,7 @@ router.get(
   "/admin",
   protect,
   requireAdmin,
-  rateLimit("fetchFoldersAdmin"),
+  limiter("fetchFoldersAdmin"),
   getAllFoldersAdminController,
 );
 
@@ -28,7 +28,7 @@ router.get(
   "/user/:id/paginated",
   protect,
   authorizeSelfOrAdmin,
-  rateLimit("getFoldersByUserPaginated"),
+  limiter("getFoldersByUserPaginated"),
   getFolderByUserPaginatedController,
 );
 
@@ -36,21 +36,16 @@ router.get(
   "/user/:id",
   protect,
   authorizeSelfOrAdmin,
-  rateLimit("getFoldersByUser"),
+  limiter("getFoldersByUser"),
   getFoldersByUserController,
 );
 
-router.post("/", protect, rateLimit("createFolder"), createFolderController);
+router.post("/", protect, limiter("createFolder"), createFolderController);
 
-router.get("/:id", protect, rateLimit("fetchFolder"), getFolderByIdController);
+router.get("/:id", protect, limiter("fetchFolder"), getFolderByIdController);
 
-router.put("/:id", protect, rateLimit("updateFolder"), updateFolderController);
+router.put("/:id", protect, limiter("updateFolder"), updateFolderController);
 
-router.delete(
-  "/:id",
-  protect,
-  rateLimit("deleteFolder"),
-  deleteFolderController,
-);
+router.delete("/:id", protect, limiter("deleteFolder"), deleteFolderController);
 
 export default router;

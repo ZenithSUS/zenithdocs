@@ -1,17 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { rateLimiters } from "../lib/rate-limit/presets.js";
 
-/**
- * A middleware that enforces rate limiting based on the given limiter key.
- * If the request exceeds the rate limit, a 429 response is returned.
- * The middleware sets the following headers on the response:
- * - X-RateLimit-Limit: The maximum number of requests allowed within the time window.
- * - X-RateLimit-Remaining: The number of remaining requests allowed within the time window.
- * - X-RateLimit-Reset: The time at which the rate limit will be reset.
- * @param {keyof typeof rateLimiters} limiterKey - The key to the rate limiter.
- * @returns {Promise<NextFunction>} - A promise that resolves to the next function in the middleware chain.
- */
-const rateLimit =
+const limiter =
   (limiterKey: keyof typeof rateLimiters) =>
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -46,4 +36,4 @@ const rateLimit =
     }
   };
 
-export default rateLimit;
+export default limiter;

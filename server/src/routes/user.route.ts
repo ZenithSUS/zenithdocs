@@ -8,7 +8,7 @@ import {
 import protect from "../middlewares/protect.middleware.js";
 import authorizeSelfOrAdmin from "../middlewares/authorize-self-or-admin.middleware.js";
 import requireAdmin from "../middlewares/require-admin.middleware.js";
-import rateLimit from "../middlewares/ratelimit.middleware.js";
+import limiter from "../middlewares/limiter.middleware.js";
 
 const router = Router();
 
@@ -17,7 +17,7 @@ router.get(
   "/",
   protect,
   requireAdmin,
-  rateLimit("fetchUsersAdmin"),
+  limiter("fetchUsersAdmin"),
   getAllUsersController,
 );
 
@@ -25,7 +25,7 @@ router.get(
   "/:id",
   protect,
   authorizeSelfOrAdmin,
-  rateLimit("fetchUser"),
+  limiter("fetchUser"),
   getUserByIdController,
 );
 
@@ -33,7 +33,7 @@ router.put(
   "/:id",
   protect,
   authorizeSelfOrAdmin,
-  rateLimit("updateUser"),
+  limiter("updateUser"),
   updateUserController,
 );
 
@@ -41,7 +41,7 @@ router.delete(
   "/:id",
   protect,
   authorizeSelfOrAdmin,
-  rateLimit("deleteUser"),
+  limiter("deleteUser"),
   deleteUserController,
 );
 

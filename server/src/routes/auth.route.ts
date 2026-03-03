@@ -10,22 +10,18 @@ import {
 } from "../controllers/auth.controller.js";
 import passport from "../config/passport.js";
 import config from "../config/env.js";
-import rateLimit from "../middlewares/ratelimit.middleware.js";
+import limiter from "../middlewares/limiter.middleware.js";
 
 const router = Router();
 
 // Authentication routes
-router.post("/login", rateLimit("login"), loginController);
+router.post("/login", limiter("login"), loginController);
 
-router.post("/register", rateLimit("register"), registerUserController);
+router.post("/register", limiter("register"), registerUserController);
 
-router.post("/logout", rateLimit("logout"), logoutController);
+router.post("/logout", limiter("logout"), logoutController);
 
-router.post(
-  "/refresh",
-  rateLimit("refreshToken"),
-  refreshAccessTokenController,
-);
+router.post("/refresh", limiter("refreshToken"), refreshAccessTokenController);
 
 router.get(
   "/google",
@@ -36,7 +32,7 @@ router.get(
 
 router.get(
   "/google/callback",
-  rateLimit("oauthLogin"),
+  limiter("oauthLogin"),
   passport.authenticate("google", {
     session: false,
     failureRedirect: `${config.client.baseUrl}/login`,
@@ -44,6 +40,6 @@ router.get(
   oauthLoginController,
 );
 
-router.get("/me", protect, rateLimit("fetchMe"), getMeController);
+router.get("/me", protect, limiter("fetchMe"), getMeController);
 
 export default router;

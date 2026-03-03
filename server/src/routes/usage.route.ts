@@ -12,7 +12,7 @@ import {
 import protect from "../middlewares/protect.middleware.js";
 import requireAdmin from "../middlewares/require-admin.middleware.js";
 import authorizeSelfOrAdmin from "../middlewares/authorize-self-or-admin.middleware.js";
-import rateLimit from "../middlewares/ratelimit.middleware.js";
+import limiter from "../middlewares/limiter.middleware.js";
 
 const router = Router();
 
@@ -21,7 +21,7 @@ router.get(
   "/user/:id/last-six-months",
   protect,
   authorizeSelfOrAdmin,
-  rateLimit("getLastSixMonthsUsage"),
+  limiter("getLastSixMonthsUsage"),
   getLastSixMonthsUsageByUserController,
 );
 
@@ -29,7 +29,7 @@ router.get(
   "/user/:id/:month",
   protect,
   authorizeSelfOrAdmin,
-  rateLimit("getUsageByUserAndMonth"),
+  limiter("getUsageByUserAndMonth"),
   getUsageByUserAndMonthController,
 );
 
@@ -37,7 +37,7 @@ router.get(
   "/user/:id",
   protect,
   authorizeSelfOrAdmin,
-  rateLimit("fetchUsage"),
+  limiter("fetchUsage"),
   getUsageByUserController,
 );
 
@@ -45,22 +45,22 @@ router.get(
   "/",
   protect,
   requireAdmin,
-  rateLimit("fetchUsageAdmin"),
+  limiter("fetchUsageAdmin"),
   getAllUsageAdminController,
 );
 
-router.post("/", protect, rateLimit("createUsage"), createUsageController);
+router.post("/", protect, limiter("createUsage"), createUsageController);
 
-router.put("/:id", protect, rateLimit("updateUsage"), updateUsageController);
+router.put("/:id", protect, limiter("updateUsage"), updateUsageController);
 
 router.delete(
   "/user/:id",
   protect,
   authorizeSelfOrAdmin,
-  rateLimit("deleteUsageByUser"),
+  limiter("deleteUsageByUser"),
   deleteUsageByUserController,
 );
 
-router.delete("/:id", protect, rateLimit("deleteUsage"), deleteUsageController);
+router.delete("/:id", protect, limiter("deleteUsage"), deleteUsageController);
 
 export default router;

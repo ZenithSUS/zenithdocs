@@ -11,7 +11,7 @@ import {
 import protect from "../middlewares/protect.middleware.js";
 import requireAdmin from "../middlewares/require-admin.middleware.js";
 import upload from "../middlewares/upload.middleware.js";
-import rateLimit from "../middlewares/ratelimit.middleware.js";
+import limiter from "../middlewares/limiter.middleware.js";
 
 const router = Router();
 
@@ -20,7 +20,7 @@ router.get(
   "/admin",
   protect,
   requireAdmin,
-  rateLimit("fetchDocuments"),
+  limiter("fetchDocuments"),
   getAllDocumentsController,
 );
 
@@ -28,21 +28,21 @@ router.get(
   "/user/:id",
   protect,
   authorizeSelfOrAdmin,
-  rateLimit("getDocumentsByUserPaginated"),
+  limiter("getDocumentsByUserPaginated"),
   getDocumentsByUserPaginatedController,
 );
 
 router.get(
   "/:id",
   protect,
-  rateLimit("fetchSingleDocument"),
+  limiter("fetchSingleDocument"),
   getDocumentByIdController,
 );
 
 router.post(
   "/",
   protect,
-  rateLimit("uploadDocument"),
+  limiter("uploadDocument"),
   upload.single("file"),
   createDocumentController,
 );
@@ -50,14 +50,14 @@ router.post(
 router.put(
   "/:id",
   protect,
-  rateLimit("updateDocument"),
+  limiter("updateDocument"),
   updateDocumentController,
 );
 
 router.delete(
   "/:id",
   protect,
-  rateLimit("deleteDocument"),
+  limiter("deleteDocument"),
   deleteDocumentByIdController,
 );
 
