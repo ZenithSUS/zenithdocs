@@ -9,6 +9,7 @@ import compression from "compression";
 import path from "path";
 import favicon from "serve-favicon";
 import { fileURLToPath } from "url";
+import MongoStore from "connect-mongo";
 
 // Middlewares
 import requestLogger from "./middlewares/request-logger.middleware.js";
@@ -70,9 +71,11 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(favicon(path.join(__dirname, "public", "favicon.ico")));
 app.use(
   session({
+    store: MongoStore.create({ mongoUrl: config.database.mongoURI }),
     secret: config.session.secret,
     resave: false,
     saveUninitialized: false,
+    cookie: { secure: config.nodeEnv === "production" },
   }),
 );
 app.use(passport.initialize());
