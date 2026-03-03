@@ -49,6 +49,8 @@ export const metadata: Metadata = {
     canonical: "/",
   },
 
+  metadataBase: new URL("https://zenithdocs-zen.vercel.app"),
+
   // Open Graph
   openGraph: {
     type: "website",
@@ -96,7 +98,6 @@ export const metadata: Metadata = {
       { url: "/icon-16.png", sizes: "16x16", type: "image/png" },
       { url: "/icon-32.png", sizes: "32x32", type: "image/png" },
     ],
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
   },
 
   // Verification — replace with your actual tokens
