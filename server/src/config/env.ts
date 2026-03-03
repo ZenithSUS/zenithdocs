@@ -35,6 +35,10 @@ const config = {
     apiKey: process.env.CLOUDINARY_API_KEY || "",
     apiSecret: process.env.CLOUDINARY_API_SECRET || "",
   },
+  redis: {
+    restUrl: process.env.UPSTASH_REDIS_REST_URL || "",
+    restToken: process.env.UPSTASH_REDIS_REST_TOKEN || "",
+  },
   google: {
     clientId: process.env.GOOGLE_CLIENT_ID || "",
     clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
@@ -60,6 +64,8 @@ const requiredEnvVars = [
   "BACKEND_URL",
   "CLIENT_URL_DEV",
   "CLIENT_URL",
+  "UPSTASH_REDIS_REST_URL",
+  "UPSTASH_REDIS_REST_TOKEN",
 ];
 
 requiredEnvVars.forEach((envVar) => {
