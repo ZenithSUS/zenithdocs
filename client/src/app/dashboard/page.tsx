@@ -3,17 +3,21 @@
 import CursorGlow from "@/components/CursorGlow";
 import DashboardHeader from "@/components/dashboard/Header";
 import DashboardTabLoading from "@/components/dashboard/DashBoardTabLoading";
-import DashBoardSidebar, { NavItem } from "@/components/dashboard/Sidebar";
+import DashBoardSidebar from "@/components/dashboard/Sidebar";
 
 import { lazy, Suspense } from "react";
-import DocumentsTab from "@/components/dashboard/tabs/Documents";
 import DashboardLoading from "@/components/dashboard/LoadingScreen";
 import ErrorScreen from "@/components/dashboard/ErrorScreen";
 import useDashboardPage from "./useDashboard";
+import DocumentsLoadingSkeleton from "@/components/dashboard/tabs/documents/DocumentsLoadingSkeleton";
+import FolderLoadingSkeletion from "@/components/dashboard/tabs/folders/FolderLoadingSkeletion";
 
 // Lazy-load dashboard tab components for code splitting
 const OverViewTab = lazy(() => import("@/components/dashboard/tabs/Overview"));
-const FolderTab = lazy(() => import("@/components/dashboard/tabs/Folders"));
+const DocumentsTab = lazy(
+  () => import("@/components/dashboard/tabs/documents"),
+);
+const FolderTab = lazy(() => import("@/components/dashboard/tabs/folders"));
 const UsageTab = lazy(() => import("@/components/dashboard/tabs/Usage"));
 const SummaryTab = lazy(() => import("@/components/dashboard/tabs/Summary"));
 
@@ -131,7 +135,7 @@ export default function DashboardPage() {
 
           {/* ══ DOCUMENTS ═════════════════════════════════════════════════════ */}
           {nav === "documents" && (
-            <Suspense fallback={<DashboardTabLoading />}>
+            <Suspense fallback={<DocumentsLoadingSkeleton />}>
               <DocumentsTab
                 userId={user?._id ?? ""}
                 filterFolder={filterFolder}
@@ -149,7 +153,7 @@ export default function DashboardPage() {
 
           {/* ══ FOLDERS ═══════════════════════════════════════════════════════ */}
           {nav === "folders" && (
-            <Suspense fallback={<DashboardTabLoading />}>
+            <Suspense fallback={<FolderLoadingSkeletion />}>
               <FolderTab
                 setNav={setNav}
                 userId={user?._id ?? ""}
