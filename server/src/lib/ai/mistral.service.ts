@@ -8,6 +8,12 @@ const client = new Mistral({
 
 type SummaryType = "short" | "bullet" | "detailed" | "executive";
 
+export interface AdditionalDetails {
+  risk: string; // e.g. "Auto-renewal clause ($4.2M)"
+  action: string; // e.g. "Sign before March 1, 2024"
+  entity: string[]; // e.g. ["Acme Corp", "John Doe (CEO)"]
+}
+
 function buildSystemPrompt(type: SummaryType) {
   switch (type) {
     case "short":
@@ -88,6 +94,65 @@ Deliver structured, executive-ready plain text.
   }
 }
 
+const ADDITIONAL_DETAILS_SYSTEM_PROMPT = `
+You are an expert document analyst. You read any type of document — contracts, resumes, reports, invoices, research papers, emails, proposals, policies, and more.
+
+Analyze the provided text and return a JSON object with exactly these fields:
+
+{
+  "risk": "string",
+  "action": "string",
+  "entity": ["string"]
+}
+
+━━━ FIELD DEFINITIONS ━━━
+
+risk:
+  Identify the most significant risk, gap, concern, or weakness in the document.
+  Adapt your analysis to the document type:
+  - Contract/Legal  → "Auto-renewal clause present", "Indemnity clause missing"
+  - Resume/CV       → "No quantified achievements listed", "3-year employment gap (2019–2022)"
+  - Report/Analysis → "Conclusion not supported by data", "Sample size too small (n=12)"
+  - Invoice/Finance → "Payment overdue by 45 days", "Missing tax identification number"
+  - Email/Memo      → "No clear decision maker assigned", "Deadline not specified"
+  - Proposal        → "Budget section absent", "ROI not addressed"
+  - Policy          → "Enforcement mechanism unclear", "Last reviewed 4 years ago"
+  - General         → Identify any notable weakness, inconsistency, or missing element
+
+  If genuinely no risk exists, return "No significant risk identified".
+  Maximum 10 words. Be specific — never vague.
+
+action:
+  Identify the most important next step, deadline, or recommended action from the document.
+  Adapt to the document type:
+  - Contract/Legal  → "Sign before March 1, 2024", "Negotiate liability cap before signing"
+  - Resume/CV       → "Add metrics to work experience", "Include a summary section"
+  - Report/Analysis → "Expand sample size before publishing", "Validate findings with follow-up study"
+  - Invoice/Finance → "Process payment by due date", "Request missing invoice number"
+  - Email/Memo      → "Respond by end of week", "Schedule follow-up meeting"
+  - Proposal        → "Submit by RFP deadline", "Add cost-benefit breakdown"
+  - Policy          → "Schedule annual review", "Assign policy owner"
+  - General         → Identify any clear next step or improvement action
+
+  If no action is needed, return "No immediate action required".
+  Maximum 10 words. Be direct and actionable.
+
+entity:
+  Extract the most relevant named entities from the document.
+  - People: include role/title if mentioned (e.g. "Jane Smith (CTO)", "John Doe (Applicant)")
+  - Organizations: companies, institutions, agencies (e.g. "Acme Corp", "MIT", "IRS")
+  - Systems/Tools: software, platforms, technologies (e.g. "Salesforce", "AWS Lambda", "PostgreSQL")
+  - Locations: cities, countries, addresses if significant (e.g. "San Francisco, CA")
+  - Dates/Deadlines: only if critical (e.g. "March 1, 2024 (deadline)")
+  Extract up to 8 of the most relevant. If none found, return [].
+
+━━━ RULES ━━━
+- Return ONLY valid JSON. No explanations, no markdown, no preamble.
+- Do NOT wrap output in backticks or code blocks.
+- Never return vague placeholders like "N/A", "Unknown", or "See document".
+- Always produce a meaningful risk and action — think carefully before defaulting to fallbacks.
+`;
+
 const MAX_CHARS_PER_CHUNK = 12000; // ~3000 tokens
 const CHUNK_DELAY_MS = 1500;
 
@@ -98,7 +163,6 @@ function sleep(ms: number) {
 function chunkText(text: string, maxChars: number): string[] {
   const chunks: string[] = [];
 
-  // Try to split on paragraph boundaries first
   const paragraphs = text.split(/\n{2,}/);
   let current = "";
 
@@ -149,7 +213,7 @@ async function callMistralWithRetry(
         err?.message?.toLowerCase().includes("rate limit");
 
       if (is429 && attempt < retries - 1) {
-        const delay = baseDelay * Math.pow(2, attempt); // Exponential backoff
+        const delay = baseDelay * Math.pow(2, attempt);
         await sleep(delay);
       } else {
         throw error;
@@ -160,20 +224,60 @@ async function callMistralWithRetry(
   throw new AppError("Failed to generate summary", 500);
 }
 
+const ADDITIONAL_DETAILS_FALLBACK: AdditionalDetails = {
+  risk: "None identified",
+  action: "No action required",
+  entity: [],
+};
+
+async function extractAdditionalDetails(
+  content: string,
+): Promise<{ details: AdditionalDetails; tokens: number }> {
+  // Use first 8000 chars — enough context without burning extra tokens
+  const excerpt = content.slice(0, 8000);
+
+  try {
+    const result = await callMistralWithRetry(
+      excerpt,
+      ADDITIONAL_DETAILS_SYSTEM_PROMPT,
+    );
+
+    const parsed = JSON.parse(result.text) as AdditionalDetails;
+
+    const details: AdditionalDetails = {
+      risk:
+        typeof parsed.risk === "string" && parsed.risk.trim()
+          ? parsed.risk.trim()
+          : ADDITIONAL_DETAILS_FALLBACK.risk,
+      action:
+        typeof parsed.action === "string" && parsed.action.trim()
+          ? parsed.action.trim()
+          : ADDITIONAL_DETAILS_FALLBACK.action,
+      entity: Array.isArray(parsed.entity)
+        ? parsed.entity.filter((e) => typeof e === "string").slice(0, 8)
+        : [],
+    };
+
+    return { details, tokens: result.tokens };
+  } catch {
+    // Never let metadata extraction break the main summary
+    return { details: ADDITIONAL_DETAILS_FALLBACK, tokens: 0 };
+  }
+}
+
 export const summarizeText = async (
   content: string,
   type: SummaryType,
-  currentTokens: number, // tokens already used this month
-  maxTokens: number, // user's plan token limit
+  currentTokens: number,
+  maxTokens: number,
 ) => {
   const systemPrompt = buildSystemPrompt(type);
   let runningTokenTotal = currentTokens;
 
-  // Small content — send directly
+  // ─── Small content — send directly ───────────────────────────────────────
   if (content.length <= MAX_CHARS_PER_CHUNK) {
     const result = await callMistralWithRetry(content, systemPrompt);
 
-    // Check if this single call would exceed the limit
     if (runningTokenTotal + result.tokens > maxTokens) {
       throw new AppError(
         `You've run out of tokens for this month. Please upgrade your plan or wait until next month to continue.`,
@@ -181,10 +285,17 @@ export const summarizeText = async (
       );
     }
 
-    return { content: result.text, tokensUsed: result.tokens };
+    const { details, tokens: detailTokens } =
+      await extractAdditionalDetails(content);
+
+    return {
+      content: result.text,
+      additionalDetails: details,
+      tokensUsed: result.tokens + detailTokens,
+    };
   }
 
-  // Large content — chunked
+  // ─── Large content — chunked ──────────────────────────────────────────────
   const chunks = chunkText(content, MAX_CHARS_PER_CHUNK);
 
   let totalTokens = 0;
@@ -192,13 +303,11 @@ export const summarizeText = async (
 
   for (let i = 0; i < chunks.length; i++) {
     const estimatedChunkTokens = Math.ceil(chunks[i].length / 4);
-
     const remaining = Math.max(0, maxTokens - runningTokenTotal - totalTokens);
 
-    // Check if this chunk would exceed the limit
     if (runningTokenTotal + totalTokens + estimatedChunkTokens > maxTokens) {
       throw new AppError(
-        `This document is too large to summarize with your current plan. You have remaining ${remaining.toLocaleString()} tokens. Try a shorter document or upgrade your plan for more capacity.`,
+        `This document is too large to summarize with your current plan. You have ${remaining.toLocaleString()} tokens remaining. Try a shorter document or upgrade your plan for more capacity.`,
         400,
       );
     }
@@ -207,7 +316,6 @@ export const summarizeText = async (
     chunkSummaries.push(result.text);
     totalTokens += result.tokens;
 
-    // Check if this chunk would exceed the limit
     if (runningTokenTotal + totalTokens > maxTokens) {
       throw new AppError(
         `Your token limit was reached while processing this document. Partial summaries cannot be saved. Please upgrade your plan to handle larger documents.`,
@@ -215,19 +323,24 @@ export const summarizeText = async (
       );
     }
 
-    // Add a delay between chunks
     if (i < chunks.length - 1) await sleep(CHUNK_DELAY_MS);
   }
 
+  // ─── Single chunk result ──────────────────────────────────────────────────
   if (chunkSummaries.length === 1) {
-    return { content: chunkSummaries[0], tokensUsed: totalTokens };
+    const { details, tokens: detailTokens } =
+      await extractAdditionalDetails(content);
+
+    return {
+      content: chunkSummaries[0],
+      additionalDetails: details,
+      tokensUsed: totalTokens + detailTokens,
+    };
   }
 
-  // Final combination pass — check before calling
-  const estimatedFinalTokens = Math.ceil(
-    chunkSummaries.join("\n\n").length / 4,
-  );
-
+  // ─── Final combination pass ───────────────────────────────────────────────
+  const combined = chunkSummaries.join("\n\n");
+  const estimatedFinalTokens = Math.ceil(combined.length / 4);
   const remaining = Math.max(0, maxTokens - runningTokenTotal - totalTokens);
 
   if (runningTokenTotal + totalTokens + estimatedFinalTokens > maxTokens) {
@@ -236,12 +349,16 @@ export const summarizeText = async (
       400,
     );
   }
-  const combined = chunkSummaries.join("\n\n");
+
   const finalResult = await callMistralWithRetry(combined, systemPrompt);
   totalTokens += finalResult.tokens;
 
+  const { details, tokens: detailTokens } =
+    await extractAdditionalDetails(content);
+
   return {
     content: finalResult.text,
-    tokensUsed: totalTokens,
+    additionalDetails: details,
+    tokensUsed: totalTokens + detailTokens,
   };
 };
