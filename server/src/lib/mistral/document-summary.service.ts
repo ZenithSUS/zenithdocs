@@ -1,6 +1,7 @@
 import { Mistral } from "@mistralai/mistralai";
 import config from "../../config/env.js";
 import AppError from "../../utils/app-error.js";
+import chunkText from "./chunk.util.js";
 
 const client = new Mistral({
   apiKey: config.ai.mistralai,
@@ -158,25 +159,6 @@ const CHUNK_DELAY_MS = 1500;
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function chunkText(text: string, maxChars: number): string[] {
-  const chunks: string[] = [];
-
-  const paragraphs = text.split(/\n{2,}/);
-  let current = "";
-
-  for (const para of paragraphs) {
-    if ((current + para).length > maxChars) {
-      if (current) chunks.push(current.trim());
-      current = para;
-    } else {
-      current += (current ? "\n\n" : "") + para;
-    }
-  }
-
-  if (current.trim()) chunks.push(current.trim());
-  return chunks;
 }
 
 async function callMistralWithRetry(
