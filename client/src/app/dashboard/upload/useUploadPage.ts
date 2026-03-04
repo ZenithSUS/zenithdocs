@@ -189,7 +189,9 @@ const useUploadPage = () => {
         toast.success("Files uploaded successfully!");
       } catch (err) {
         const apiError = err as AxiosError;
-        toast.error(apiError.response.data.message);
+        toast.error(
+          apiError.response?.data?.message || "Failed to upload file",
+        );
 
         setFiles((prev) =>
           prev.map((f) =>
