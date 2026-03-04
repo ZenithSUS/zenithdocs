@@ -6,4 +6,12 @@ const redis = new Redis({
   token: config.redis.restToken,
 });
 
+export const bullMQConnection = {
+  host: config.redis.connection.host,
+  port: config.redis.connection.port,
+  password: config.redis.connection.password,
+  tls: {},
+  maxRetriesPerRequest: null,
+};
+
 export default redis;
