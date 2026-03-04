@@ -21,7 +21,7 @@ const useDocumentStatus = () => {
 
   useEffect(() => {
     // Don't connect until auth is ready
-    if (!userId || !accessToken) return;
+    if (!userId || !accessToken || !config.api.baseUrl) return;
 
     const socket = io(config.api.baseUrl, {
       auth: { token: accessToken },
