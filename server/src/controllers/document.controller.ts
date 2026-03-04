@@ -13,6 +13,7 @@ import AppError from "../utils/app-error.js";
 import cloudinary, { uploadToCloudinary } from "../lib/cloudinary.service.js";
 import extractRawText from "../lib/extract-text.js";
 import mongoose from "mongoose";
+import { embeddingQueue } from "../queues/embedding.queue.js";
 
 interface DocumentParams extends ParamsDictionary {
   id: string;
@@ -60,6 +61,12 @@ export const createDocumentController = async (
 
     const document = await createDocumentService(finalData);
 
+    await embeddingQueue.add(
+      "embed-document",
+      { documentId: document._id.toString(), userId },
+      { attempts: 3, backoff: { type: "exponential", delay: 5000 } },
+    );
+
     return res.status(201).json({
       success: true,
       message: "Document created successfully",
@@ -93,7 +100,7 @@ export const getAllDocumentsController = async (
       message: "Documents fetched successfully",
       data: documents,
     });
-  } catch (error: unknown) {
+  } catch (error) {
     next(error);
   }
 };
