@@ -8,8 +8,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { dashboardKeys } from "@/features/dashboard/dashboard.keys";
 import useDocument from "@/features/documents/useDocument";
 import { AxiosError } from "@/types/api";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { toast } from "sonner";
 
@@ -28,8 +30,8 @@ const DeleteDocumentModal = ({
   userId,
   open,
   onOpenChange,
-  onSuccess,
 }: DeleteDocumentModalProps) => {
+  const queryClient = useQueryClient();
   const { deleteDocumentMutation } = useDocument(userId, "");
   const { mutateAsync: deleteDoc, isPending } = deleteDocumentMutation;
 
@@ -38,12 +40,14 @@ const DeleteDocumentModal = ({
       await deleteDoc(documentId);
       toast.success("Document deleted successfully!");
       onOpenChange(false);
-      onSuccess?.();
+      await queryClient.refetchQueries({
+        queryKey: dashboardKeys.overview(),
+      });
     } catch (error) {
       const err = error as AxiosError;
       toast.error(err.response.data.message || "Error deleting document");
     }
-  }, [documentId, deleteDoc, onOpenChange, onSuccess]);
+  }, [documentId, deleteDoc, onOpenChange]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
