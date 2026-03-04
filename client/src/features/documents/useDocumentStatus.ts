@@ -1,6 +1,6 @@
 import config from "@/config/env";
 import { useEffect } from "react";
-import { io } from "socket.io-client";
+import io from "socket.io-client";
 import { useQueryClient } from "@tanstack/react-query";
 import documentKeys from "./document.keys";
 import { updateInfiniteDocumentStatus } from "./document.cache";
@@ -21,7 +21,7 @@ const useDocumentStatus = () => {
 
   useEffect(() => {
     // Don't connect until auth is ready
-    if (!userId || !accessToken) return;
+    if (!userId || !accessToken || !config.api.baseUrl) return;
 
     const socket = io(config.api.baseUrl, {
       auth: { token: accessToken },
