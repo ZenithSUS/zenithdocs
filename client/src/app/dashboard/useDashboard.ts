@@ -1,4 +1,5 @@
 import { NavItem } from "@/components/dashboard/Sidebar";
+import useAuthStore from "@/features/auth/auth.store";
 import useAuth from "@/features/auth/useAuth";
 import useDashboard from "@/features/dashboard/useDashboard";
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -10,6 +11,7 @@ const useDashboardPage = () => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const mainRef = useRef<HTMLElement>(null);
 
+  const { setAccessToken, setUserId } = useAuthStore();
   const { me } = useAuth();
   const {
     data: user,
@@ -71,6 +73,17 @@ const useDashboardPage = () => {
     });
     return () => cancelAnimationFrame(frame);
   }, [nav, userLoading]);
+
+  useEffect(() => {
+    if (user?._id) {
+      setUserId(user._id);
+    }
+  }, [user?._id]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (token) setAccessToken(token);
+  }, []);
 
   return {
     // Auth
