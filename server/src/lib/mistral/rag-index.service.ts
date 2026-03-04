@@ -5,29 +5,33 @@ import {
 import chunkText from "./chunk.util.js";
 import { generateEmbedding } from "./embedding.service.js";
 
-const MAX_CHAR_PER_CHUNK = 5000; // Maximum number of characters per chunk
+const MAX_CHAR_PER_CHUNK = 2000;
+const MAX_CHUNKS = 50;
+const BATCH_SIZE = 5;
+const BATCH_DELAY_MS = 200;
 
-/**
- * Prepare a document for RAG (Reading Assistant Generation) by generating embeddings for
- * each chunk of text in the document and storing the enriched chunks in the document.
- * @param {string} documentId - The ID of the document to prepare
- * @returns {Promise<void>} - A promise that resolves when the document has been prepared
- */
 export async function prepareDocumentforRAG(documentId: string) {
   const document = await getDocumentById(documentId);
-
   if (!document || !document.rawText) return;
 
-  const chunks = chunkText(document.rawText, MAX_CHAR_PER_CHUNK);
-
+  const chunks = chunkText(document.rawText, MAX_CHAR_PER_CHUNK).slice(
+    0,
+    MAX_CHUNKS,
+  );
   const enrichedChunks = [];
 
-  for (const chunk of chunks) {
-    const embedding = await generateEmbedding(chunk);
+  for (let i = 0; i < chunks.length; i += BATCH_SIZE) {
+    const batch = chunks.slice(i, i + BATCH_SIZE);
+    const embeddings = await Promise.all(batch.map(generateEmbedding));
+    enrichedChunks.push(
+      ...batch.map((text, j) => ({ text, embedding: embeddings[j] })),
+    );
 
-    enrichedChunks.push({ text: chunk, embedding });
+    // Avoid rate limiting between batches (skip delay on last batch)
+    if (i + BATCH_SIZE < chunks.length) {
+      await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY_MS));
+    }
   }
 
-  document.chunks = enrichedChunks;
   await updateDocument(documentId, { chunks: enrichedChunks });
 }

@@ -11,6 +11,12 @@ interface EmbeddingJobData {
 
 export const embeddingQueue = new Queue("embedding", {
   connection: bullMQConnection,
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: { type: "exponential", delay: 5000 },
+    removeOnComplete: 100,
+    removeOnFail: 50,
+  },
 });
 
 export const embeddingWorker = new Worker(
@@ -39,6 +45,6 @@ export const embeddingWorker = new Worker(
   },
   {
     connection: bullMQConnection,
-    concurrency: 3,
+    concurrency: 1,
   },
 );
