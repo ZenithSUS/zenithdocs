@@ -26,6 +26,31 @@ export const updateInfiniteDocument = (
   });
 };
 
+export const updateInfiniteDocumentStatus = (
+  queryClient: QueryClient,
+  querykey: readonly unknown[],
+  updatedDoc: {
+    documentId: string;
+    status: "uploaded" | "processing" | "completed" | "failed";
+  },
+) => {
+  queryClient.setQueryData<DocumentsInfiniteData>(querykey, (oldData) => {
+    if (!oldData) return oldData;
+
+    return {
+      ...oldData,
+      pages: oldData.pages.map((page) => ({
+        ...page,
+        documents: page.documents.map((doc) =>
+          doc._id === updatedDoc.documentId
+            ? { ...doc, status: updatedDoc.status }
+            : doc,
+        ),
+      })),
+    };
+  });
+};
+
 export const removeInfiniteDocument = (
   queryClient: QueryClient,
   querykey: readonly unknown[],
