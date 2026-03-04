@@ -1,3 +1,4 @@
+import fs from "fs";
 import { Request, Response } from "express";
 import { IDocument } from "../models/Document.js";
 import {
@@ -39,10 +40,13 @@ export const createDocumentController = async (
 
     const data: Partial<IDocument> = req.body;
 
-    const rawText = await extractRawText(req.file.buffer, req.file.mimetype);
+    const rawText = await extractRawText(
+      fs.readFileSync(req.file.path),
+      req.file.mimetype,
+    );
 
     const { url, publicId } = await uploadToCloudinary(
-      req.file.buffer,
+      fs.readFileSync(req.file.path),
       req.file.originalname,
       userId,
     );
@@ -63,7 +67,7 @@ export const createDocumentController = async (
 
     await embeddingQueue.add(
       "embed-document",
-      { documentId: document._id.toString(), userId },
+      { documentId: document._id.toString(), userId, filePath: req.file.path },
       { attempts: 3, backoff: { type: "exponential", delay: 5000 } },
     );
 
