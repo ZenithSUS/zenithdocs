@@ -1,4 +1,4 @@
-import { summarizeText } from "../lib/ai/mistral.service.js";
+import { summarizeText } from "../lib/mistral/document-summary.service.js";
 import { ISummary } from "../models/Summary.js";
 import {
   createSummary,
