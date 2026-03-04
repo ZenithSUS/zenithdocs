@@ -39,6 +39,16 @@ const config = {
     apiSecret: process.env.CLOUDINARY_API_SECRET || "",
   },
   redis: {
+    get connection() {
+      const redisUrl = new URL(process.env.UPSTASH_REDIS_URL!);
+      return {
+        host: redisUrl.hostname,
+        port: Number(redisUrl.port),
+        password: redisUrl.password,
+        tls: {},
+        maxRetriesPerRequest: null as null,
+      };
+    },
     restUrl: process.env.UPSTASH_REDIS_REST_URL || "",
     restToken: process.env.UPSTASH_REDIS_REST_TOKEN || "",
   },
@@ -49,7 +59,6 @@ const config = {
   },
 };
 
-// Check if the required environment variables are set
 const requiredEnvVars = [
   "MISTRALAI_API_KEY",
   "MONGODB_URI_DEV",
@@ -67,6 +76,7 @@ const requiredEnvVars = [
   "BACKEND_URL",
   "CLIENT_URL_DEV",
   "CLIENT_URL",
+  "UPSTASH_REDIS_URL",
   "UPSTASH_REDIS_REST_URL",
   "UPSTASH_REDIS_REST_TOKEN",
 ];
