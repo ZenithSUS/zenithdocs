@@ -32,8 +32,7 @@ const useDocumentStatus = () => {
     socket.emit("join", userId);
 
     // --- Connection error handlers ---
-    socket.on("connect_error", (error) => {
-      const err = error as Error;
+    socket.on("connect_error", (err: Error) => {
       console.error("Socket connection error:", err.message);
       if (socket.io.reconnectionAttempts() === 5) {
         toast.error("Real-time updates unavailable. Please refresh.");
