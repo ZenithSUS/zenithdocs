@@ -3,18 +3,19 @@ import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 import fs from "fs/promises";
 
 /**
- * Extracts the raw text from a file given its path and MIME type.
+ * Extracts the raw text from a file, given its path and MIME type.
  *
  * Supports the following MIME types:
- * - application/pdf: extracts text from a PDF file using pdf-parse.
- * - application/vnd.openxmlformats-officedocument.wordprocessingml.document: extracts text from a Word document using mammoth.
- * - text/plain: reads the contents of a plain text file.
+ * - application/pdf
+ * - application/vnd.openxmlformats-officedocument.wordprocessingml.document
+ * - text/plain
  *
- * Throws an error if the MIME type is not supported.
+ * @throws {Error} - If the file type is not supported
  *
- * @param filePath - The path to the file.
- * @param mimeType - The MIME type of the file.
- * @returns A promise that resolves to the extracted text.
+ * @param {string} filePath - The path to the file
+ * @param {string} mimeType - The MIME type of the file
+ *
+ * @returns {Promise<string>} - The raw text extracted from the file
  */
 const extractRawText = async (
   filePath: string,
