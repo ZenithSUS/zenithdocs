@@ -17,6 +17,7 @@ import {
 } from "../repositories/usage.repository.js";
 import { deleteFileFromCloudinary } from "../lib/cloudinary.service.js";
 import colors from "../utils/log-colors.js";
+import { deleteDocumentChunksByDocumentId } from "../repositories/document-chunk.repository.js";
 
 /**
  * Creates a new document with the given data
@@ -262,6 +263,9 @@ export const deleteDocumentByIdService = async (
   // Delete the document from database
   const deletedDocument = await deleteDocumentById(id);
   if (!deletedDocument) throw new AppError("Document not found", 404);
+
+  // Delete the document chunks associated with the document
+  await deleteDocumentChunksByDocumentId(id);
 
   return deletedDocument;
 };
