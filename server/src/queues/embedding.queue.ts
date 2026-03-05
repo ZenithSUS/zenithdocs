@@ -30,7 +30,7 @@ export const embeddingWorker = new Worker(
       .emit("document:processing", { documentId, status: "processing" });
 
     try {
-      await prepareDocumentforRAG(documentId);
+      await prepareDocumentforRAG(documentId, userId);
       await updateDocument(documentId, { status: "completed" });
       getIO()
         .to(userId)

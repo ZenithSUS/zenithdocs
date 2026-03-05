@@ -1,7 +1,5 @@
-import {
-  getDocumentById,
-  updateDocument,
-} from "../../repositories/document.repository.js";
+import { createManyDocumentChunks } from "../../repositories/document-chunk.repository.js";
+import { getDocumentById } from "../../repositories/document.repository.js";
 import chunkText from "./chunk.util.js";
 import { generateEmbedding } from "./embedding.service.js";
 
@@ -10,7 +8,10 @@ const MAX_CHUNKS = 50;
 const BATCH_SIZE = 5;
 const BATCH_DELAY_MS = 200;
 
-export async function prepareDocumentforRAG(documentId: string) {
+export async function prepareDocumentforRAG(
+  documentId: string,
+  userId: string,
+) {
   const document = await getDocumentById(documentId);
   if (!document || !document.rawText) return;
 
@@ -33,5 +34,13 @@ export async function prepareDocumentforRAG(documentId: string) {
     }
   }
 
-  await updateDocument(documentId, { chunks: enrichedChunks });
+  const chunkDocs = enrichedChunks.map((chunk, index) => ({
+    documentId: document._id.toString(),
+    userId: userId,
+    text: chunk.text,
+    embedding: chunk.embedding,
+    chunkIndex: index,
+  }));
+
+  await createManyDocumentChunks(chunkDocs);
 }
