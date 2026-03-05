@@ -20,15 +20,38 @@ const useDocumentStatus = () => {
   const { userId, accessToken } = useAuthStore();
 
   useEffect(() => {
-    // Don't connect until auth is ready
     if (!userId || !accessToken || !config.api.baseUrl) return;
 
     const socket = io(config.api.baseUrl, {
       auth: { token: accessToken },
+      reconnectionAttempts: 5, // stop retrying after 5 attempts
+      reconnectionDelay: 2000, // wait 2s between attempts
+      timeout: 10000, // fail connection after 10s
     });
 
     socket.emit("join", userId);
 
+    // --- Connection error handlers ---
+    socket.on("connect_error", (err) => {
+      console.error("Socket connection error:", err.message);
+      if (socket.io.reconnectionAttempts() === 5) {
+        toast.error("Real-time updates unavailable. Please refresh.");
+      }
+    });
+
+    socket.on("disconnect", (reason) => {
+      if (reason === "io server disconnect") {
+        console.warn("Disconnected by server:", reason);
+        toast.warning("Connection lost. Reconnecting...");
+        socket.connect(); // manually reconnect since socket.io won't retry
+      }
+    });
+
+    socket.on("reconnect_failed", () => {
+      toast.error("Could not reconnect. Please refresh the page.");
+    });
+
+    // --- Document event handlers ---
     socket.on("document:processing", (data: DocStatus) => {
       updateInfiniteDocumentStatus(
         queryClient,
@@ -59,9 +82,13 @@ const useDocumentStatus = () => {
     });
 
     return () => {
+      socket.off("connect_error");
+      socket.off("disconnect");
+      socket.off("reconnect_failed");
       socket.off("document:processing");
       socket.off("document:completed");
       socket.off("document:failed");
+      socket.disconnect(); // ← you were missing this — always clean up the connection
     };
   }, [userId]);
 };
