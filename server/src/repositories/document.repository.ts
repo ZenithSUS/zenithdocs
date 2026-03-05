@@ -31,7 +31,7 @@ export const getAllDocuments = async () => {
       path: "folder",
       select: "_id name",
     })
-    .select("-chunks")
+
     .lean();
 };
 
@@ -55,7 +55,6 @@ export const getDocumentById = async (id: string) => {
       path: "folder",
       select: "_id name",
     })
-    .select("-chunks")
     .lean();
 };
 
@@ -88,7 +87,6 @@ export const getDocumentsByUserPaginated = async (
       path: "folder",
       select: "_id name",
     })
-    .select("-chunks")
     .sort({ createdAt: -1 })
     .lean();
 
@@ -141,7 +139,6 @@ export const getTotalStatusDocumentsByUser = async (
 export const getRecentDocumentsByUser = async (userId: string) => {
   return await Document.find({ user: userId })
     .populate({ path: "folder", select: "_id name type" })
-    .select("-chunks")
     .sort({ createdAt: -1 })
     .limit(5)
     .lean();
@@ -167,7 +164,6 @@ export const updateDocument = async (id: string, data: Partial<IDocument>) => {
       path: "folder",
       select: "_id name",
     })
-    .select("-chunks")
     .lean();
 };
 
