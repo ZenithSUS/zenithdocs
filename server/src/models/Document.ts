@@ -1,18 +1,12 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 import Summary, { ISummary } from "./Summary.js";
 
-export interface IChunk {
-  text: string;
-  embedding: number[];
-}
-
 export interface IDocument extends Document {
   title: string;
   fileUrl: string;
   fileType: string;
   fileSize: number;
   rawText: string;
-  chunks?: IChunk[];
   status: "uploaded" | "processing" | "completed" | "failed";
   user: Types.ObjectId;
   folder?: Types.ObjectId;
@@ -43,12 +37,6 @@ const documentSchema = new Schema<IDocument>(
     rawText: {
       type: String,
     },
-    chunks: [
-      {
-        text: { type: String },
-        embedding: { type: [Number] },
-      },
-    ],
     status: {
       type: String,
       enum: ["uploaded", "processing", "completed", "failed"],
