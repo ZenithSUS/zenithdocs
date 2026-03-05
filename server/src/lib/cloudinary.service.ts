@@ -1,5 +1,5 @@
 import { v2 as cloudinary } from "cloudinary";
-import streamifier from "streamifier";
+import fs from "fs";
 import config from "../config/env.js";
 
 cloudinary.config({
@@ -12,7 +12,7 @@ const baseFolder =
   config.nodeEnv === "production" ? "zenithdocs" : "zenithdocs-dev";
 
 export const uploadToCloudinary = (
-  buffer: Buffer,
+  filePath: string,
   originalName: string,
   userId: string,
 ): Promise<{ url: string; publicId: string }> => {
@@ -21,7 +21,7 @@ export const uploadToCloudinary = (
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
-        folder: folder,
+        folder,
         resource_type: "raw",
         public_id: `${Date.now()}-${originalName}`,
       },
@@ -31,7 +31,7 @@ export const uploadToCloudinary = (
       },
     );
 
-    streamifier.createReadStream(buffer).pipe(uploadStream);
+    fs.createReadStream(filePath).pipe(uploadStream);
   });
 };
 
@@ -39,9 +39,7 @@ export const deleteFileFromCloudinary = (publicId: string): Promise<void> => {
   return new Promise((resolve, reject) => {
     cloudinary.uploader.destroy(
       publicId,
-      {
-        resource_type: "raw",
-      },
+      { resource_type: "raw" },
       (error, result) => {
         if (error || !result) return reject(error);
         resolve();

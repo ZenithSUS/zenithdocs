@@ -1,3 +1,5 @@
+import fs from "fs";
+import { promisify } from "util";
 import { Request, Response } from "express";
 import { IDocument } from "../models/Document.js";
 import {
@@ -15,6 +17,8 @@ import extractRawText from "../lib/extract-text.js";
 import mongoose from "mongoose";
 import { embeddingQueue } from "../queues/embedding.queue.js";
 
+const unlink = promisify(fs.unlink);
+
 interface DocumentParams extends ParamsDictionary {
   id: string;
 }
@@ -29,20 +33,20 @@ export const createDocumentController = async (
   next: NextFunction,
 ) => {
   let uploadedPublicId: string | null = null;
+  const tempFilePath = req.file?.path;
 
   try {
     const userId = req.user?.sub;
 
     if (!userId) throw new AppError("Unauthorized", 401);
-
-    if (!req.file) throw new AppError("File is required", 400);
+    if (!req.file || !tempFilePath) throw new AppError("File is required", 400);
 
     const data: Partial<IDocument> = req.body;
 
-    const rawText = await extractRawText(req.file.buffer, req.file.mimetype);
+    const rawText = await extractRawText(tempFilePath, req.file.mimetype);
 
     const { url, publicId } = await uploadToCloudinary(
-      req.file.buffer,
+      tempFilePath,
       req.file.originalname,
       userId,
     );
@@ -60,6 +64,8 @@ export const createDocumentController = async (
     };
 
     const document = await createDocumentService(finalData);
+
+    await unlink(tempFilePath).catch(() => {});
 
     await embeddingQueue.add(
       "embed-document",
@@ -79,6 +85,8 @@ export const createDocumentController = async (
         resource_type: "raw",
       });
     }
+
+    if (tempFilePath) await unlink(tempFilePath).catch(() => {});
     next(error);
   }
 };

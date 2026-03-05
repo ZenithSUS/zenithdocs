@@ -1,6 +1,13 @@
 import multer from "multer";
+import path from "path";
+import os from "os";
 
-const storage = multer.memoryStorage();
+const storage = multer.diskStorage({
+  destination: os.tmpdir(),
+  filename: (_, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
 
 const upload = multer({
   storage,
