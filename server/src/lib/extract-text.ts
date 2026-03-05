@@ -22,10 +22,26 @@ const extractRawText = async (
 ): Promise<string> => {
   switch (mimeType) {
     case "application/pdf": {
-      const parser = new PDFParse({ url: filePath }); // accepts local path or URL
-      const result = await parser.getText();
-      console.log(result);
-      return result.text;
+      const fileUrl = filePath.startsWith("http")
+        ? filePath
+        : `file://${filePath}`;
+
+      // Get total page count first
+      const probe = new PDFParse({ url: fileUrl });
+      const probeResult = await probe.getText({ partial: [1] });
+      const totalPages = probeResult.pages.length;
+      await probe.destroy();
+
+      // Extract page by page to avoid OOM
+      let fullText = "";
+      for (let page = 1; page <= totalPages; page++) {
+        const parser = new PDFParse({ url: fileUrl });
+        const result = await parser.getText({ partial: [page] });
+        fullText += result.text;
+        await parser.destroy(); // free memory after each page
+      }
+
+      return fullText;
     }
 
     case "application/vnd.openxmlformats-officedocument.wordprocessingml.document": {

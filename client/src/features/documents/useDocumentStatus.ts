@@ -32,8 +32,7 @@ const useDocumentStatus = () => {
     socket.emit("join", userId);
 
     // --- Connection error handlers ---
-    socket.on("connect_error", (err: Error) => {
-      console.error("Socket connection error:", err.message);
+    socket.on("connect_error", () => {
       if (socket.io.reconnectionAttempts() === 5) {
         toast.error("Real-time updates unavailable. Please refresh.");
       }
@@ -41,7 +40,6 @@ const useDocumentStatus = () => {
 
     socket.on("disconnect", (reason: string) => {
       if (reason === "io server disconnect") {
-        console.warn("Disconnected by server:", reason);
         toast.warning("Connection lost. Reconnecting...");
         socket.connect(); // manually reconnect since socket.io won't retry
       }
