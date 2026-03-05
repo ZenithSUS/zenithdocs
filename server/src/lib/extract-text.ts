@@ -1,5 +1,5 @@
 import mammoth from "mammoth";
-import { PDFParse } from "pdf-parse";
+import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 import fs from "fs/promises";
 
 /**
@@ -22,24 +22,35 @@ const extractRawText = async (
 ): Promise<string> => {
   switch (mimeType) {
     case "application/pdf": {
-      const fileUrl = filePath.startsWith("http")
-        ? filePath
-        : `file://${filePath}`;
+      let buffer: ArrayBuffer;
 
-      // Get total page count first
-      const probe = new PDFParse({ url: fileUrl });
-      const probeResult = await probe.getText({ partial: [1] });
-      const totalPages = probeResult.pages.length;
-      await probe.destroy();
-
-      // Extract page by page to avoid OOM
-      let fullText = "";
-      for (let page = 1; page <= totalPages; page++) {
-        const parser = new PDFParse({ url: fileUrl });
-        const result = await parser.getText({ partial: [page] });
-        fullText += result.text;
-        await parser.destroy(); // free memory after each page
+      if (filePath.startsWith("http")) {
+        buffer = await fetch(filePath).then((r) => r.arrayBuffer());
+      } else {
+        const fileBuffer = await fs.readFile(filePath);
+        buffer = fileBuffer.buffer.slice(
+          fileBuffer.byteOffset,
+          fileBuffer.byteOffset + fileBuffer.byteLength,
+        ) as ArrayBuffer;
       }
+
+      const loadingTask = pdfjsLib.getDocument({
+        data: new Uint8Array(buffer),
+      });
+      const pdf = await loadingTask.promise;
+
+      let fullText = "";
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        const pageText = content.items
+          .map((item: any) => ("str" in item ? item.str : ""))
+          .join(" ");
+        fullText += pageText + "\n";
+        page.cleanup();
+      }
+
+      await loadingTask.destroy();
 
       return fullText;
     }

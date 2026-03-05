@@ -28,7 +28,7 @@
     "passport": "^0.7.0",
     "passport-google-oauth2": "^0.2.0",
     "passport-google-oauth20": "^2.0.0",
-    "pdf-parse": "^2.4.5",
+    "pdfjs-dist": "^5.5.207",
     "serve-favicon": "^2.5.1",
     "socket.io": "^4.8.3",
     "streamifier": "^0.1.1",
