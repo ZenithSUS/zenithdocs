@@ -46,5 +46,9 @@ export const embeddingWorker = new Worker(
   {
     connection: bullMQConnection,
     concurrency: 1,
+    limiter: {
+      max: 1,
+      duration: 1000,
+    },
   },
 );
