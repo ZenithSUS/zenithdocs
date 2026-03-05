@@ -1,6 +1,6 @@
 import config from "@/config/env";
 import { useEffect } from "react";
-import io from "socket.io-client";
+import io, { Socket } from "socket.io-client";
 import { useQueryClient } from "@tanstack/react-query";
 import documentKeys from "./document.keys";
 import { updateInfiniteDocumentStatus } from "./document.cache";
@@ -39,7 +39,7 @@ const useDocumentStatus = () => {
       }
     });
 
-    socket.on("disconnect", (reason) => {
+    socket.on("disconnect", (reason: Socket.DisconnectReason) => {
       if (reason === "io server disconnect") {
         console.warn("Disconnected by server:", reason);
         toast.warning("Connection lost. Reconnecting...");
