@@ -200,7 +200,7 @@ const useUploadPage = () => {
                   ...f,
                   status: "error",
                   error:
-                    apiError.response.data.message || "Failed to upload file",
+                    apiError.response?.data?.message || "Failed to upload file",
                 }
               : f,
           ),
