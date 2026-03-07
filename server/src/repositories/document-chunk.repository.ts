@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import DocumentChunk, {
   IDocumentChunkInput,
 } from "../models/Document_Chunk.js";
@@ -12,6 +13,94 @@ export const createManyDocumentChunks = async (
 ) => {
   const documentChunks = await DocumentChunk.insertMany(data);
   return documentChunks;
+};
+
+/**
+ * Searches for similar document chunks based on the given query embedding and document ID.
+ * It returns up to 5 similar document chunks with the highest similarity score.
+ * @param {EmbeddingResponse} queryEmbedding - The query embedding to search for similar document chunks.
+ * @param {string} documentId - The ID of the document to search for similar document chunks.
+ * @returns {Promise<IDocumentChunk[]>} An array of up to 5 similar document chunks with the highest similarity score.
+ */
+export const getSimilarityScore = async (
+  queryEmbedding: number[],
+  documentId: string,
+) => {
+  try {
+    if (!queryEmbedding?.length) return [];
+
+    const results = await DocumentChunk.aggregate([
+      {
+        $vectorSearch: {
+          index: "embedding",
+          path: "embedding",
+          queryVector: queryEmbedding,
+          numCandidates: 150,
+          limit: 5,
+          filter: {
+            documentId: { $eq: new mongoose.Types.ObjectId(documentId) },
+          },
+        },
+      },
+      {
+        $project: {
+          text: 1,
+          chunkIndex: 1,
+          documentId: 1,
+          score: { $meta: "vectorSearchScore" },
+        },
+      },
+    ]);
+
+    return results;
+  } catch (err) {
+    console.error(`Vector search failed:`, err);
+    return [];
+  }
+};
+
+/**
+ * Retrieves up to a given limit of similar document chunks from a given document ID,
+ * filtered by a minimum similarity score.
+ * @param {number[]} queryEmbedding - The query embedding to search for similar document chunks.
+ * @param {string} documentId - The ID of the document to search for similar document chunks.
+ * @param {number} [minScore=0.6] - The minimum similarity score required for a document chunk to be considered similar.
+ * @param {number} [limit=5] - The maximum number of similar document chunks to return.
+ * @returns {Promise<IDocumentChunk[]>} An array of up to limit similar document chunks with the highest similarity score, filtered by minScore.
+ */
+export const getSimilaritySummaryScore = async (
+  queryEmbedding: number[],
+  documentId: string,
+  minScore = 0.6,
+  limit = 5, // ← add this
+) => {
+  const results = await DocumentChunk.aggregate([
+    {
+      $vectorSearch: {
+        index: "embedding",
+        path: "embedding",
+        queryVector: queryEmbedding,
+        numCandidates: 150,
+        limit: limit * 2, // fetch double, filter down
+        filter: {
+          documentId: { $eq: new mongoose.Types.ObjectId(documentId) },
+        },
+      },
+    },
+    {
+      $project: {
+        text: 1,
+        chunkIndex: 1,
+        documentId: 1,
+        score: { $meta: "vectorSearchScore" },
+      },
+    },
+    { $match: { score: { $gte: minScore } } },
+    { $sort: { score: -1 } },
+    { $limit: limit },
+  ]);
+
+  return results;
 };
 
 /**
