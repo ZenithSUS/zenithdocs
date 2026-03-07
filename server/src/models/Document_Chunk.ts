@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
+import { vectorDB } from "../config/db.js";
 
 export interface IDocumentChunk extends Document {
   documentId: Types.ObjectId;
@@ -51,7 +52,7 @@ const documentChunkSchema = new Schema<IDocumentChunk>(
   { timestamps: true },
 );
 
-export default mongoose.model<IDocumentChunk>(
+export default vectorDB.model<IDocumentChunk>(
   "DocumentChunk",
   documentChunkSchema,
 );

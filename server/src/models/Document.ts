@@ -1,5 +1,7 @@
-import mongoose, { Schema, Document, Types } from "mongoose";
+import { Schema, Document, Types } from "mongoose";
 import Summary, { ISummary } from "./Summary.js";
+import { mainDB } from "../config/db.js";
+import Chat, { IChat } from "./Chat.js";
 
 export interface IDocument extends Document {
   title: string;
@@ -62,17 +64,20 @@ const documentSchema = new Schema<IDocument>(
 documentSchema.index({ user: 1, createdAt: -1 });
 documentSchema.index({ folder: 1 });
 
-// Cascasde summary when document is deleted
-documentSchema.post("findOneAndDelete", async (doc: ISummary) => {
+// Cascasde summary and chat when document is deleted
+documentSchema.post("findOneAndDelete", async (doc: ISummary | IChat) => {
   await Summary.deleteMany({ document: doc._id });
+  await Chat.deleteMany({ documentId: doc._id });
 });
 
-documentSchema.post("deleteOne", async (doc: ISummary) => {
+documentSchema.post("deleteOne", async (doc: ISummary | IChat) => {
   await Summary.deleteMany({ document: doc._id });
+  await Chat.deleteMany({ documentId: doc._id });
 });
 
-documentSchema.post("deleteMany", async (doc: ISummary) => {
+documentSchema.post("deleteMany", async (doc: ISummary | IChat) => {
   await Summary.deleteMany({ document: doc._id });
+  await Chat.deleteMany({ documentId: doc._id });
 });
 
-export default mongoose.model<IDocument>("Document", documentSchema);
+export default mainDB.model<IDocument>("Document", documentSchema);

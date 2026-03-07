@@ -1,5 +1,6 @@
-import mongoose, { Schema, Types } from "mongoose";
+import { Schema, Types } from "mongoose";
 import Document, { IDocument } from "./Document.js";
+import { mainDB } from "../config/db.js";
 
 export interface IFolder extends Document {
   name: string;
@@ -45,4 +46,4 @@ folderSchema.post("deleteOne", async (doc: IDocument) => {
   }
 });
 
-export default mongoose.model<IFolder>("Folder", folderSchema);
+export default mainDB.model<IFolder>("Folder", folderSchema);

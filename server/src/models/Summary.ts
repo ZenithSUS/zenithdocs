@@ -1,4 +1,5 @@
-import mongoose, { Schema, Document, Types } from "mongoose";
+import { Schema, Document, Types } from "mongoose";
+import { mainDB } from "../config/db.js";
 
 export interface IAdditionalDetails {
   risk: string; // e.g. "Auto-renewal clause ($4.2M)"
@@ -72,4 +73,4 @@ const summarySchema = new Schema<ISummary>(
   { timestamps: true },
 );
 
-export default mongoose.model<ISummary>("Summary", summarySchema);
+export default mainDB.model<ISummary>("Summary", summarySchema);
