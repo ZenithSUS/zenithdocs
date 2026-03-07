@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import CursorGlow from "@/components/CursorGlow";
@@ -26,7 +26,7 @@ interface MessageFormValues {
   message: string;
 }
 
-export default function DocumentChatPage() {
+function DocumentChatContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const docId = searchParams.get("doc");
@@ -495,5 +495,24 @@ export default function DocumentChatPage() {
         .prose code { font-family: 'Courier New', monospace; }
       `}</style>
     </div>
+  );
+}
+
+export default function DocumentChatPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#111111] text-[#F5F5F5] flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-12 h-12 border-2 border-[#C9A227] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-[13px] text-text/50 font-sans">
+              Loading conversation...
+            </p>
+          </div>
+        </div>
+      }
+    >
+      <DocumentChatContent />
+    </Suspense>
   );
 }
