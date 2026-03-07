@@ -60,12 +60,17 @@ function DocumentChatContent() {
   useEffect(() => {
     if (!isOptionsOpen) return;
     const handler = (e: MouseEvent) => {
+      const target = e.target as Element;
+      // Don't close if clicking inside the options menu
+      if (optionsRef.current?.contains(target)) return;
+      // Don't close if clicking inside a radix alert dialog portal
       if (
-        optionsRef.current &&
-        !optionsRef.current.contains(e.target as Node)
-      ) {
-        setIsOptionsOpen(false);
-      }
+        target.closest?.(
+          "[role='alertdialog'], [data-radix-popper-content-wrapper]",
+        )
+      )
+        return;
+      setIsOptionsOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -260,10 +265,7 @@ function DocumentChatContent() {
             </button>
 
             {isOptionsOpen && (
-              <div
-                className="absolute top-full right-0 mt-2 z-40 min-w-45 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl shadow-black/50 py-1.5 overflow-hidden"
-                onClick={(e) => e.stopPropagation()}
-              >
+              <div className="absolute top-full right-0 mt-2  min-w-45 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl shadow-black/50 py-1.5 overflow-hidden">
                 <div className="px-3 py-1.5 mb-1">
                   <span className="text-[10px] text-text/30 font-sans tracking-widest uppercase">
                     Options

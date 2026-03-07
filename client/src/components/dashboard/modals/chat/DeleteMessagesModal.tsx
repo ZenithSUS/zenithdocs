@@ -80,11 +80,7 @@ function DeleteMessagesModal({
           </AlertDialogCancel>
           <AlertDialogAction
             className="flex-1 cursor-pointer font-sans tracking-wider font-bold bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
-            onClick={(e) => {
-              e.preventDefault();
-              console.log("Deleting messages...");
-              handleDeleteMessages();
-            }}
+            onClick={handleDeleteMessages}
             disabled={isDeleting}
           >
             {isDeleting ? "Deleting..." : "Delete"}
