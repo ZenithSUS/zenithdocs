@@ -30,8 +30,9 @@ const config = {
   database: {
     mongoURI:
       process.env.NODE_ENV === "production"
-        ? process.env.MONGODB_URI
-        : process.env.MONGODB_URI_DEV || "",
+        ? process.env.MONGODB_ATLAS_URI
+        : process.env.MONGODB_URI || "",
+    mongoAtlasURI: process.env.MONGODB_ATLAS_URI || "",
   },
   cloudinary: {
     cloudName: process.env.CLOUDINARY_CLOUD_NAME || "",
@@ -61,7 +62,8 @@ const config = {
 
 const requiredEnvVars = [
   "MISTRALAI_API_KEY",
-  "MONGODB_URI_DEV",
+  "MONGODB_URI",
+  "MONGODB_ATLAS_URI",
   "ALLOWED_ORIGINS",
   "API_KEY",
   "JWT_ACCESS_SECRET",
