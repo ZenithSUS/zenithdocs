@@ -1,5 +1,11 @@
 import Doc from "@/types/doc";
-import { EyeIcon, FolderPlus, SparkleIcon, TrashIcon } from "lucide-react";
+import {
+  EyeIcon,
+  FolderPlus,
+  MessageCircle,
+  SparkleIcon,
+  TrashIcon,
+} from "lucide-react";
 
 interface ActionsDropDownProps {
   actionsMenuOpen: string;
@@ -80,7 +86,24 @@ function ActionsDropDown({
         </span>{" "}
         Move to Folder
       </button>
+
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          handleNavigate(`/dashboard/chat?doc=${actionsMenuOpen}`);
+        }}
+        className="w-full px-4 py-2.5 text-left text-[12px] font-sans text-text/70 hover:bg-white/5 hover:text-text transition-colors flex items-center gap-2"
+      >
+        <span>
+          <MessageCircle className="w-4 h-4" />
+        </span>{" "}
+        Chat
+      </button>
+
+      {/* Separator */}
       <div className="border-t border-white/8" />
+
+      {/* Delete button */}
       <button
         onClick={(e) => {
           e.stopPropagation();
