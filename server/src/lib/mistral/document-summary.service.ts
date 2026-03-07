@@ -1,11 +1,6 @@
-import { Mistral } from "@mistralai/mistralai";
-import config from "../../config/env.js";
 import AppError from "../../utils/app-error.js";
 import chunkText from "./chunk.util.js";
-
-const client = new Mistral({
-  apiKey: config.ai.mistralai,
-});
+import client from "./index.js";
 
 type SummaryType = "short" | "bullet" | "detailed" | "executive";
 

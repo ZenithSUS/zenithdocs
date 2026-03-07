@@ -1,10 +1,5 @@
-import { Mistral } from "@mistralai/mistralai";
-import config from "../../config/env.js";
 import AppError from "../../utils/app-error.js";
-
-const client = new Mistral({
-  apiKey: config.ai.mistralai,
-});
+import client from "./index.js";
 
 export async function generateEmbedding(text: string): Promise<number[]> {
   const response = await client.embeddings.create({
