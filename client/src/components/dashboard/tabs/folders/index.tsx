@@ -125,7 +125,13 @@ function FolderTab({
           </div>
           <div className="divide-y divide-white/4">
             {unfiledDocs.slice(0, 5).map((doc) => {
-              return <UnifiedDocumentsCard document={doc} setNav={setNav} />;
+              return (
+                <UnifiedDocumentsCard
+                  key={doc._id}
+                  document={doc}
+                  setNav={setNav}
+                />
+              );
             })}
             {unfiledDocs.length > 5 && (
               <div
