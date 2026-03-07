@@ -11,7 +11,6 @@ import sizefmt from "@/helpers/size-format";
 import { Summary, SummaryType } from "@/types/summary";
 import { toast } from "sonner";
 import { AxiosError } from "@/types/api";
-import Doc from "@/types/doc";
 import useDashboard from "@/features/dashboard/useDashboard";
 import {
   AlertTriangle,
@@ -22,7 +21,6 @@ import {
   Sparkles,
   XCircle,
   Zap,
-  AlignLeft,
   List,
   Briefcase,
   ChevronRight,
@@ -82,12 +80,8 @@ function SummarizePageContent() {
     error: userErrorData,
   } = me;
 
-  const { documentById, updateDocumentMutation } = useDocument(
-    user?._id || "",
-    docId || "",
-  );
+  const { documentById } = useDocument(user?._id || "", docId || "");
   const { data: document, isLoading: docLoading } = documentById;
-  const { mutateAsync: updateDocument } = updateDocumentMutation;
 
   const { createSummaryMutation } = useSummary(user?._id || "", docId || "");
   const {
@@ -123,13 +117,7 @@ function SummarizePageContent() {
       const summary = await createSummary({
         user: user._id,
         document: document._id,
-        content: document.rawText,
         type: selectedType,
-      });
-
-      await updateDocument({
-        id: document._id,
-        data: { user: user._id, status: "completed" } as Partial<Doc>,
       });
 
       setGeneratedSummary(summary.content);
@@ -139,10 +127,6 @@ function SummarizePageContent() {
       await Promise.all([refetchLastSixMonthsUsage(), refetchDashboard()]);
     } catch (error) {
       const err = error as AxiosError;
-      await updateDocument({
-        id: document._id,
-        data: { status: "failed" } as Partial<Doc>,
-      }).catch(() => {});
       toast.error(err.response?.data?.message || "Something went wrong.");
     }
   }, [document, user, selectedType]);
