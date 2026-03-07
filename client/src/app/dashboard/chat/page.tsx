@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, Suspense } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  Suspense,
+  useMemo,
+} from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import CursorGlow from "@/components/CursorGlow";
@@ -78,10 +85,10 @@ function DocumentChatContent() {
 
   // Sync messages from server
   useEffect(() => {
-    if (chat?.messages) {
+    if (chat?.messages && !isTyping && !streamingMessage) {
       setMessagesData(chat.messages);
     }
-  }, [chat]);
+  }, [chat, isTyping, streamingMessage]);
 
   useEffect(() => {
     const h = (e: MouseEvent) => setMousePos({ x: e.clientX, y: e.clientY });
@@ -166,24 +173,27 @@ function DocumentChatContent() {
     }
   };
 
-  const markdownComponents = {
-    p: ({ children }: any) => <p className="mb-3 last:mb-0">{children}</p>,
-    ul: ({ children }: any) => (
-      <ul className="list-disc pl-5 mb-3 space-y-1">{children}</ul>
-    ),
-    ol: ({ children }: any) => (
-      <ol className="list-decimal pl-5 mb-3 space-y-1">{children}</ol>
-    ),
-    li: ({ children }: any) => <li className="text-text/70">{children}</li>,
-    code: ({ children }: any) => (
-      <code className="bg-black/30 px-1.5 py-0.5 rounded text-[13px] text-primary/90">
-        {children}
-      </code>
-    ),
-    strong: ({ children }: any) => (
-      <strong className="font-semibold text-text/95">{children}</strong>
-    ),
-  };
+  const markdownComponents = useMemo(
+    () => ({
+      p: ({ children }: any) => <p className="mb-3 last:mb-0">{children}</p>,
+      ul: ({ children }: any) => (
+        <ul className="list-disc pl-5 mb-3 space-y-1">{children}</ul>
+      ),
+      ol: ({ children }: any) => (
+        <ol className="list-decimal pl-5 mb-3 space-y-1">{children}</ol>
+      ),
+      li: ({ children }: any) => <li className="text-text/70">{children}</li>,
+      code: ({ children }: any) => (
+        <code className="bg-black/30 px-1.5 py-0.5 rounded text-[13px] text-primary/90">
+          {children}
+        </code>
+      ),
+      strong: ({ children }: any) => (
+        <strong className="font-semibold text-text/95">{children}</strong>
+      ),
+    }),
+    [],
+  );
 
   if (docLoading || chatLoading || !user) {
     return (
@@ -298,7 +308,7 @@ function DocumentChatContent() {
               <p className="text-[14px] text-text/40 font-sans max-w-md leading-relaxed mb-8">
                 Ask questions about{" "}
                 <span className="text-text/60 font-medium">
-                  {document.title}
+                  {documentData.title}
                 </span>
                 . I'll help you understand and extract insights from the
                 document.
@@ -349,7 +359,7 @@ function DocumentChatContent() {
 
               {visibleMessages.map((msg, idx) => (
                 <div
-                  key={idx}
+                  key={`${msg.role}-${msg.createdAt}-${idx}`}
                   className={`flex gap-4 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                 >
                   {msg.role === "assistant" && (
