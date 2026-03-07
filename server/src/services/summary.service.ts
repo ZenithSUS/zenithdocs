@@ -14,6 +14,8 @@ import AppError from "../utils/app-error.js";
 import mongoose from "mongoose";
 import { updateUsageMonthByUser } from "../repositories/usage.repository.js";
 import PLAN_LIMITS from "../config/plans.js";
+import { generateEmbedding } from "../lib/mistral/embedding.service.js";
+import { getSimilaritySummaryScore } from "../repositories/document-chunk.repository.js";
 
 /**
  * Creates a new summary with the given data.
@@ -52,10 +54,6 @@ export const createSummaryService = async (data: Partial<ISummary>) => {
     throw new AppError("Invalid Summary Type", 400);
   }
 
-  if (!data.content || typeof data.content !== "string") {
-    throw new AppError("Content is required", 400);
-  }
-
   // Update usage or create a new one
   const usageLimit = await updateUsageMonthByUser(data.user, month);
 
@@ -74,8 +72,31 @@ export const createSummaryService = async (data: Partial<ISummary>) => {
     throw new AppError("You have reached your usage limit for this month", 400);
   }
 
+  const summaryQueries: Record<ISummary["type"], string> = {
+    short: "main points overview summary",
+    bullet: "key facts insights bullet points",
+    detailed: "detailed explanation arguments conclusions",
+    executive: "strategic impact business implications recommendations",
+  };
+
+  // Convert query to embedding
+  const query = summaryQueries[data.type as ISummary["type"]];
+  const queryEmbedding = await generateEmbedding(query);
+  const chunks = await getSimilaritySummaryScore(
+    queryEmbedding,
+    data.document,
+    0.0,
+  );
+
+  // Sort by document order for coherent summarization
+  const sortedChunks = [...chunks].sort((a, b) => a.chunkIndex - b.chunkIndex);
+  const contentFromChunks = sortedChunks.map((c) => c.text).join("\n\n");
+
+  const contentToSummarize =
+    contentFromChunks.length > 0 ? contentFromChunks : query;
+
   const { content, tokensUsed, additionalDetails } = await summarizeText(
-    data.content,
+    contentToSummarize,
     data.type as ISummary["type"],
     usageLimit.tokensUsed, // current usage
     userLimit.tokenLimit, // max allowed
