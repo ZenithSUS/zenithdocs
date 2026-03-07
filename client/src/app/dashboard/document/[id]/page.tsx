@@ -26,6 +26,7 @@ import {
   FileType,
   ScrollText,
   FileX2Icon,
+  MessageCircle,
 } from "lucide-react";
 import LoadingScreen from "@/components/dashboard/LoadingScreen";
 import ErrorScreen from "@/components/dashboard/ErrorScreen";
@@ -144,15 +145,24 @@ export default function DocumentViewPage() {
             </h1>
           </div>
 
-          <button
-            onClick={() =>
-              router.push(`/dashboard/summarize?doc=${documentId}`)
-            }
-            className="hidden sm:flex items-center gap-2 px-5 py-2 bg-[#C9A227] text-[#111111] rounded-sm text-[12px] font-bold tracking-widest font-sans transition-all duration-200 hover:bg-[#e0b530] hover:-translate-y-0.5"
-          >
-            <Sparkles size={13} />
-            SUMMARIZE
-          </button>
+          <div className="flex flew-row items-center gap-2">
+            <button
+              onClick={() =>
+                router.push(`/dashboard/summarize?doc=${documentId}`)
+              }
+              className="hidden sm:flex items-center gap-2 px-5 py-2 bg-[#C9A227] text-[#111111] rounded-sm text-[12px] font-bold tracking-widest font-sans transition-all duration-200 hover:bg-[#e0b530] hover:-translate-y-0.5"
+            >
+              <Sparkles size={13} />
+              SUMMARIZE
+            </button>
+            <button
+              onClick={() => router.push(`/dashboard/chat?doc=${documentId}`)}
+              className="hidden sm:flex items-center px-5 py-2 bg-accent text-[#FFFFFF] rounded-sm text-[12px] font-bold tracking-widest font-sans transition-all duration-200 hover:bg-accent hover:-translate-y-0.5 gap-2"
+            >
+              <MessageCircle size={20} />
+              CHAT
+            </button>
+          </div>
         </div>
       </header>
 
@@ -200,7 +210,7 @@ export default function DocumentViewPage() {
               {statusMeta.label}
             </div>
 
-            <div className="flex gap-2 ml-auto">
+            <div className="flex flex-wrap gap-2 ml-auto">
               {document.fileUrl && (
                 <a
                   href={document.fileUrl}
@@ -220,6 +230,13 @@ export default function DocumentViewPage() {
               >
                 <Sparkles size={12} />
                 SUMMARIZE
+              </button>
+              <button
+                onClick={() => router.push(`/dashboard/chat?doc=${documentId}`)}
+                className="flex items-center gap-1.5 px-4 py-2 bg-accent text-text font-sans hover:bg-accent rounded-sm text-[11px] font-bold tracking-widest transition-colors"
+              >
+                <MessageCircle size={12} />
+                CHAT
               </button>
             </div>
           </div>
