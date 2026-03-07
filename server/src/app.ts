@@ -25,6 +25,7 @@ import folderRouter from "./routes/folder.route.js";
 import summaryRouter from "./routes/summary.route.js";
 import usageRouter from "./routes/usage.route.js";
 import dashboardRouter from "./routes/dashboard.route.js";
+import chatRouter from "./routes/chat.route.js";
 
 // Passport
 import session from "express-session";
@@ -65,7 +66,10 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(hpp());
-app.use(compression());
+app.use((req, res, next) => {
+  if (req.path.includes("/api/chat")) return next();
+  compression()(req, res, next);
+});
 app.use(requestLogger);
 app.use(express.static(path.join(__dirname, "public")));
 app.use(favicon(path.join(__dirname, "public", "favicon.ico")));
@@ -116,6 +120,7 @@ app.use("/api/folders", requireApiKey, folderRouter);
 app.use("/api/summaries", requireApiKey, summaryRouter);
 app.use("/api/usages", requireApiKey, usageRouter);
 app.use("/api/dashboard", requireApiKey, dashboardRouter);
+app.use("/api/chat", requireApiKey, chatRouter);
 
 // Error Handlers
 app.use(notFound);
