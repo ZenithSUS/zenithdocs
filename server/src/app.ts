@@ -114,7 +114,7 @@ app.get("/api/auth/cookie-test", (req, res) => {
 });
 
 // Routes
-app.use("/api/auth", requireApiKey, authRouter);
+app.use("/api/auth", authRouter);
 app.use("/api/users", requireApiKey, userRouter);
 app.use("/api/documents", requireApiKey, documentRouter);
 app.use("/api/folders", requireApiKey, folderRouter);
