@@ -5,6 +5,8 @@ const documentKeys = {
   byFolder: (folderId: string) => [...documentKeys.all, folderId] as const,
   byUserPage: (userId: string, page: number) =>
     [...documentKeys.byUser(userId), page] as const,
+  byUserWithChatPage: (userId: string) =>
+    [...documentKeys.byUser(userId), "chats"] as const,
   create: () => [...documentKeys.all, "create"] as const,
   update: () => [...documentKeys.all, "update"] as const,
   delete: () => [...documentKeys.all, "delete"] as const,

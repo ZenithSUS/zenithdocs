@@ -12,17 +12,24 @@ import {
   deleteDocumentById,
   updateDocumentById,
   createDocument,
+  fetchDocumentByUserWithChatsPaginated,
 } from "./document.api";
 import { AxiosError } from "axios";
 import { ResponseWithPagedData } from "@/types/api";
-import Doc from "@/types/doc";
+import Doc, { DocWithChat } from "@/types/doc";
 import {
   removeInfiniteDocument,
   updateInfiniteDocument,
 } from "./document.cache";
 
 type DocumentPage = ResponseWithPagedData<Doc, "documents">["data"];
+type DocumentWithChatPage = ResponseWithPagedData<
+  DocWithChat,
+  "documents"
+>["data"];
+
 type DocumentsInfiniteData = InfiniteData<DocumentPage>;
+
 type UpdateVariables = {
   id: string;
   data: Partial<Doc>;
@@ -51,7 +58,7 @@ const useDocument = (userId: string, documentId: string = "") => {
   const createDocumentMutation = useMutation<Doc, AxiosError, Partial<Doc>>({
     mutationKey: documentKeys.create(),
     mutationFn: (data) => createDocument(data),
-    onSuccess: (newDocs) =>
+    onSuccess: (newDocs) => {
       queryClient.setQueryData<DocumentsInfiniteData>(
         documentKeys.byUserPage(userId, documentLimit),
         (oldData) => {
@@ -71,7 +78,8 @@ const useDocument = (userId: string, documentId: string = "") => {
             ],
           };
         },
-      ),
+      );
+    },
   });
 
   // Get documents by user ID paginated
@@ -85,6 +93,25 @@ const useDocument = (userId: string, documentId: string = "") => {
     queryKey: documentKeys.byUserPage(userId, documentLimit),
     queryFn: ({ pageParam = 1 }) =>
       fetchDocumentByUserPaginated(userId, pageParam, documentLimit),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const { page, totalPages } = lastPage.pagination;
+      return page < totalPages ? page + 1 : undefined;
+    },
+    enabled: !!userId,
+  });
+
+  // Get documents by user ID with chats paginated
+  const documentsByUserWithChatsPage = useInfiniteQuery<
+    DocumentWithChatPage,
+    AxiosError,
+    InfiniteData<DocumentWithChatPage>,
+    ReturnType<typeof documentKeys.byUserWithChatPage>,
+    number
+  >({
+    queryKey: documentKeys.byUserWithChatPage(userId),
+    queryFn: ({ pageParam = 1 }) =>
+      fetchDocumentByUserWithChatsPaginated(userId, pageParam, documentLimit),
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
       const { page, totalPages } = lastPage.pagination;
@@ -196,6 +223,7 @@ const useDocument = (userId: string, documentId: string = "") => {
   return {
     createDocumentMutation,
     documentsByUserPage,
+    documentsByUserWithChatsPage,
     documentById,
     updateDocumentMutation,
     deleteDocumentMutation,

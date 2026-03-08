@@ -1,6 +1,6 @@
 import { api } from "@/lib/axios";
 import { ResponseWithData, ResponseWithPagedData } from "@/types/api";
-import Doc from "@/types/doc";
+import Doc, { DocWithChat } from "@/types/doc";
 
 export const createDocument = async (data: Partial<Doc> & { file?: File }) => {
   const formData = new FormData();
@@ -33,6 +33,24 @@ export const fetchDocumentByUserPaginated = async (
       },
     },
   );
+
+  return res.data;
+};
+
+export const fetchDocumentByUserWithChatsPaginated = async (
+  userId: string,
+  page: number,
+  limit: number,
+) => {
+  const { data: res } = await api.get<
+    ResponseWithPagedData<DocWithChat, "documents">
+  >(`/api/documents/user/${userId}`, {
+    params: {
+      page,
+      limit,
+      includeChats: true,
+    },
+  });
 
   return res.data;
 };
