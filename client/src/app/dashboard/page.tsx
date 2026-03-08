@@ -11,6 +11,7 @@ import ErrorScreen from "@/components/dashboard/ErrorScreen";
 import useDashboardPage from "./useDashboard";
 import DocumentsLoadingSkeleton from "@/components/dashboard/tabs/documents/DocumentsLoadingSkeleton";
 import FolderLoadingSkeletion from "@/components/dashboard/tabs/folders/FolderLoadingSkeletion";
+import DocumentChatLoading from "@/components/dashboard/tabs/chats/DocumentChatLoading";
 
 // Lazy-load dashboard tab components for code splitting
 const OverViewTab = lazy(() => import("@/components/dashboard/tabs/Overview"));
@@ -20,6 +21,7 @@ const DocumentsTab = lazy(
 const FolderTab = lazy(() => import("@/components/dashboard/tabs/folders"));
 const UsageTab = lazy(() => import("@/components/dashboard/tabs/Usage"));
 const SummaryTab = lazy(() => import("@/components/dashboard/tabs/Summary"));
+const ChatsTab = lazy(() => import("@/components/dashboard/tabs/chats"));
 
 const CURRENT_MONTH = new Date().toISOString().slice(0, 7); // YYYY-MM
 
@@ -160,6 +162,13 @@ export default function DashboardPage() {
                 setFilterFolder={setFilterFolder}
                 onRefresh={handleRefetch}
               />
+            </Suspense>
+          )}
+
+          {/* ══ Chats ═════════════════════════════════════════════════════ */}
+          {nav === "chats" && (
+            <Suspense fallback={<DocumentChatLoading />}>
+              <ChatsTab userId={user?._id ?? ""} />
             </Suspense>
           )}
 
