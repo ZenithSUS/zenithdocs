@@ -1,11 +1,36 @@
 import config from "@/config/env";
 import { api } from "@/lib/axios";
-import { ResponseWithData } from "@/types/api";
+import { ResponseWithData, ResponseWithPagedData } from "@/types/api";
 import { Chat, MessageInput } from "@/types/chat";
+
+export const initChatForDocument = async (documentId: string) => {
+  const { data: res } = await api.post<ResponseWithData<Chat>>(
+    `/api/chat/document/${documentId}/init`,
+  );
+  return res.data;
+};
 
 export const fetchChatByDocumentId = async (documentId: string) => {
   const { data: res } = await api.get<ResponseWithData<Chat>>(
     `/api/chat/document/${documentId}`,
+  );
+
+  return res.data;
+};
+
+export const fetchChatByUserPaginated = async (
+  userId: string,
+  page: number,
+  limit: number,
+) => {
+  const { data: res } = await api.get<ResponseWithPagedData<Chat, "chats">>(
+    `api/chat/user/${userId}`,
+    {
+      params: {
+        page,
+        limit,
+      },
+    },
   );
 
   return res.data;
@@ -58,15 +83,16 @@ export const createChatStream = async (
     for (const line of lines) {
       if (!line.startsWith("data: ")) continue;
 
-      const text = line.slice(6); // raw token from backend
+      const text = line.slice(6);
 
       if (text === "[DONE]") {
         onDone();
         return;
       }
 
-      // Backend sends raw text tokens separated by newlines
-      onChunk(text);
+      // Decode the encoded newlines back
+      const decoded = text.replace(/\\n/g, "\n");
+      onChunk(decoded);
     }
   }
 
@@ -81,7 +107,7 @@ export const createChatStream = async (
 
 export const deleteChatMessages = async (id: string) => {
   const { data: res } = await api.delete<ResponseWithData<Chat>>(
-    `/api/chat/${id}`,
+    `/api/chat/message/${id}`,
   );
   return res.data;
 };
