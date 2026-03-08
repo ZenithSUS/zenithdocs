@@ -1,7 +1,7 @@
 import { Schema, Document, Types } from "mongoose";
-import Summary, { ISummary } from "./Summary.js";
 import { mainDB } from "../config/db.js";
-import Chat, { IChat } from "./Chat.js";
+import Summary from "./Summary.js";
+import Chat from "./Chat.js";
 
 export interface IDocument extends Document {
   title: string;
@@ -65,17 +65,23 @@ documentSchema.index({ user: 1, createdAt: -1 });
 documentSchema.index({ folder: 1 });
 
 // Cascasde summary and chat when document is deleted
-documentSchema.post("findOneAndDelete", async (doc: ISummary | IChat) => {
+documentSchema.post("findOneAndDelete", async function (doc: IDocument) {
+  if (!doc) return;
+
   await Summary.deleteMany({ document: doc._id });
   await Chat.deleteMany({ documentId: doc._id });
 });
 
-documentSchema.post("deleteOne", async (doc: ISummary | IChat) => {
+documentSchema.post("deleteOne", async (doc: IDocument) => {
+  if (!doc) return;
+
   await Summary.deleteMany({ document: doc._id });
   await Chat.deleteMany({ documentId: doc._id });
 });
 
-documentSchema.post("deleteMany", async (doc: ISummary | IChat) => {
+documentSchema.post("deleteMany", async (doc: IDocument) => {
+  if (!doc) return;
+
   await Summary.deleteMany({ document: doc._id });
   await Chat.deleteMany({ documentId: doc._id });
 });
