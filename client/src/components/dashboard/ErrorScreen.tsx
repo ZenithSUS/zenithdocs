@@ -1,15 +1,7 @@
 "use client";
 
+import { AxiosError } from "@/types/api";
 import { useRouter } from "next/navigation";
-
-export type AxiosError = {
-  response: {
-    data: {
-      success: boolean;
-      message: string;
-    };
-  };
-};
 
 interface ErrorScreenProps {
   error: AxiosError | null;
