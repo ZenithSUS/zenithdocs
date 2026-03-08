@@ -45,7 +45,7 @@ const DeleteDocumentModal = ({
       });
     } catch (error) {
       const err = error as AxiosError;
-      toast.error(err.response.data.message || "Error deleting document");
+      toast.error(err.response?.data?.message || "Error deleting document");
     }
   }, [documentId, deleteDoc, onOpenChange]);
 
