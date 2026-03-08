@@ -26,6 +26,7 @@ import summaryRouter from "./routes/summary.route.js";
 import usageRouter from "./routes/usage.route.js";
 import dashboardRouter from "./routes/dashboard.route.js";
 import chatRouter from "./routes/chat.route.js";
+import messageRouter from "./routes/message.route.js";
 
 // Passport
 import session from "express-session";
@@ -113,7 +114,7 @@ app.get("/api/auth/cookie-test", (req, res) => {
 });
 
 // Routes
-app.use("/api/auth", authRouter);
+app.use("/api/auth", requireApiKey, authRouter);
 app.use("/api/users", requireApiKey, userRouter);
 app.use("/api/documents", requireApiKey, documentRouter);
 app.use("/api/folders", requireApiKey, folderRouter);
@@ -121,6 +122,7 @@ app.use("/api/summaries", requireApiKey, summaryRouter);
 app.use("/api/usages", requireApiKey, usageRouter);
 app.use("/api/dashboard", requireApiKey, dashboardRouter);
 app.use("/api/chat", requireApiKey, chatRouter);
+app.use("/api/messages", requireApiKey, messageRouter);
 
 // Error Handlers
 app.use(notFound);
