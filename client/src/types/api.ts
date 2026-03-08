@@ -12,8 +12,8 @@ export type RefreshTokenResponse = {
 };
 
 export type AxiosError = {
-  response: {
-    data: {
+  response?: {
+    data?: {
       success: boolean;
       message: string;
     };
