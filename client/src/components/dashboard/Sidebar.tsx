@@ -8,6 +8,7 @@ export type NavItem =
   | "documents"
   | "summaries"
   | "folders"
+  | "chats"
   | "usage";
 
 interface DashboardSidebarProps {
@@ -31,6 +32,7 @@ const navItems: { id: NavItem; icon: string; label: string }[] = [
   { id: "documents", icon: "▣", label: "Documents" },
   { id: "summaries", icon: "◎", label: "Summaries" },
   { id: "folders", icon: "⬡", label: "Folders" },
+  { id: "chats", icon: "⊕", label: "Chats" },
   { id: "usage", icon: "◉", label: "Usage" },
 ];
 
