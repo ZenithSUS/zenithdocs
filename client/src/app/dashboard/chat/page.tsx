@@ -24,31 +24,43 @@ import useDocument from "@/features/documents/useDocument";
 import ReactMarkdown from "react-markdown";
 import useAuth from "@/features/auth/useAuth";
 import { toast } from "sonner";
-import { Message } from "@/types/chat";
 import DeleteMessagesModal from "@/components/dashboard/modals/chat/DeleteMessagesModal";
-
-const PAGE_SIZE = 20;
+import useMessage from "@/features/message/useMessage";
+import {
+  appendMessageToCache,
+  removeMessageFromCache,
+} from "@/features/message/message.cache";
+import { Message } from "@/types/message";
+import { useQueryClient } from "@tanstack/react-query";
+import messageKeys from "@/features/message/message.keys";
+import documentKeys from "@/features/documents/document.keys";
 
 interface MessageFormValues {
   message: string;
 }
 
+interface StreamingBubble {
+  content: string;
+}
+
 function DocumentChatContent() {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const searchParams = useSearchParams();
   const docId = searchParams.get("doc");
 
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isTyping, setIsTyping] = useState(false);
-  const [messagesData, setMessagesData] = useState<Message[]>([]);
-  const [streamingMessage, setStreamingMessage] = useState("");
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
-  const streamingRef = useRef("");
-  const optionsRef = useRef<HTMLDivElement>(null);
 
+  const [streamingBubble, setStreamingBubble] =
+    useState<StreamingBubble | null>(null);
+
+  const lastBottomMsgIdRef = useRef<string | null>(null);
+  const optionsRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const accumulatedRef = useRef("");
 
   const { register, handleSubmit, watch, reset, setValue } =
     useForm<MessageFormValues>({ defaultValues: { message: "" } });
@@ -59,18 +71,50 @@ function DocumentChatContent() {
 
   const { documentById } = useDocument(user?._id ?? "", docId ?? "");
   const { data: documentData, isLoading: docLoading } = documentById;
+  const { sendMessageStream, initChatDocument } = useChat(user?._id || "");
+  const { data: initChat, isLoading: initChatLoading } = initChatDocument(
+    docId || "",
+  );
 
-  const { chatByDocument, sendMessageStream } = useChat(user?._id || "");
-  const { data: chat, isLoading: chatLoading } = chatByDocument(docId || "");
+  const chatId = initChat?._id || "";
 
-  // Close dropdown on click outside
+  const { messagesByChatPage } = useMessage({ chatId });
+
+  const {
+    data: messages,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading: isLoadingMessages,
+  } = messagesByChatPage;
+
+  const allMessages =
+    messages?.pages
+      .slice()
+      .reverse()
+      .flatMap((page) => page.messages) ?? [];
+
+  useEffect(() => {
+    if (allMessages.length === 0) return;
+    const bottomId = allMessages[allMessages.length - 1]._id;
+    if (bottomId !== lastBottomMsgIdRef.current) {
+      lastBottomMsgIdRef.current = bottomId ?? null;
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [allMessages]);
+
+  useEffect(() => {
+    if (streamingBubble) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [streamingBubble?.content]);
+
+  // Close dropdown on outside click
   useEffect(() => {
     if (!isOptionsOpen) return;
     const handler = (e: MouseEvent) => {
       const target = e.target as Element;
-      // Don't close if clicking inside the options menu
       if (optionsRef.current?.contains(target)) return;
-      // Don't close if clicking inside a radix alert dialog portal
       if (
         target.closest?.(
           "[role='alertdialog'], [data-radix-popper-content-wrapper]",
@@ -83,23 +127,11 @@ function DocumentChatContent() {
     return () => document.removeEventListener("mousedown", handler);
   }, [isOptionsOpen]);
 
-  // Sync messages from server
-  useEffect(() => {
-    if (chat?.messages && !isTyping && !streamingMessage) {
-      setMessagesData(chat.messages);
-    }
-  }, [chat, isTyping, streamingMessage]);
-
   useEffect(() => {
     const h = (e: MouseEvent) => setMousePos({ x: e.clientX, y: e.clientY });
     window.addEventListener("mousemove", h);
     return () => window.removeEventListener("mousemove", h);
   }, []);
-
-  // Auto-scroll on new messages or streaming
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messagesData, streamingMessage]);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -109,61 +141,81 @@ function DocumentChatContent() {
     }
   }, [messageValue]);
 
-  // Get visible messages
-  const totalMessages = messagesData.length;
-  const hasMore = totalMessages > visibleCount;
-  const visibleMessages = messagesData.slice(
-    Math.max(0, totalMessages - visibleCount),
-  );
-
-  const loadMore = () => setVisibleCount((prev) => prev + PAGE_SIZE);
+  const handleLoadMore = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   const onSubmit = useCallback(
     async (values: MessageFormValues) => {
-      if (!values.message.trim() || !docId || isTyping) return;
+      if (!values.message.trim() || !docId || isTyping || !chatId) return;
       const userMessage = values.message.trim();
 
-      // Optimistically add user message
-      setMessagesData((prev) => [
-        ...prev,
-        { role: "user", content: userMessage, createdAt: new Date() },
-      ]);
+      accumulatedRef.current = "";
       reset();
       setIsTyping(true);
-      streamingRef.current = "";
-      setStreamingMessage("");
+      setStreamingBubble({ content: "" });
+
+      const tempUserMessage: Message = {
+        _id: `temp-user-${Date.now()}`,
+        chatId,
+        userId: user!._id,
+        role: "user",
+        content: userMessage,
+        createdAt: new Date(),
+      };
+      appendMessageToCache(
+        queryClient,
+        messageKeys.byChat(chatId),
+        tempUserMessage,
+      );
 
       try {
         await sendMessageStream(
           { documentId: docId, question: userMessage },
+
           (chunk) => {
-            streamingRef.current += chunk;
-            setStreamingMessage(streamingRef.current);
+            accumulatedRef.current += chunk;
+            setStreamingBubble({ content: accumulatedRef.current });
           },
-          () => {
-            const finalContent = streamingRef.current;
+
+          async () => {
+            const finalContent = accumulatedRef.current.trimEnd(); // ✅ clean trailing newlines
+
+            setStreamingBubble(null);
             setIsTyping(false);
-            setStreamingMessage("");
-            streamingRef.current = "";
-            setMessagesData((prev) => [
-              ...prev,
-              {
-                role: "assistant",
-                content: finalContent,
-                createdAt: new Date(),
-              },
-            ]);
+
+            const aiMessage: Message = {
+              _id: `temp-ai-${Date.now()}`,
+              chatId,
+              userId: user!._id,
+              role: "assistant",
+              content: finalContent,
+              createdAt: new Date(),
+            };
+
+            appendMessageToCache(
+              queryClient,
+              messageKeys.byChat(chatId),
+              aiMessage,
+            );
           },
         );
+
+        queryClient.invalidateQueries({
+          queryKey: documentKeys.byUserWithChatPage(user?._id || ""),
+        });
       } catch {
         toast.error("Error sending message");
+        removeMessageFromCache(
+          queryClient,
+          messageKeys.byChat(chatId),
+          tempUserMessage._id,
+        );
+        setStreamingBubble(null);
         setIsTyping(false);
-        setStreamingMessage("");
-        streamingRef.current = "";
-        setMessagesData((prev) => prev.slice(0, -1));
       }
     },
-    [docId, isTyping, sendMessageStream, reset],
+    [docId, chatId, isTyping, sendMessageStream, reset, queryClient, user],
   );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -172,6 +224,11 @@ function DocumentChatContent() {
       handleSubmit(onSubmit)();
     }
   };
+
+  const isChatsProcessing = useMemo(
+    () => initChatLoading || docLoading,
+    [initChatLoading, docLoading],
+  );
 
   const markdownComponents = useMemo(
     () => ({
@@ -195,7 +252,7 @@ function DocumentChatContent() {
     [],
   );
 
-  if (docLoading || chatLoading || !user) {
+  if (isChatsProcessing || !user) {
     return (
       <div className="min-h-screen bg-[#111111] text-[#F5F5F5] flex items-center justify-center">
         <div className="text-center">
@@ -229,7 +286,6 @@ function DocumentChatContent() {
   return (
     <div className="h-screen bg-[#111111] text-[#F5F5F5] font-serif flex flex-col overflow-hidden relative">
       <CursorGlow mousePos={mousePos} />
-
       <div
         className="absolute inset-0 opacity-30"
         style={{
@@ -265,7 +321,6 @@ function DocumentChatContent() {
             </div>
           </div>
 
-          {/* Options menu */}
           <div className="relative" ref={optionsRef}>
             <button
               onClick={() => setIsOptionsOpen(!isOptionsOpen)}
@@ -273,9 +328,8 @@ function DocumentChatContent() {
             >
               <MoreHorizontal className="w-5 h-5" />
             </button>
-
             {isOptionsOpen && (
-              <div className="absolute top-full right-0 mt-2  min-w-45 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl shadow-black/50 py-1.5 overflow-hidden">
+              <div className="absolute top-full right-0 mt-2 min-w-45 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl shadow-black/50 py-1.5 overflow-hidden">
                 <div className="px-3 py-1.5 mb-1">
                   <span className="text-[10px] text-text/30 font-sans tracking-widest uppercase">
                     Options
@@ -283,9 +337,8 @@ function DocumentChatContent() {
                 </div>
                 <div className="h-px bg-white/8 mb-1" />
                 <DeleteMessagesModal
-                  id={chat?._id || ""}
+                  chatId={initChat?._id || ""}
                   documentId={docId}
-                  userId={user._id}
                   onAction={() => setIsOptionsOpen(false)}
                 />
               </div>
@@ -294,10 +347,34 @@ function DocumentChatContent() {
         </div>
       </header>
 
-      {/* Messages area */}
+      {/* Messages */}
       <main className="relative z-10 flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto px-5 sm:px-8 py-8">
-          {messagesData.length === 0 && !isTyping ? (
+          {isLoadingMessages && (
+            <div className="space-y-6">
+              {[...Array(3)].map((_, i) => (
+                <div
+                  key={i}
+                  className={`flex gap-4 ${i % 2 === 0 ? "justify-end" : "justify-start"}`}
+                >
+                  {i % 2 !== 0 && (
+                    <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 shrink-0 mt-1 animate-pulse" />
+                  )}
+                  <div
+                    className={`h-14 rounded-2xl animate-pulse ${i % 2 === 0 ? "bg-primary/5 border border-primary/10" : "bg-white/5 border border-white/10"}`}
+                    style={{ width: `${45 + (i % 3) * 15}%` }}
+                  />
+                  {i % 2 === 0 && (
+                    <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 shrink-0 mt-1 animate-pulse" />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!isLoadingMessages &&
+          allMessages.length === 0 &&
+          !streamingBubble ? (
             <div className="flex flex-col items-center justify-center min-h-100 text-center">
               <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mb-6">
                 <Sparkles className="w-8 h-8 text-primary" />
@@ -313,7 +390,6 @@ function DocumentChatContent() {
                 . I'll help you understand and extract insights from the
                 document.
               </p>
-
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl">
                 {[
                   "Summarize the main points",
@@ -338,28 +414,34 @@ function DocumentChatContent() {
                 ))}
               </div>
             </div>
-          ) : (
+          ) : !isLoadingMessages ? (
             <div className="space-y-8">
-              {/* Load more button */}
-              {hasMore && (
+              {hasNextPage && (
                 <div className="flex justify-center">
                   <button
-                    onClick={loadMore}
-                    className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full text-[12px] text-text/50 font-sans hover:text-text/80 hover:border-white/20 transition-all"
+                    onClick={handleLoadMore}
+                    disabled={isFetchingNextPage}
+                    className="flex items-center gap-2 px-4 py-2 text-[12px] font-sans tracking-wider text-text/50 hover:text-text/80 border border-white/10 hover:border-white/20 rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <ChevronUp className="w-3.5 h-3.5" />
-                    Load {Math.min(
-                      PAGE_SIZE,
-                      totalMessages - visibleCount,
-                    )}{" "}
-                    older messages
+                    {isFetchingNextPage ? (
+                      <>
+                        <div className="w-3 h-3 border border-text/30 border-t-transparent rounded-full animate-spin" />
+                        LOADING...
+                      </>
+                    ) : (
+                      <>
+                        <ChevronUp className="w-3 h-3" />
+                        LOAD EARLIER MESSAGES
+                      </>
+                    )}
                   </button>
                 </div>
               )}
 
-              {visibleMessages.map((msg, idx) => (
+              {/* Messages */}
+              {allMessages.map((msg, idx) => (
                 <div
-                  key={`${msg.role}-${msg.createdAt}-${idx}`}
+                  key={msg._id ?? idx}
                   className={`flex gap-4 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                 >
                   {msg.role === "assistant" && (
@@ -367,7 +449,6 @@ function DocumentChatContent() {
                       <Sparkles className="w-4 h-4 text-primary" />
                     </div>
                   )}
-
                   <div
                     className={`max-w-[85%] sm:max-w-[75%] ${
                       msg.role === "user"
@@ -397,7 +478,6 @@ function DocumentChatContent() {
                       })}
                     </div>
                   </div>
-
                   {msg.role === "user" && (
                     <div className="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center shrink-0 mt-1">
                       <span className="text-[12px] text-text/70 font-sans font-medium">
@@ -408,45 +488,34 @@ function DocumentChatContent() {
                 </div>
               ))}
 
-              {/* Streaming bubble */}
-              {streamingMessage && (
-                <div className="flex gap-4 justify-start">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 mt-1">
-                    <Sparkles className="w-4 h-4 text-primary" />
-                  </div>
-                  <div className="max-w-[85%] sm:max-w-[75%] bg-white/5 border border-white/10 rounded-2xl px-5 py-4">
-                    <div className="text-[14px] leading-[1.8] font-sans text-text/80">
-                      <div className="prose prose-invert prose-sm max-w-none">
-                        <ReactMarkdown components={markdownComponents}>
-                          {streamingMessage}
-                        </ReactMarkdown>
-                      </div>
-                    </div>
-                    <span className="inline-block w-0.5 h-3.5 bg-primary/70 animate-pulse align-middle ml-0.5" />
-                  </div>
-                </div>
-              )}
-
-              {/* Typing dots */}
-              {isTyping && !streamingMessage && (
+              {/* Live streaming bubble — local state only, never touches the cache */}
+              {streamingBubble && (
                 <div className="flex gap-4 justify-start">
                   <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 mt-1">
                     <Sparkles className="w-4 h-4 text-primary animate-pulse" />
                   </div>
-                  <div className="bg-white/5 border border-white/10 rounded-2xl px-5 py-4">
-                    <div className="flex gap-1.5">
-                      <div
-                        className="w-2 h-2 rounded-full bg-primary animate-bounce"
-                        style={{ animationDelay: "0ms" }}
-                      />
-                      <div
-                        className="w-2 h-2 rounded-full bg-primary animate-bounce"
-                        style={{ animationDelay: "150ms" }}
-                      />
-                      <div
-                        className="w-2 h-2 rounded-full bg-primary animate-bounce"
-                        style={{ animationDelay: "300ms" }}
-                      />
+                  <div className="max-w-[85%] sm:max-w-[75%] bg-white/5 border border-white/10 rounded-2xl px-5 py-4">
+                    <div className="text-[14px] leading-[1.8] font-sans text-text/80">
+                      {!streamingBubble.content ? (
+                        <div className="flex gap-1.5 py-1">
+                          <div
+                            className="w-2 h-2 rounded-full bg-primary animate-bounce"
+                            style={{ animationDelay: "0ms" }}
+                          />
+                          <div
+                            className="w-2 h-2 rounded-full bg-primary animate-bounce"
+                            style={{ animationDelay: "150ms" }}
+                          />
+                          <div
+                            className="w-2 h-2 rounded-full bg-primary animate-bounce"
+                            style={{ animationDelay: "300ms" }}
+                          />
+                        </div>
+                      ) : (
+                        <ReactMarkdown components={markdownComponents}>
+                          {streamingBubble.content}
+                        </ReactMarkdown>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -454,11 +523,11 @@ function DocumentChatContent() {
 
               <div ref={messagesEndRef} />
             </div>
-          )}
+          ) : null}
         </div>
       </main>
 
-      {/* Input area */}
+      {/* Input */}
       <footer className="relative z-10 border-t border-white/8 bg-background/80 backdrop-blur-sm">
         <div className="max-w-4xl mx-auto px-5 sm:px-8 py-4">
           <div className="relative">
@@ -475,7 +544,6 @@ function DocumentChatContent() {
               className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 pr-14 text-[14px] text-text/90 font-sans placeholder:text-text/30 outline-none focus:border-primary/30 focus:bg-white/8 transition-all resize-none disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ minHeight: "56px", maxHeight: "200px" }}
             />
-
             <button
               onClick={handleSubmit(onSubmit)}
               disabled={!messageValue.trim() || isTyping}
@@ -488,7 +556,6 @@ function DocumentChatContent() {
               )}
             </button>
           </div>
-
           <p className="text-[10px] text-text/25 font-sans text-center mt-3 tracking-wider">
             AI responses may contain errors. Verify important information.
           </p>
@@ -500,9 +567,7 @@ function DocumentChatContent() {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-4px); }
         }
-        .animate-bounce {
-          animation: bounce 1s ease-in-out infinite;
-        }
+        .animate-bounce { animation: bounce 1s ease-in-out infinite; }
         .prose { color: inherit; }
         .prose code { font-family: 'Courier New', monospace; }
       `}</style>
