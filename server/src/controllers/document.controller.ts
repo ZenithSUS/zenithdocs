@@ -8,6 +8,7 @@ import {
   getAllDocumentsService,
   getDocumentByIdService,
   getDocumentsByUserPaginatedService,
+  getDocumentsByUserWithChatsPaginatedService,
   updateDocumentService,
 } from "../services/document.service.js";
 import { NextFunction, ParamsDictionary } from "express-serve-static-core";
@@ -124,14 +125,15 @@ export const getDocumentsByUserPaginatedController = async (
 ) => {
   try {
     const userId = req.params.id;
+
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 10;
 
-    const documents = await getDocumentsByUserPaginatedService(
-      userId,
-      page,
-      limit,
-    );
+    const includeChats = req.query.includeChats === "true";
+
+    const documents = includeChats
+      ? await getDocumentsByUserWithChatsPaginatedService(userId, page, limit)
+      : await getDocumentsByUserPaginatedService(userId, page, limit);
 
     return res.status(200).json({
       success: true,

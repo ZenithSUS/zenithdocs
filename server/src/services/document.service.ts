@@ -5,6 +5,7 @@ import {
   getAllDocuments,
   getDocumentById,
   getDocumentsByUserPaginated,
+  getDocumentsByUserWithChatsPaginated,
   updateDocument,
 } from "../repositories/document.repository.js";
 import { getFolderById } from "../repositories/folder.repository.js";
@@ -127,6 +128,40 @@ export const getDocumentsByUserPaginatedService = async (
     throw new AppError("Page and limit must be positive integers", 400);
 
   const documents = await getDocumentsByUserPaginated(userId, page, limit);
+  return documents;
+};
+
+/**
+ * Retrieves documents belonging to a user along with their associated chats in a paginated manner
+ * @param {string} userId - User ID
+ * @param {number} page - Page number to retrieve
+ * @param {number} limit - Number of documents to retrieve per page
+ * @returns An object containing the documents and the count of documents belonging to the user
+ * @throws {AppError} If the user ID is invalid or missing
+ * @throws {AppError} If the page number or limit is invalid or missing
+ * @throws {AppError} If the page number or limit is not a positive integer
+ */
+export const getDocumentsByUserWithChatsPaginatedService = async (
+  userId: string,
+  page: number,
+  limit: number,
+) => {
+  if (!userId) throw new AppError("User ID is required", 400);
+
+  if (!mongoose.Types.ObjectId.isValid(userId))
+    throw new AppError("Invalid User ID", 400);
+
+  if (!page || !limit) throw new AppError("Page and limit are required", 400);
+
+  if (page < 1 || limit < 1)
+    throw new AppError("Page and limit must be positive integers", 400);
+
+  const documents = await getDocumentsByUserWithChatsPaginated(
+    userId,
+    page,
+    limit,
+  );
+
   return documents;
 };
 
