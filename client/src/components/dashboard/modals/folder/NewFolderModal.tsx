@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import useFolder from "@/features/folder/useFolder";
+import { AxiosError } from "@/types/api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -62,13 +63,15 @@ const NewFolderModal = ({
       toast.success("Folder created successfully!");
       setOpen(false);
     } catch (error) {
-      console.log("Error creating folder:", error);
+      const err = error as AxiosError;
+      toast.error(err?.response?.data?.message || "Something went wrong.");
     }
   }, []);
 
   const errorMessage = useMemo(
     () =>
-      error?.response.data.message || "Something went wrong. Please try again.",
+      error?.response?.data?.message ||
+      "Something went wrong. Please try again.",
     [],
   );
 
