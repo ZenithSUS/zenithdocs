@@ -4,13 +4,17 @@ import client from "./index.js";
 import {
   createChat,
   getChatByDocument,
-  appendMessages,
   updateChatSummary,
 } from "../../repositories/chat.repository.js";
 import { Types } from "mongoose";
-import { IMessage } from "../../models/Chat.js";
 import { getDocumentByIdService } from "../../services/document.service.js";
 import AppError from "../../utils/app-error.js";
+import { IMessage } from "../../models/Message.js";
+import {
+  createMessages,
+  getRecentMessagesByChatId,
+  getTotalMessagesByChatIdAndUser,
+} from "../../repositories/message.repository.js";
 
 interface StreamChatPayload {
   question: string;
@@ -65,23 +69,29 @@ export const streamDocumentChatWithContextService = async ({
   }
 
   let chat = await getChatByDocument(documentId, userId);
+
   if (!chat) {
     chat = await createChat({
       documentId: new Types.ObjectId(documentId),
       userId: new Types.ObjectId(userId),
-      messages: [],
       summary: "",
     });
   }
 
+  const totalMessages = await getTotalMessagesByChatIdAndUser(
+    chat._id.toString(),
+    userId,
+  );
+  const oldMessages = await getRecentMessagesByChatId(chat._id.toString());
+
   let summary = chat.summary;
-  if (chat.messages.length > MAX_HISTORY_LENGTH) {
-    const oldMessages = chat.messages.slice(0, MAX_HISTORY_LENGTH);
+
+  if (totalMessages > MAX_HISTORY_LENGTH) {
     summary = (await summarizeOldMessages(oldMessages)).toString();
     await updateChatSummary(chat._id.toString(), summary);
   }
 
-  const recentHistory = chat.messages.slice(-MAX_HISTORY_LENGTH).map((m) => ({
+  const recentHistory = oldMessages.map((m) => ({
     role: m.role,
     content: m.content,
   }));
@@ -96,11 +106,12 @@ You are a helpful AI assistant. Answer the user's question based ONLY on the con
 ${summary ? "\nPrevious Conversion Summary:\n" + summary + "\n" : ""}
 
 Rules:
-- Write in plain, conversational text only
-- Do NOT use markdown formatting (no **, no *, no #, no bullet dashes, no backticks)
-- Do NOT use headers or bold/italic text
-- Use plain numbered lists only if listing multiple items (e.g. "1. 2. 3.")
+- Use markdown formatting to structure your response clearly
+- Use **bold** for key terms or important points
+- Use bullet points or numbered lists when listing multiple items
+- Use headers (##) for distinct sections when the answer is long
 - Write in clear, natural paragraphs
+- Keep code or technical terms in \`backticks\`
 - If the answer is not in the context, say "I don't have enough information to answer that."
 
 Context:
@@ -130,16 +141,29 @@ ${context}`;
     const token = chunk.data.choices[0].delta.content;
     if (token) {
       fullResponse += token;
-      res.write(`data: ${token}\n\n`);
+
+      const encoded = token.toString().replace(/\n/g, "\\n");
+      res.write(`data: ${encoded}\n\n`);
     }
   }
-
   res.write(`data: [DONE]\n\n`);
   res.end();
 
-  await appendMessages(chat._id.toString(), [
-    { role: "user", content: question, createdAt: new Date() },
-    { role: "assistant", content: fullResponse, createdAt: new Date() },
+  await createMessages([
+    {
+      chatId: chat._id.toString(),
+      userId,
+      role: "user",
+      content: question,
+      createdAt: new Date(),
+    },
+    {
+      chatId: chat._id.toString(),
+      userId,
+      role: "assistant",
+      content: fullResponse,
+      createdAt: new Date(Date.now() + 1000),
+    },
   ]);
 
   return fullResponse;
