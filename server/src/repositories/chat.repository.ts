@@ -1,5 +1,5 @@
 import { Types } from "mongoose";
-import Chat, { IChat, IMessage } from "../models/Chat.js";
+import Chat, { IChat } from "../models/Chat.js";
 
 /**
  * Creates a new chat document with the given data.
@@ -25,26 +25,50 @@ export const getChatByDocument = async (documentId: string, userId: string) => {
 };
 
 /**
+ * Retrieves all chat documents associated with a given user ID.
+ * @param {string} userId - The ID of the user to retrieve chat documents for.
+ * @returns {Promise<IChat[]>} An array of chat documents associated with the user.
+ */
+export const getChatByUser = async (userId: string) => {
+  return await Chat.find({ userId: new Types.ObjectId(userId) });
+};
+
+/**
+ * Retrieves all chat documents associated with a given user ID in a paginated manner.
+ * @param {string} userId - The ID of the user to retrieve chat documents for.
+ * @param {number} page - The page number to retrieve.
+ * @param {number} limit - The number of chat documents to retrieve per page.
+ * @returns {Promise<IChat[]>} An array of chat documents associated with the user.
+ */
+export const getChatByUserPaginated = async (
+  userId: string,
+  page: number,
+  limit: number,
+) => {
+  const offset = (page - 1) * limit;
+
+  const chats = await Chat.find({ userId: new Types.ObjectId(userId) })
+    .skip(offset)
+    .limit(limit)
+    .sort({ createdAt: -1 });
+
+  const total = await Chat.countDocuments({
+    userId: new Types.ObjectId(userId),
+  });
+
+  return {
+    chats,
+    pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+  };
+};
+
+/**
  * Retrieves a chat document by its ID.
  * @param {string} id - The ID of the chat document to retrieve.
  * @returns {Promise<IChat | null>} The chat document if found, null otherwise.
  */
 export const getChatById = async (id: string) => {
   return await Chat.findById(id);
-};
-
-/**
- * Appends a list of messages to a chat document.
- * @param {string} chatId - The ID of the chat document to append messages to.
- * @param {IMessage[]} messages - The list of messages to append.
- * @returns {Promise<IChat>} The updated chat document.
- */
-export const appendMessages = async (chatId: string, messages: IMessage[]) => {
-  return await Chat.findByIdAndUpdate(
-    chatId,
-    { $push: { messages: { $each: messages } } },
-    { returnDocument: "after" },
-  );
 };
 
 /**
