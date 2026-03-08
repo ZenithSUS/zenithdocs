@@ -1,5 +1,6 @@
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import Document, { IDocument } from "../models/Document.js";
+import Chat from "../models/Chat.js";
 
 /**
  * Creates a new document with the given data
@@ -128,6 +129,98 @@ export const getTotalStatusDocumentsByUser = async (
   }
 
   return await Document.countDocuments({ user: userId, status: status });
+};
+
+/**
+ * Retrieves documents belonging to a user in a paginated manner along with their associated chats.
+ * @param {string} userId - User ID
+ * @param {number} page - Page number to retrieve
+ * @param {number} limit - Number of documents to retrieve per page
+ * @returns {Promise<{ documents: IWithChat[], pagination: { page: number, limit: number, total: number, totalPages: number } }>} An object containing the documents with their associated chats and the pagination information
+ * @throws {null} If the user ID is invalid
+ */
+export const getDocumentsByUserWithChatsPaginated = async (
+  userId: string,
+  page: number,
+  limit: number,
+) => {
+  const offset = (page - 1) * limit;
+
+  const [documents, total] = await Promise.all([
+    Document.find({ user: userId })
+      .sort({ createdAt: -1 })
+      .select("-rawText")
+      .skip(offset)
+      .limit(limit)
+      .lean(),
+    Document.countDocuments({ user: userId }),
+  ]);
+
+  const documentIds = documents.map((doc) => doc._id);
+
+  const chatAggregation = await Chat.aggregate([
+    {
+      $match: {
+        userId: new Types.ObjectId(userId),
+        documentId: { $in: documentIds },
+      },
+    },
+    {
+      $lookup: {
+        from: "messages", // collection name
+        let: { chatId: "$_id" }, // chatId from messages
+        pipeline: [
+          { $match: { $expr: { $eq: ["$chatId", "$$chatId"] } } },
+          { $sort: { createdAt: -1 } },
+          { $limit: 1 },
+          { $project: { _id: 0, content: 1, role: 1 } },
+        ],
+        as: "lastMessage",
+      },
+    },
+    {
+      $lookup: {
+        from: "messages",
+        localField: "_id",
+        foreignField: "chatId",
+        as: "messages",
+      },
+    },
+    {
+      $project: {
+        documentId: 1,
+        summary: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        messageCount: { $size: "$messages" },
+        lastMessage: {
+          $cond: {
+            if: { $gt: [{ $size: "$lastMessage" }, 0] },
+            then: {
+              content: { $first: "$lastMessage.content" },
+              role: { $first: "$lastMessage.role" },
+            },
+            else: null,
+          },
+        },
+      },
+    },
+  ]);
+
+  // Map by documentId O(1) lookup
+  const chatMap = new Map(
+    chatAggregation.map((chat) => [chat.documentId.toString(), chat]),
+  );
+
+  const documentsWithChats = documents.map((doc) => ({
+    ...doc,
+    chat: chatMap.get(doc._id.toString()) || null,
+  }));
+
+  return {
+    documents: documentsWithChats,
+    pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+  };
 };
 
 /**
