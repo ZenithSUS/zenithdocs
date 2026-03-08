@@ -1,3 +1,5 @@
+import { Chat } from "./chat";
+
 export type DocStatus = "uploaded" | "processing" | "completed" | "failed";
 
 export interface Doc {
@@ -19,6 +21,18 @@ export interface Doc {
   createdAt: string;
   updatedAt?: string;
 }
+
+export type DocWithChat = Doc & {
+  chat:
+    | (Omit<Chat, "rawText"> & {
+        messageCount: number;
+        lastMessage: {
+          content: string;
+          role: "user" | "assistant";
+        };
+      })
+    | null;
+};
 
 export type CreateDoc = Omit<Doc, "_id" | "createdAt" | "updatedAt"> & {
   file?: File;
