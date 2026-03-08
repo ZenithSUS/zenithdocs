@@ -9,37 +9,34 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import useChat from "@/features/chat/useChat";
+import useMessage from "@/features/message/useMessage";
 import { AxiosError } from "@/types/api";
 import { Trash2Icon } from "lucide-react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
 interface DeleteMessagesModalProps {
-  id: string;
-  userId: string;
+  chatId: string;
   documentId: string;
   onAction?: () => void;
 }
 
 function DeleteMessagesModal({
-  id,
-  userId,
+  chatId,
   documentId,
   onAction,
 }: DeleteMessagesModalProps) {
   const [open, setOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const { deleteChatMessagesMutation } = useChat(userId);
-  const { mutateAsync: deleteChatMessages } = deleteChatMessagesMutation;
+  const { deleteMessageByChatMutation } = useMessage({ chatId });
+  const { mutateAsync: deleteChatMessages } = deleteMessageByChatMutation;
 
   const handleDeleteMessages = useCallback(async () => {
     setIsDeleting(true);
 
     try {
-      await deleteChatMessages({ id, documentId });
+      await deleteChatMessages(chatId);
       toast.success("Messages deleted successfully!");
       setOpen(false);
       onAction?.();
@@ -49,7 +46,7 @@ function DeleteMessagesModal({
     } finally {
       setIsDeleting(false);
     }
-  }, [deleteChatMessages, id, documentId]);
+  }, [deleteChatMessages, documentId]);
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
