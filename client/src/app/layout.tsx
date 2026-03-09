@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     locale: "en_US",
     images: [
       {
-        url: "/og-image.png", // Place a 1200×630 image at /public/og-image.png
+        url: "/og-image.png",
         width: 1200,
         height: 630,
         alt: "ZenithDocs – AI-Powered Document Manager",
