@@ -6,8 +6,6 @@ import useAuth from "@/features/auth/useAuth";
  * Hydrates the auth store once at layout level.
  * - Reads accessToken from localStorage into the store
  * - Syncs userId once the user query resolves
- *
- * Call this once in the dashboard layout, not in individual page hooks.
  */
 const useAuthHydration = () => {
   const { setAccessToken, setUserId } = useAuthStore();
