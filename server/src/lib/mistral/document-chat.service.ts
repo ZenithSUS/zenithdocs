@@ -106,6 +106,8 @@ You are a helpful AI assistant. Answer the user's question based ONLY on the con
 ${summary ? "\nPrevious Conversion Summary:\n" + summary + "\n" : ""}
 
 Rules:
+- Answer the user's question base ONLY on the context provided
+- Do not answer questions that are not in the context
 - Use markdown formatting to structure your response clearly
 - Use **bold** for key terms or important points
 - Use bullet points or numbered lists when listing multiple items
@@ -128,7 +130,7 @@ ${context}`;
   const stream = await client.chat.stream({
     model: "mistral-large-latest",
     messages: [
-      { role: "user", content: systemPrompt }, // system context
+      { role: "system", content: systemPrompt }, // system context
       ...recentHistory, // previous conversation
       { role: "user", content: question }, // current question (clean, no prompt)
     ],
