@@ -23,37 +23,52 @@ const extractRawText = async (
 ): Promise<string> => {
   switch (mimeType) {
     case "application/pdf": {
-      let buffer: ArrayBuffer;
-
-      if (filePath.startsWith("http")) {
-        buffer = await fetch(filePath).then((r) => r.arrayBuffer());
-      } else {
-        const fileBuffer = await fs.readFile(filePath);
-        buffer = fileBuffer.buffer.slice(
-          fileBuffer.byteOffset,
-          fileBuffer.byteOffset + fileBuffer.byteLength,
-        ) as ArrayBuffer;
-      }
+      // Load into a Uint8Array inside an IIFE block so the intermediate
+      // buffers fall out of scope (and become GC-eligible) before pdfjs loads
+      const pdfData = await (async (): Promise<Uint8Array> => {
+        if (filePath.startsWith("http")) {
+          const arrayBuffer = await fetch(filePath).then((r) =>
+            r.arrayBuffer(),
+          );
+          return new Uint8Array(arrayBuffer);
+          // arrayBuffer goes out of scope here
+        } else {
+          const fileBuffer = await fs.readFile(filePath);
+          const copy = new Uint8Array(fileBuffer);
+          return copy;
+          // fileBuffer goes out of scope here
+        }
+      })();
 
       const loadingTask = pdfjsLib.getDocument({
-        data: new Uint8Array(buffer),
+        data: pdfData,
+        disableAutoFetch: true,
+        disableStream: true,
       });
-      const pdf = await loadingTask.promise;
 
-      let fullText = "";
-      for (let i = 1; i <= pdf.numPages; i++) {
+      const pdf = await loadingTask.promise;
+      const numPages = pdf.numPages;
+
+      const pageTexts: string[] = [];
+
+      for (let i = 1; i <= numPages; i++) {
         const page = await pdf.getPage(i);
         const content = await page.getTextContent();
+
         const pageText = content.items
           .map((item: any) => ("str" in item ? item.str : ""))
           .join(" ");
-        fullText += pageText + "\n";
+
+        pageTexts.push(pageText);
+
+        // Release each page's resources immediately after extraction
         page.cleanup();
+        content.items.length = 0;
       }
 
       await loadingTask.destroy();
 
-      return fullText;
+      return pageTexts.join("\n");
     }
 
     case "application/vnd.openxmlformats-officedocument.wordprocessingml.document": {
