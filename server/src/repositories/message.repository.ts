@@ -39,7 +39,7 @@ export const getRecentMessagesByChatId = async (chatId: string) => {
   return await Message.find({
     chatId: new mongoose.Types.ObjectId(chatId),
   })
-    .sort({ createdAt: -1 })
+    .sort({ createdAt: 1 })
     .limit(10)
     .lean();
 };
