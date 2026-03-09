@@ -4,7 +4,10 @@ import {
   deleteMessagesByChatAndUser,
   getMessageByChatIdPaginated,
 } from "../repositories/message.repository.js";
-import { updateChatSummary } from "../repositories/chat.repository.js";
+import {
+  getChatById,
+  updateChatSummary,
+} from "../repositories/chat.repository.js";
 
 /**
  * Retrieves all messages associated with a given chat ID in a paginated manner.
@@ -68,6 +71,12 @@ export const deleteMessagesByChatIdAndUserService = async (
 
   if (!mongoose.Types.ObjectId.isValid(userId)) {
     throw new AppError("Invalid user ID", 400);
+  }
+
+  const chat = await getChatById(chatId);
+
+  if (!chat) {
+    throw new AppError("Chat not found", 404);
   }
 
   const messages = await deleteMessagesByChatAndUser(chatId, userId);
