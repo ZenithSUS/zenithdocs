@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import HeaderDropDown from "./HeaderDropDown";
 import { useRouter } from "next/navigation";
+import { Upload } from "lucide-react";
 
 interface DashboardHeaderProps {
   userId: string;
@@ -71,13 +72,16 @@ function DashboardHeader({
           className="hidden sm:flex items-center gap-2 px-4 py-2 bg-primary text-black rounded-sm text-[11px] font-bold tracking-widest font-sans hover:bg-[#e0b530] transition-colors duration-200 cursor-pointer"
           onClick={() => router.push("/dashboard/upload")}
         >
-          <span className="text-[10px] font-bold">↑</span> UPLOAD
+          <span>
+            <Upload className="w-4 h-4" />
+          </span>{" "}
+          UPLOAD
         </button>
         <button
           className="sm:hidden text-black font-bold p-2 bg-primary text-background rounded-sm text-[14px] hover:bg-[#e0b530] transition-colors"
           onClick={() => router.push("/dashboard/upload")}
         >
-          ↑
+          <Upload className="w-4 h-4" />
         </button>
 
         <div className="relative">
