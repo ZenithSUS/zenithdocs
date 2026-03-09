@@ -13,6 +13,19 @@ initSocket(httpServer, config.server.allowedOrigins.split(","));
 // Connect to MongoDB
 connectDB();
 
+const originalWarn = console.warn.bind(console);
+const originalInfo = console.info.bind(console);
+
+console.warn = (...args) => {
+  if (typeof args[0] === "string" && args[0].includes("TT:")) return;
+  originalWarn(...args);
+};
+
+console.info = (...args) => {
+  if (typeof args[0] === "string" && args[0].includes("TT:")) return;
+  originalInfo(...args);
+};
+
 // Start the HTTP server
 httpServer.listen(config.server.port, () => {
   console.log("=".repeat(50));
