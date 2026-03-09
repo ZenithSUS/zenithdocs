@@ -23,7 +23,12 @@ const protect = async (req: Request, res: Response, next: NextFunction) => {
       return next(new AppError("Unauthorized access", 401));
     }
 
-    req.user = decoded;
+    // Attach user to request
+    req.user = {
+      sub: user._id.toString(),
+      role: user.role,
+    };
+
     next();
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
