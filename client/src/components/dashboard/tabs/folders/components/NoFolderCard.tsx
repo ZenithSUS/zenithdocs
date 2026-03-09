@@ -1,4 +1,4 @@
-import NewFolderModal from "../../modals/folder/NewFolderModal";
+import NewFolderModal from "../../../modals/folder/NewFolderModal";
 
 interface NoFolderCardProps {
   userId: string;

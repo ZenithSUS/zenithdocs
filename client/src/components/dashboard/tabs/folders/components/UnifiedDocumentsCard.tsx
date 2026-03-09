@@ -1,7 +1,7 @@
 import FileIcon from "@/components/FileIcon";
 import Doc from "@/types/doc";
 import { SetStateAction } from "react";
-import { NavItem } from "../../Sidebar";
+import { NavItem } from "../../../Sidebar";
 import STATUS_META from "@/constants/status-meta";
 
 interface UnifiedDocumentsProps {
