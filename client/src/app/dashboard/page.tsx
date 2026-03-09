@@ -17,7 +17,7 @@ import DocumentChatLoading from "@/components/dashboard/tabs/chat/DocumentChatLo
 const OverViewTab = lazy(() => import("@/components/dashboard/tabs/Overview"));
 const DocumentsTab = lazy(() => import("@/components/dashboard/tabs/document"));
 const FolderTab = lazy(() => import("@/components/dashboard/tabs/folder"));
-const UsageTab = lazy(() => import("@/components/dashboard/tabs/Usage"));
+const UsageTab = lazy(() => import("@/components/dashboard/tabs/usage"));
 const SummaryTab = lazy(() => import("@/components/dashboard/tabs/Summary"));
 const ChatsTab = lazy(() => import("@/components/dashboard/tabs/chat"));
 
