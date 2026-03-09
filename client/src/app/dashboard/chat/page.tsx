@@ -1,16 +1,8 @@
 "use client";
 
-import {
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  Suspense,
-  useMemo,
-} from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useForm } from "react-hook-form";
-import CursorGlow from "@/components/CursorGlow";
+import { Suspense } from "react";
+import { useRouter } from "next/navigation";
+import ReactMarkdown from "react-markdown";
 import {
   Send,
   Sparkles,
@@ -19,250 +11,79 @@ import {
   ChevronUp,
   MoreHorizontal,
 } from "lucide-react";
-import useChat from "@/features/chat/useChat";
-import useDocument from "@/features/documents/useDocument";
-import ReactMarkdown from "react-markdown";
-import useAuth from "@/features/auth/useAuth";
-import { toast } from "sonner";
+
+import CursorGlow from "@/components/CursorGlow";
+import ErrorScreen from "@/components/dashboard/ErrorScreen";
 import DeleteMessagesModal from "@/components/dashboard/modals/chat/DeleteMessagesModal";
-import useMessage from "@/features/message/useMessage";
-import {
-  appendMessageToCache,
-  removeMessageFromCache,
-} from "@/features/message/message.cache";
-import { Message } from "@/types/message";
-import { useQueryClient } from "@tanstack/react-query";
-import messageKeys from "@/features/message/message.keys";
-import documentKeys from "@/features/documents/document.keys";
+import { markdownComponents } from "@/app/dashboard/chat/components/markdownComponents";
+import useChatPage from "./useChatPage";
 
-interface MessageFormValues {
-  message: string;
-}
+// ─── Loading fallback (shared between Suspense boundary + internal states) ───
+const FullPageSpinner = ({
+  label = "Loading conversation...",
+}: {
+  label?: string;
+}) => (
+  <div className="min-h-screen bg-[#111111] text-[#F5F5F5] flex items-center justify-center">
+    <div className="text-center">
+      <div className="w-12 h-12 border-2 border-[#C9A227] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+      <p className="text-[13px] text-text/50 font-sans">{label}</p>
+    </div>
+  </div>
+);
 
-interface StreamingBubble {
-  content: string;
-}
-
+// ─── Page ────────────────────────────────────────────────────────────────────
 function DocumentChatContent() {
-  const queryClient = useQueryClient();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const docId = searchParams.get("doc");
-
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [isTyping, setIsTyping] = useState(false);
-  const [isOptionsOpen, setIsOptionsOpen] = useState(false);
-
-  const [streamingBubble, setStreamingBubble] =
-    useState<StreamingBubble | null>(null);
-
-  const lastBottomMsgIdRef = useRef<string | null>(null);
-  const optionsRef = useRef<HTMLDivElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const accumulatedRef = useRef("");
-
-  const { register, handleSubmit, watch, reset, setValue } =
-    useForm<MessageFormValues>({ defaultValues: { message: "" } });
-  const messageValue = watch("message");
-
-  const { me } = useAuth();
-  const { data: user } = me;
-
-  const { documentById } = useDocument(user?._id ?? "", docId ?? "");
-  const { data: documentData, isLoading: docLoading } = documentById;
-  const { sendMessageStream, initChatDocument } = useChat(user?._id || "");
-  const { data: initChat, isLoading: initChatLoading } = initChatDocument(
-    docId || "",
-  );
-
-  const chatId = initChat?._id || "";
-
-  const { messagesByChatPage } = useMessage({ chatId });
 
   const {
-    data: messages,
-    fetchNextPage,
+    // Auth
+    user,
+    userError,
+    userErrorData,
+    refetchUser,
+
+    // Document / chat metadata
+    docId,
+    initChat,
+    documentData,
+    isChatsProcessing,
+    userLoading,
+
+    // Messages
+    allMessages,
+    isLoadingMessages,
     hasNextPage,
     isFetchingNextPage,
-    isLoading: isLoadingMessages,
-  } = messagesByChatPage;
+    handleLoadMore,
 
-  const allMessages =
-    messages?.pages
-      .slice()
-      .reverse()
-      .flatMap((page) => page.messages) ?? [];
+    // Stream + form
+    register,
+    handleSubmit,
+    setValue,
+    messageValue,
+    isTyping,
+    streamingBubble,
+    onSubmit,
+    handleKeyDown,
 
-  useEffect(() => {
-    if (allMessages.length === 0) return;
-    const bottomId = allMessages[allMessages.length - 1]._id;
-    if (bottomId !== lastBottomMsgIdRef.current) {
-      lastBottomMsgIdRef.current = bottomId ?? null;
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [allMessages]);
+    // UI
+    mousePos,
+    options,
 
-  useEffect(() => {
-    if (streamingBubble) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [streamingBubble?.content]);
+    // Refs
+    textareaRef,
+    messagesEndRef,
+  } = useChatPage();
 
-  // Close dropdown on outside click
-  useEffect(() => {
-    if (!isOptionsOpen) return;
-    const handler = (e: MouseEvent) => {
-      const target = e.target as Element;
-      if (optionsRef.current?.contains(target)) return;
-      if (
-        target.closest?.(
-          "[role='alertdialog'], [data-radix-popper-content-wrapper]",
-        )
-      )
-        return;
-      setIsOptionsOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [isOptionsOpen]);
+  // ─── Guards ──────────────────────────────────────────────────────────────
 
-  useEffect(() => {
-    const h = (e: MouseEvent) => setMousePos({ x: e.clientX, y: e.clientY });
-    window.addEventListener("mousemove", h);
-    return () => window.removeEventListener("mousemove", h);
-  }, []);
+  if (userError) {
+    return <ErrorScreen error={userErrorData} onRetry={refetchUser} />;
+  }
 
-  // Auto-resize textarea
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
-    }
-  }, [messageValue]);
-
-  const handleLoadMore = useCallback(() => {
-    if (hasNextPage && !isFetchingNextPage) fetchNextPage();
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
-
-  const onSubmit = useCallback(
-    async (values: MessageFormValues) => {
-      if (!values.message.trim() || !docId || isTyping || !chatId) return;
-      const userMessage = values.message.trim();
-
-      accumulatedRef.current = "";
-      reset();
-      setIsTyping(true);
-      setStreamingBubble({ content: "" });
-
-      const tempUserMessage: Message = {
-        _id: `temp-user-${Date.now()}`,
-        chatId,
-        userId: user!._id,
-        role: "user",
-        content: userMessage,
-        createdAt: new Date(),
-      };
-      appendMessageToCache(
-        queryClient,
-        messageKeys.byChat(chatId),
-        tempUserMessage,
-      );
-
-      try {
-        await sendMessageStream(
-          { documentId: docId, question: userMessage },
-
-          (chunk) => {
-            accumulatedRef.current += chunk;
-            setStreamingBubble({ content: accumulatedRef.current });
-          },
-
-          async () => {
-            const finalContent = accumulatedRef.current.trimEnd(); // ✅ clean trailing newlines
-
-            setStreamingBubble(null);
-            setIsTyping(false);
-
-            const aiMessage: Message = {
-              _id: `temp-ai-${Date.now()}`,
-              chatId,
-              userId: user!._id,
-              role: "assistant",
-              content: finalContent,
-              createdAt: new Date(),
-            };
-
-            appendMessageToCache(
-              queryClient,
-              messageKeys.byChat(chatId),
-              aiMessage,
-            );
-          },
-        );
-
-        queryClient.invalidateQueries({
-          queryKey: documentKeys.byUserWithChatPage(user?._id || ""),
-        });
-      } catch {
-        toast.error("Error sending message");
-        removeMessageFromCache(
-          queryClient,
-          messageKeys.byChat(chatId),
-          tempUserMessage._id,
-        );
-        setStreamingBubble(null);
-        setIsTyping(false);
-      }
-    },
-    [docId, chatId, isTyping, sendMessageStream, reset, queryClient, user],
-  );
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit(onSubmit)();
-    }
-  };
-
-  const isChatsProcessing = useMemo(
-    () => initChatLoading || docLoading,
-    [initChatLoading, docLoading],
-  );
-
-  const markdownComponents = useMemo(
-    () => ({
-      p: ({ children }: any) => <p className="mb-3 last:mb-0">{children}</p>,
-      ul: ({ children }: any) => (
-        <ul className="list-disc pl-5 mb-3 space-y-1">{children}</ul>
-      ),
-      ol: ({ children }: any) => (
-        <ol className="list-decimal pl-5 mb-3 space-y-1">{children}</ol>
-      ),
-      li: ({ children }: any) => <li className="text-text/70">{children}</li>,
-      code: ({ children }: any) => (
-        <code className="bg-black/30 px-1.5 py-0.5 rounded text-[13px] text-primary/90">
-          {children}
-        </code>
-      ),
-      strong: ({ children }: any) => (
-        <strong className="font-semibold text-text/95">{children}</strong>
-      ),
-    }),
-    [],
-  );
-
-  if (isChatsProcessing || !user) {
-    return (
-      <div className="min-h-screen bg-[#111111] text-[#F5F5F5] flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-2 border-[#C9A227] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-[13px] text-text/50 font-sans">
-            Loading conversation...
-          </p>
-        </div>
-      </div>
-    );
+  if (isChatsProcessing || userLoading) {
+    return <FullPageSpinner />;
   }
 
   if (!documentData || !docId) {
@@ -283,9 +104,13 @@ function DocumentChatContent() {
     );
   }
 
+  // ─── Render ───────────────────────────────────────────────────────────────
+
   return (
     <div className="h-screen bg-[#111111] text-[#F5F5F5] font-serif flex flex-col overflow-hidden relative">
       <CursorGlow mousePos={mousePos} />
+
+      {/* Background grid */}
       <div
         className="absolute inset-0 opacity-30"
         style={{
@@ -294,7 +119,7 @@ function DocumentChatContent() {
         }}
       />
 
-      {/* Header */}
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
       <header className="relative z-50 border-b border-white/8 bg-background/80 backdrop-blur-sm">
         <div className="max-w-4xl mx-auto px-5 sm:px-8 py-4 flex items-center justify-between gap-2">
           <button
@@ -321,14 +146,15 @@ function DocumentChatContent() {
             </div>
           </div>
 
-          <div className="relative" ref={optionsRef}>
+          <div className="relative" ref={options.ref}>
             <button
-              onClick={() => setIsOptionsOpen(!isOptionsOpen)}
+              onClick={() => options.setIsOpen(!options.isOpen)}
               className="p-2 rounded-lg text-text/50 hover:text-text/90 hover:bg-white/8 transition-all"
             >
               <MoreHorizontal className="w-5 h-5" />
             </button>
-            {isOptionsOpen && (
+
+            {options.isOpen && (
               <div className="absolute top-full right-0 mt-2 min-w-45 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl shadow-black/50 py-1.5 overflow-hidden">
                 <div className="px-3 py-1.5 mb-1">
                   <span className="text-[10px] text-text/30 font-sans tracking-widest uppercase">
@@ -337,9 +163,9 @@ function DocumentChatContent() {
                 </div>
                 <div className="h-px bg-white/8 mb-1" />
                 <DeleteMessagesModal
-                  chatId={initChat?._id || ""}
+                  chatId={initChat?._id ?? ""}
                   documentId={docId}
-                  onAction={() => setIsOptionsOpen(false)}
+                  onAction={() => options.setIsOpen(false)}
                 />
               </div>
             )}
@@ -347,9 +173,10 @@ function DocumentChatContent() {
         </div>
       </header>
 
-      {/* Messages */}
+      {/* ── Messages ───────────────────────────────────────────────────────── */}
       <main className="relative z-10 flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto px-5 sm:px-8 py-8">
+          {/* Skeleton */}
           {isLoadingMessages && (
             <div className="space-y-6">
               {[...Array(3)].map((_, i) => (
@@ -372,162 +199,159 @@ function DocumentChatContent() {
             </div>
           )}
 
+          {/* Empty state */}
           {!isLoadingMessages &&
-          allMessages.length === 0 &&
-          !streamingBubble ? (
-            <div className="flex flex-col items-center justify-center min-h-100 text-center">
-              <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mb-6">
-                <Sparkles className="w-8 h-8 text-primary" />
-              </div>
-              <h2 className="text-[24px] font-serif text-text/80 mb-3">
-                Start a Conversation
-              </h2>
-              <p className="text-[14px] text-text/40 font-sans max-w-md leading-relaxed mb-8">
-                Ask questions about{" "}
-                <span className="text-text/60 font-medium">
-                  {documentData.title}
-                </span>
-                . I'll help you understand and extract insights from the
-                document.
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl">
-                {[
-                  "Summarize the main points",
-                  "What are the key takeaways?",
-                  "Explain the technical details",
-                  "What problems does this address?",
-                  "What is the overall impact?",
-                  "What are the challenges?",
-                ].map((suggestion, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setValue("message", suggestion)}
-                    className="group p-4 bg-white/5 border border-white/10 rounded-lg text-left hover:border-primary/30 hover:bg-white/8 transition-all duration-200"
-                  >
-                    <div className="flex items-start gap-2">
-                      <Sparkles className="w-4 h-4 text-primary/50 mt-0.5 shrink-0" />
-                      <span className="text-[13px] text-text/60 font-sans group-hover:text-text/80 transition-colors">
-                        {suggestion}
-                      </span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : !isLoadingMessages ? (
-            <div className="space-y-8">
-              {hasNextPage && (
-                <div className="flex justify-center">
-                  <button
-                    onClick={handleLoadMore}
-                    disabled={isFetchingNextPage}
-                    className="flex items-center gap-2 px-4 py-2 text-[12px] font-sans tracking-wider text-text/50 hover:text-text/80 border border-white/10 hover:border-white/20 rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isFetchingNextPage ? (
-                      <>
-                        <div className="w-3 h-3 border border-text/30 border-t-transparent rounded-full animate-spin" />
-                        LOADING...
-                      </>
-                    ) : (
-                      <>
-                        <ChevronUp className="w-3 h-3" />
-                        LOAD EARLIER MESSAGES
-                      </>
-                    )}
-                  </button>
+            allMessages.length === 0 &&
+            !streamingBubble && (
+              <div className="flex flex-col items-center justify-center min-h-100 text-center">
+                <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mb-6">
+                  <Sparkles className="w-8 h-8 text-primary" />
                 </div>
-              )}
+                <h2 className="text-[24px] font-serif text-text/80 mb-3">
+                  Start a Conversation
+                </h2>
+                <p className="text-[14px] text-text/40 font-sans max-w-md leading-relaxed mb-8">
+                  Ask questions about{" "}
+                  <span className="text-text/60 font-medium">
+                    {documentData.title}
+                  </span>
+                  . I'll help you understand and extract insights from the
+                  document.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl">
+                  {[
+                    "Summarize the main points",
+                    "What are the key takeaways?",
+                    "Explain the technical details",
+                    "What problems does this address?",
+                    "What is the overall impact?",
+                    "What are the challenges?",
+                  ].map((suggestion, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setValue("message", suggestion)}
+                      className="group p-4 bg-white/5 border border-white/10 rounded-lg text-left hover:border-primary/30 hover:bg-white/8 transition-all duration-200"
+                    >
+                      <div className="flex items-start gap-2">
+                        <Sparkles className="w-4 h-4 text-primary/50 mt-0.5 shrink-0" />
+                        <span className="text-[13px] text-text/60 font-sans group-hover:text-text/80 transition-colors">
+                          {suggestion}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
-              {/* Messages */}
-              {allMessages.map((msg, idx) => (
-                <div
-                  key={msg._id ?? idx}
-                  className={`flex gap-4 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                >
-                  {msg.role === "assistant" && (
-                    <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 mt-1">
-                      <Sparkles className="w-4 h-4 text-primary" />
-                    </div>
-                  )}
+          {/* Message list */}
+          {!isLoadingMessages &&
+            (allMessages.length > 0 || streamingBubble) && (
+              <div className="space-y-8">
+                {hasNextPage && (
+                  <div className="flex justify-center">
+                    <button
+                      onClick={handleLoadMore}
+                      disabled={isFetchingNextPage}
+                      className="flex items-center gap-2 px-4 py-2 text-[12px] font-sans tracking-wider text-text/50 hover:text-text/80 border border-white/10 hover:border-white/20 rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isFetchingNextPage ? (
+                        <>
+                          <div className="w-3 h-3 border border-text/30 border-t-transparent rounded-full animate-spin" />
+                          LOADING...
+                        </>
+                      ) : (
+                        <>
+                          <ChevronUp className="w-3 h-3" />
+                          LOAD EARLIER MESSAGES
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+
+                {allMessages.map((msg, idx) => (
                   <div
-                    className={`max-w-[85%] sm:max-w-[75%] ${
-                      msg.role === "user"
-                        ? "bg-primary/10 border border-primary/20"
-                        : "bg-white/5 border border-white/10"
-                    } rounded-2xl px-5 py-4`}
+                    key={msg._id ?? idx}
+                    className={`flex gap-4 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                   >
+                    {msg.role === "assistant" && (
+                      <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 mt-1">
+                        <Sparkles className="w-4 h-4 text-primary" />
+                      </div>
+                    )}
                     <div
-                      className={`text-[14px] leading-[1.8] font-sans ${
-                        msg.role === "user" ? "text-text/90" : "text-text/80"
+                      className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-5 py-4 ${
+                        msg.role === "user"
+                          ? "bg-primary/10 border border-primary/20"
+                          : "bg-white/5 border border-white/10"
                       }`}
                     >
-                      {msg.role === "assistant" ? (
-                        <div className="prose prose-invert prose-sm max-w-none">
+                      <div
+                        className={`text-[14px] leading-[1.8] font-sans ${msg.role === "user" ? "text-text/90" : "text-text/80"}`}
+                      >
+                        {msg.role === "assistant" ? (
+                          <div className="prose prose-invert prose-sm max-w-none">
+                            <ReactMarkdown components={markdownComponents}>
+                              {msg.content}
+                            </ReactMarkdown>
+                          </div>
+                        ) : (
+                          <p className="whitespace-pre-wrap">{msg.content}</p>
+                        )}
+                      </div>
+                      <div className="text-[10px] text-text/30 font-sans mt-2 tracking-wider">
+                        {new Date(msg.createdAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </div>
+                    </div>
+                    {msg.role === "user" && (
+                      <div className="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center shrink-0 mt-1">
+                        <span className="text-[12px] text-text/70 font-sans font-medium">
+                          {user?.email[0].toUpperCase() ?? "?"}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {/* Streaming bubble */}
+                {streamingBubble && (
+                  <div className="flex gap-4 justify-start">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 mt-1">
+                      <Sparkles className="w-4 h-4 text-primary animate-pulse" />
+                    </div>
+                    <div className="max-w-[85%] sm:max-w-[75%] bg-white/5 border border-white/10 rounded-2xl px-5 py-4">
+                      <div className="text-[14px] leading-[1.8] font-sans text-text/80">
+                        {!streamingBubble.content ? (
+                          <div className="flex gap-1.5 py-1">
+                            {[0, 150, 300].map((delay) => (
+                              <div
+                                key={delay}
+                                className="w-2 h-2 rounded-full bg-primary animate-bounce"
+                                style={{ animationDelay: `${delay}ms` }}
+                              />
+                            ))}
+                          </div>
+                        ) : (
                           <ReactMarkdown components={markdownComponents}>
-                            {msg.content}
+                            {streamingBubble.content}
                           </ReactMarkdown>
-                        </div>
-                      ) : (
-                        <p className="whitespace-pre-wrap">{msg.content}</p>
-                      )}
-                    </div>
-                    <div className="text-[10px] text-text/30 font-sans mt-2 tracking-wider">
-                      {new Date(msg.createdAt).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                        )}
+                      </div>
                     </div>
                   </div>
-                  {msg.role === "user" && (
-                    <div className="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center shrink-0 mt-1">
-                      <span className="text-[12px] text-text/70 font-sans font-medium">
-                        {user.email[0].toUpperCase()}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              ))}
+                )}
 
-              {/* Live streaming bubble — local state only, never touches the cache */}
-              {streamingBubble && (
-                <div className="flex gap-4 justify-start">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 mt-1">
-                    <Sparkles className="w-4 h-4 text-primary animate-pulse" />
-                  </div>
-                  <div className="max-w-[85%] sm:max-w-[75%] bg-white/5 border border-white/10 rounded-2xl px-5 py-4">
-                    <div className="text-[14px] leading-[1.8] font-sans text-text/80">
-                      {!streamingBubble.content ? (
-                        <div className="flex gap-1.5 py-1">
-                          <div
-                            className="w-2 h-2 rounded-full bg-primary animate-bounce"
-                            style={{ animationDelay: "0ms" }}
-                          />
-                          <div
-                            className="w-2 h-2 rounded-full bg-primary animate-bounce"
-                            style={{ animationDelay: "150ms" }}
-                          />
-                          <div
-                            className="w-2 h-2 rounded-full bg-primary animate-bounce"
-                            style={{ animationDelay: "300ms" }}
-                          />
-                        </div>
-                      ) : (
-                        <ReactMarkdown components={markdownComponents}>
-                          {streamingBubble.content}
-                        </ReactMarkdown>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div ref={messagesEndRef} />
-            </div>
-          ) : null}
+                <div ref={messagesEndRef} />
+              </div>
+            )}
         </div>
       </main>
 
-      {/* Input */}
+      {/* ── Input ──────────────────────────────────────────────────────────── */}
       <footer className="relative z-10 border-t border-white/8 bg-background/80 backdrop-blur-sm">
         <div className="max-w-4xl mx-auto px-5 sm:px-8 py-4">
           <div className="relative">
@@ -535,7 +359,9 @@ function DocumentChatContent() {
               {...register("message")}
               ref={(e) => {
                 register("message").ref(e);
-                textareaRef.current = e;
+                (
+                  textareaRef as React.MutableRefObject<HTMLTextAreaElement | null>
+                ).current = e;
               }}
               onKeyDown={handleKeyDown}
               placeholder="Ask a question about this document..."
@@ -575,20 +401,10 @@ function DocumentChatContent() {
   );
 }
 
+// ─── Suspense wrapper ────────────────────────────────────────────────────────
 export default function DocumentChatPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-[#111111] text-[#F5F5F5] flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-12 h-12 border-2 border-[#C9A227] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-[13px] text-text/50 font-sans">
-              Loading conversation...
-            </p>
-          </div>
-        </div>
-      }
-    >
+    <Suspense fallback={<FullPageSpinner />}>
       <DocumentChatContent />
     </Suspense>
   );
