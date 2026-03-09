@@ -31,6 +31,7 @@ import {
 import LoadingScreen from "@/components/dashboard/LoadingScreen";
 import ErrorScreen from "@/components/dashboard/ErrorScreen";
 import DocumentSummaryCard from "@/components/dashboard/cards/DocumentSummaryCard";
+import useMousePosition from "@/features/ui/useMousePostion";
 
 const SUMMARIES_PER_PAGE = 3;
 
@@ -39,11 +40,12 @@ export default function DocumentViewPage() {
   const params = useParams();
   const documentId = params?.id as string;
 
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [activeTab, setActiveTab] = useState<"details" | "summaries">(
     "details",
   );
   const [currentPage, setCurrentPage] = useState(1);
+
+  const mousePos = useMousePosition();
 
   const { me } = useAuth();
   const {
@@ -87,12 +89,6 @@ export default function DocumentViewPage() {
   useEffect(() => {
     setCurrentPage(1);
   }, [activeTab]);
-
-  useEffect(() => {
-    const h = (e: MouseEvent) => setMousePos({ x: e.clientX, y: e.clientY });
-    window.addEventListener("mousemove", h);
-    return () => window.removeEventListener("mousemove", h);
-  }, []);
 
   if (userError) {
     return <ErrorScreen error={userErrorData} onRetry={refetchUser} />;
