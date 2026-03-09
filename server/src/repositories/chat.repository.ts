@@ -94,16 +94,3 @@ export const deleteChat = async (id: string) => {
   const chat = await Chat.findByIdAndDelete(id);
   return chat;
 };
-
-/**
- * Deletes all messages associated with a chat document.
- * @param {string} chatId - The ID of the chat document to delete messages from.
- * @returns {Promise<IChat>} The updated chat document with all messages deleted.
- */
-export const deleteMessages = async (chatId: string) => {
-  return await Chat.findByIdAndUpdate(
-    chatId,
-    { $set: { messages: [] } },
-    { returnDocument: "after" },
-  );
-};

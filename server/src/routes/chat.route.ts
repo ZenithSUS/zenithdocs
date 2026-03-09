@@ -1,6 +1,5 @@
 import {
   chatController,
-  deleteChatMessagesController,
   getChatByDocumentController,
   getChatByUserPaginatedController,
   initChatForDocumentController,
@@ -8,18 +7,30 @@ import {
 import { Router } from "express";
 import protect from "../middlewares/protect.middleware.js";
 import authorizeSelfOrAdmin from "../middlewares/authorize-self-or-admin.middleware.js";
+import limiter from "../middlewares/limiter.middleware.js";
 
 const router = Router();
 
-router.post("/", protect, chatController);
-router.post("/document/:id/init", protect, initChatForDocumentController);
+router.post("/", protect, limiter("createChat"), chatController);
+router.post(
+  "/document/:id/init",
+  protect,
+  limiter("initChatForDocument"),
+  initChatForDocumentController,
+);
+
 router.get(
   "/user/:id",
   protect,
   authorizeSelfOrAdmin,
+  limiter("getChatByUserPaginated"),
   getChatByUserPaginatedController,
 );
-router.get("/document/:id", protect, getChatByDocumentController);
-router.delete("/message/:id", protect, deleteChatMessagesController);
+router.get(
+  "/document/:id",
+  protect,
+  limiter("getChatByDocument"),
+  getChatByDocumentController,
+);
 
 export default router;

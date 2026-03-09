@@ -78,4 +78,22 @@ export const rateLimiters = {
   updateUsage: createLimiter(10, "1 m", "updateUsage"),
   deleteUsage: createLimiter(5, "1 m", "deleteUsage"),
   deleteUsageByUser: createLimiter(5, "1 m", "deleteUsageByUser"),
+
+  // Chat read
+  getChatByDocument: createLimiter(15, "1 m", "getChatByDocument"),
+  getChatByUserPaginated: createLimiter(15, "1 m", "getChatByUserPaginated"),
+
+  // Chat write
+  initChatForDocument: createLimiter(5, "1 m", "initChatForDocument"),
+  createChat: createLimiter(10, "1 m", "createChat"),
+
+  // Message read
+  getMessagesByChatPaginated: createLimiter(
+    15,
+    "1 m",
+    "getMessagesByChatPaginated",
+  ),
+
+  // Message write
+  deleteMessagesByChatId: createLimiter(5, "1 m", "deleteMessagesByChatId"),
 };

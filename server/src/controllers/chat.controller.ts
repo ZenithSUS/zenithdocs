@@ -2,7 +2,6 @@ import { NextFunction, Request, Response } from "express";
 import AppError from "../utils/app-error.js";
 import { streamDocumentChatWithContextService } from "../lib/mistral/document-chat.service.js";
 import {
-  deleteChatMessagesService,
   getChatByDocumentService,
   getChatByUserPaginatedService,
   initChatForDocumentService,
@@ -140,36 +139,6 @@ export const getChatByUserPaginatedController = async (
       success: true,
       message: "Chat fetched successfully",
       data: chats,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
- * Delete chat messages by document ID
- * @route DELETE /api/chats/:id
- */
-export const deleteChatMessagesController = async (
-  req: Request<DocumentParams>,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const { id } = req.params;
-    const currentUserId = req.user?.sub;
-    const role = req.user?.role;
-
-    if (!currentUserId || (!role && role !== "admin" && role !== "user")) {
-      throw new AppError("Unauthorized", 401);
-    }
-
-    const chat = await deleteChatMessagesService(id, currentUserId, role);
-
-    return res.status(200).json({
-      success: true,
-      message: "Chat messages deleted successfully",
-      data: chat,
     });
   } catch (error) {
     next(error);
