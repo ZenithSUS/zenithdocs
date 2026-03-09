@@ -19,6 +19,7 @@ import {
 import { deleteFileFromCloudinary } from "../lib/cloudinary.service.js";
 import colors from "../utils/log-colors.js";
 import { deleteDocumentChunksByDocumentId } from "../repositories/document-chunk.repository.js";
+import { prepareDocumentforRAG } from "../lib/mistral/rag-index.service.js";
 
 /**
  * Creates a new document with the given data
@@ -90,6 +91,47 @@ export const createDocumentService = async (data: Partial<IDocument>) => {
 
   await incrementUsage(user.toString(), 0);
   return document;
+};
+
+/**
+ * Reprocesses an uploaded document with the given ID and user ID
+ * @throws {AppError} If document ID is missing or invalid
+ * @throws {AppError} If document is not found
+ * @throws {AppError} If current user ID does not match the document's owner ID (403 Forbidden)
+ * @returns The reprocessed document with the status set to "completed"
+ */
+export const reprocessUploadedDocumentService = async (
+  id: string,
+  currentUserId: string,
+) => {
+  if (!id || typeof id !== "string") {
+    throw new AppError("Document ID is required", 400);
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new AppError("Invalid Document ID", 400);
+  }
+
+  const document = await getDocumentById(id);
+
+  if (!document) {
+    throw new AppError("Document not found", 404);
+  }
+
+  if (document.user._id.toString() !== currentUserId) {
+    throw new AppError("Forbidden", 403);
+  }
+
+  await prepareDocumentforRAG(
+    document._id.toString(),
+    document.user._id.toString(),
+  );
+
+  const updatedDocument = await updateDocument(document._id.toString(), {
+    status: "completed",
+  });
+
+  return updatedDocument;
 };
 
 /**

@@ -31,6 +31,7 @@ export const rateLimiters = {
 
   // Document write
   uploadDocument: createLimiter(5, "1 m", "uploadDocument"),
+  reprocessDocument: createLimiter(5, "1 h", "reprocessDocument"),
   updateDocument: createLimiter(10, "1 m", "updateDocument"),
   deleteDocument: createLimiter(5, "1 m", "deleteDocument"),
 

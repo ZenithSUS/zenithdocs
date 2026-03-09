@@ -9,6 +9,7 @@ import {
   getDocumentByIdService,
   getDocumentsByUserPaginatedService,
   getDocumentsByUserWithChatsPaginatedService,
+  reprocessUploadedDocumentService,
   updateDocumentService,
 } from "../services/document.service.js";
 import { NextFunction, ParamsDictionary } from "express-serve-static-core";
@@ -93,6 +94,39 @@ export const createDocumentController = async (
     }
 
     if (tempFilePath) await unlink(tempFilePath).catch(() => {});
+    next(error);
+  }
+};
+
+/**
+ * Reprocess uploaded document
+ * @route POST /api/documents/reprocess
+ */
+export const reprocessUploadedDocumentController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { documentId } = req.body;
+    const currentUserId = req.user?.sub;
+    const role = req.user?.role;
+
+    if (!currentUserId || (role !== "admin" && role !== "user")) {
+      throw new AppError("Unauthorized", 401);
+    }
+
+    const document = await reprocessUploadedDocumentService(
+      documentId,
+      currentUserId,
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Document reprocessed successfully",
+      data: document,
+    });
+  } catch (error) {
     next(error);
   }
 };

@@ -47,6 +47,14 @@ router.post(
   createDocumentController,
 );
 
+router.post(
+  "/reprocess",
+  protect,
+  limiter("reprocessDocument"),
+  upload.single("file"),
+  createDocumentController,
+);
+
 router.put(
   "/:id",
   protect,
