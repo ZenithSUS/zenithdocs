@@ -14,7 +14,7 @@ import FolderLoadingSkeletion from "@/components/dashboard/tabs/folder/component
 import DocumentChatLoading from "@/components/dashboard/tabs/chat/DocumentChatLoading";
 
 // Lazy-load dashboard tab components for code splitting
-const OverViewTab = lazy(() => import("@/components/dashboard/tabs/Overview"));
+const OverViewTab = lazy(() => import("@/components/dashboard/tabs/overview"));
 const DocumentsTab = lazy(() => import("@/components/dashboard/tabs/document"));
 const FolderTab = lazy(() => import("@/components/dashboard/tabs/folder"));
 const UsageTab = lazy(() => import("@/components/dashboard/tabs/usage"));
@@ -139,7 +139,6 @@ export default function DashboardPage() {
                 maxUsage={user?.tokenLimit || 0}
                 overview={overview}
                 overviewLoading={overviewLoading}
-                summaryTypesOverview={overview?.totalSummaryTypes || []}
               />
             </Suspense>
           )}
