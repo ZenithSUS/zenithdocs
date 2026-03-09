@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import useDocument from "@/features/documents/useDocument";
 import useDashboard from "@/features/dashboard/useDashboard";
 import usageKeys from "@/features/usage/usage.key";
+import documentKeys from "@/features/documents/document.keys";
+
 import { AxiosError } from "@/types/api";
 import Doc from "@/types/doc";
 import { UploadFile } from "./upload.types";
@@ -74,6 +76,7 @@ const useFileUpload = ({
               : f,
           ),
         );
+
         toast.success("File uploaded successfully!");
       } catch (err) {
         const apiError = err as AxiosError;
@@ -97,6 +100,9 @@ const useFileUpload = ({
       refetchDashboard(),
       queryClient.refetchQueries({
         queryKey: usageKeys.byUserSixMonths(userId),
+      }),
+      queryClient.invalidateQueries({
+        queryKey: documentKeys.byUserWithChatPage(userId),
       }),
     ]);
   }, [
