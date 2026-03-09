@@ -56,10 +56,12 @@ const DeleteDocumentModal = ({
           <DialogTitle className="text-text/90 font-serif text-[20px]">
             Delete Document?
           </DialogTitle>
-          <DialogDescription className="text-text/50 font-sans text-[14px] pt-2">
+          <DialogDescription className="text-text/50 font-sans text-[14px] pt-2 wrap-break-word">
             Are you sure you want to delete{" "}
-            <span className="text-text/70 font-medium">{documentTitle}</span>?
-            This action cannot be undone and will also delete all associated
+            <span className="text-text/70 font-medium break-all">
+              {documentTitle}
+            </span>
+            ? This action cannot be undone and will also delete all associated
             summaries.
           </DialogDescription>
         </DialogHeader>
