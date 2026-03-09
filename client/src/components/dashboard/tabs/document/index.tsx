@@ -8,7 +8,7 @@ import DeleteDocumentModal from "@/components/dashboard/modals/document/DeleteDo
 import MoveToFolderModal from "@/components/dashboard/modals/document/MoveToFolderModal";
 import { ThreeDot } from "react-loading-indicators";
 
-import DocumentsLoadingSkeleton from "@/components/dashboard/tabs/documents/DocumentsLoadingSkeleton";
+import DocumentsLoadingSkeleton from "@/components/dashboard/tabs/document/DocumentsLoadingSkeleton";
 import ActionsDropDown from "./ActionsDropDown";
 import SummaryContents from "./SummaryContents";
 import DocumentRowCard from "./DocumentRowCard";

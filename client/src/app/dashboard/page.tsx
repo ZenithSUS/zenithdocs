@@ -9,19 +9,17 @@ import { lazy, Suspense } from "react";
 import DashboardLoading from "@/components/dashboard/LoadingScreen";
 import ErrorScreen from "@/components/dashboard/ErrorScreen";
 import useDashboardPage from "./useDashboard";
-import DocumentsLoadingSkeleton from "@/components/dashboard/tabs/documents/DocumentsLoadingSkeleton";
-import FolderLoadingSkeletion from "@/components/dashboard/tabs/folders/components/FolderLoadingSkeletion";
-import DocumentChatLoading from "@/components/dashboard/tabs/chats/DocumentChatLoading";
+import DocumentsLoadingSkeleton from "@/components/dashboard/tabs/document/DocumentsLoadingSkeleton";
+import FolderLoadingSkeletion from "@/components/dashboard/tabs/folder/components/FolderLoadingSkeletion";
+import DocumentChatLoading from "@/components/dashboard/tabs/chat/DocumentChatLoading";
 
 // Lazy-load dashboard tab components for code splitting
 const OverViewTab = lazy(() => import("@/components/dashboard/tabs/Overview"));
-const DocumentsTab = lazy(
-  () => import("@/components/dashboard/tabs/documents"),
-);
-const FolderTab = lazy(() => import("@/components/dashboard/tabs/folders"));
+const DocumentsTab = lazy(() => import("@/components/dashboard/tabs/document"));
+const FolderTab = lazy(() => import("@/components/dashboard/tabs/folder"));
 const UsageTab = lazy(() => import("@/components/dashboard/tabs/Usage"));
 const SummaryTab = lazy(() => import("@/components/dashboard/tabs/Summary"));
-const ChatsTab = lazy(() => import("@/components/dashboard/tabs/chats"));
+const ChatsTab = lazy(() => import("@/components/dashboard/tabs/chat"));
 
 const CURRENT_MONTH = new Date().toISOString().slice(0, 7); // YYYY-MM
 

@@ -6,11 +6,11 @@ import { ThreeDot } from "react-loading-indicators";
 import NewFolderModal from "@/components/dashboard/modals/folder/NewFolderModal";
 import FolderCard from "@/components/dashboard/cards/FolderCard";
 
-import FolderLoadingSkeletion from "@/components/dashboard/tabs/folders/components/FolderLoadingSkeletion";
-import UnifiedDocumentsCard from "@/components/dashboard/tabs/folders/components/UnifiedDocumentsCard";
-import NoFolderCard from "@/components/dashboard/tabs/folders/components/NoFolderCard";
+import FolderLoadingSkeletion from "@/components/dashboard/tabs/folder/components/FolderLoadingSkeletion";
+import UnifiedDocumentsCard from "@/components/dashboard/tabs/folder/components/UnifiedDocumentsCard";
+import NoFolderCard from "@/components/dashboard/tabs/folder/components/NoFolderCard";
 
-import useFolderTab from "@/components/dashboard/tabs/folders/useFolderTab";
+import useFolderTab from "@/components/dashboard/tabs/folder/useFolderTab";
 
 interface FolderTabProps {
   userId: string;
