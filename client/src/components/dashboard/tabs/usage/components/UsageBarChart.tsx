@@ -16,7 +16,7 @@ const CHART_HEIGHT_PX = 128;
 
 const UsageBarChart = ({ usage, currentMonth, maxUsage }: Props) => (
   <>
-    {/* Chart — height set via style so % children resolve correctly */}
+    {/* Chart bars */}
     <div
       className="flex items-end gap-2 sm:gap-3 mb-3"
       style={{ height: CHART_HEIGHT_PX }}
