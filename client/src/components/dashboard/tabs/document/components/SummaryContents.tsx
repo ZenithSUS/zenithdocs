@@ -1,12 +1,12 @@
 import { AlertTriangle, Building2, ChevronRight } from "lucide-react";
-import { SUMMARY_ICONS } from "../Summary";
 import { Summary } from "@/types/summary";
+import { SUMMARY_ICONS } from "../summaryIcons";
 
-interface SummaryContentsProps {
+interface Props {
   summary: Summary;
 }
 
-function SummaryContents({ summary }: SummaryContentsProps) {
+const SummaryContents = ({ summary }: Props) => {
   const ad = summary.additionalDetails;
   const hasRisk = ad?.risk && ad.risk !== "No significant risk identified";
   const hasAction = ad?.action && ad.action !== "No immediate action required";
@@ -15,7 +15,7 @@ function SummaryContents({ summary }: SummaryContentsProps) {
 
   return (
     <div className="px-4 py-4 bg-primary/5 border border-primary/12 rounded-sm">
-      {/* Summary header */}
+      {/* Header */}
       <div className="flex items-center gap-2 mb-3">
         <span className="text-primary text-[13px]">
           {SUMMARY_ICONS[summary.type]}
@@ -28,12 +28,12 @@ function SummaryContents({ summary }: SummaryContentsProps) {
         </span>
       </div>
 
-      {/* Summary text */}
+      {/* Content */}
       <p className="text-[13px] text-text/65 font-sans leading-[1.7] whitespace-pre-line">
         {summary.content}
       </p>
 
-      {/* Additional Details */}
+      {/* Additional details */}
       {hasAnyDetails && (
         <div className="mt-3 rounded border border-white/6 bg-white/[0.018] overflow-hidden">
           {hasRisk && (
@@ -54,7 +54,6 @@ function SummaryContents({ summary }: SummaryContentsProps) {
               </p>
             </div>
           )}
-
           {hasAction && (
             <div
               className={`flex items-start gap-3 px-3 py-2.5 ${hasEntities ? "border-b border-white/5" : ""}`}
@@ -73,7 +72,6 @@ function SummaryContents({ summary }: SummaryContentsProps) {
               </p>
             </div>
           )}
-
           {hasEntities && (
             <div className="flex items-start gap-3 px-3 py-2.5">
               <div className="flex items-center gap-1 w-14.5 shrink-0 pt-0.75">
@@ -103,6 +101,6 @@ function SummaryContents({ summary }: SummaryContentsProps) {
       )}
     </div>
   );
-}
+};
 
 export default SummaryContents;

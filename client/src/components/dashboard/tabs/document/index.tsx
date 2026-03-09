@@ -1,35 +1,41 @@
 "use client";
 
 import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
+import { ThreeDot } from "react-loading-indicators";
 import { Folder } from "@/types/folder";
 import STATUS_META from "@/constants/status-meta";
 
 import DeleteDocumentModal from "@/components/dashboard/modals/document/DeleteDocumentModal";
 import MoveToFolderModal from "@/components/dashboard/modals/document/MoveToFolderModal";
-import { ThreeDot } from "react-loading-indicators";
 
-import DocumentsLoadingSkeleton from "@/components/dashboard/tabs/document/DocumentsLoadingSkeleton";
-import ActionsDropDown from "./ActionsDropDown";
-import SummaryContents from "./SummaryContents";
-import DocumentRowCard from "./DocumentRowCard";
-import ActionButton from "./ActionButton";
 import useDocumentTab from "./useDocumentTab";
+import ActionButton from "./components/ActionButton";
+import ActionsDropDown from "./components/ActionsDropDown";
+import DocumentRowCard from "./components/DocumentRowCard";
+import DocumentsLoadingSkeleton from "./components/DocumentsLoadingSkeleton";
+import SummaryContents from "./components/SummaryContents";
 
-interface DocumentsTabProps {
+interface Props {
   userId: string;
   filterFolder: string;
   setFilterFolder: React.Dispatch<React.SetStateAction<string>>;
 }
 
-function DocumentsTab({
-  userId,
-  filterFolder,
-  setFilterFolder,
-}: DocumentsTabProps) {
-  const {
-    router,
+const STATUS_FILTERS = [
+  "all",
+  "uploaded",
+  "processing",
+  "completed",
+  "failed",
+] as const;
+const TABLE_HEADERS = ["TYPE", "DOCUMENT", "SIZE", "STATUS", "DATE", ""];
 
-    // Loading States
+function DocumentsTab({ userId, filterFolder, setFilterFolder }: Props) {
+  const router = useRouter();
+
+  const {
+    // Loading
     documentsLoading,
     foldersLoading,
 
@@ -37,45 +43,45 @@ function DocumentsTab({
     allDocs,
     allFolders,
     allSummaries,
+    filteredDocs,
 
-    // States
+    // State
     selectedDoc,
     actionsMenuOpen,
-    filteredDocs,
     filterStatus,
     isFetchingNextDocPage,
     hasNextDocPage,
     isNavigating,
     dropdownPosition,
-    documentToMove,
     documentToDelete,
+    documentToMove,
     moveModalOpen,
     deleteModalOpen,
 
-    // Actions
-    setSelectedDoc,
+    // Setters
     setFilterStatus,
+    setSelectedDoc,
     setActionsMenuOpen,
     setMoveModalOpen,
     setDeleteModalOpen,
+
+    // Handlers
     handleNavigate,
     handleMoveClick,
     handleDeleteClick,
+    handleDeleteSuccess,
     handleMoveSuccess,
     fetchNextDocPage,
-    handleDeleteSuccess,
 
     // Refs
     actionsButtonRefs,
     loadMoreRef,
   } = useDocumentTab(userId, filterFolder);
 
-  // Loading state
-  if (documentsLoading || foldersLoading) {
-    return <DocumentsLoadingSkeleton />;
-  }
+  // ─── Guards ───────────────────────────────────────────────────────────────
 
-  // Empty state
+  if (documentsLoading || foldersLoading) return <DocumentsLoadingSkeleton />;
+
   if (allDocs.length === 0) {
     return (
       <div className="border border-white/8 rounded-sm px-8 py-16 text-center">
@@ -89,8 +95,8 @@ function DocumentsTab({
         </p>
         <button
           type="button"
-          className="px-6 py-3 bg-primary text-background text-[12px] font-bold tracking-[0.12em] font-sans rounded-sm transition-all duration-200 hover:bg-[#e0b530] hover:-translate-y-0.5 cursor-pointer"
           onClick={() => router.replace("/dashboard/upload")}
+          className="px-6 py-3 bg-primary text-background text-[12px] font-bold tracking-[0.12em] font-sans rounded-sm transition-all duration-200 hover:bg-[#e0b530] hover:-translate-y-0.5 cursor-pointer"
         >
           UPLOAD DOCUMENT
         </button>
@@ -98,14 +104,14 @@ function DocumentsTab({
     );
   }
 
+  // ─── Render ───────────────────────────────────────────────────────────────
+
   return (
     <div className="space-y-5">
-      {/* Filters */}
+      {/* ── Filters ──────────────────────────────────────────────────────── */}
       <div className="flex flex-wrap gap-3 items-center">
         <div className="flex gap-1 p-1 bg-white/4 border border-white/8 rounded-sm">
-          {(
-            ["all", "uploaded", "processing", "completed", "failed"] as const
-          ).map((s) => (
+          {STATUS_FILTERS.map((s) => (
             <button
               key={s}
               onClick={() => {
@@ -158,11 +164,10 @@ function DocumentsTab({
         </span>
       </div>
 
-      {/* Document table */}
+      {/* ── Document table ────────────────────────────────────────────────── */}
       <div className="border border-white/8 rounded-sm overflow-visible">
-        {/* Table header */}
         <div className="hidden sm:grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-5 py-3 border-b border-white/6 bg-white/2">
-          {["TYPE", "DOCUMENT", "SIZE", "STATUS", "DATE", ""].map((h) => (
+          {TABLE_HEADERS.map((h) => (
             <span
               key={h}
               className="text-[9px] tracking-[0.18em] text-text/25 font-sans"
@@ -172,7 +177,6 @@ function DocumentsTab({
           ))}
         </div>
 
-        {/* Document rows */}
         <div className="divide-y divide-white/4">
           {filteredDocs.length === 0 ? (
             <div className="px-5 py-12 text-center text-text/25 text-[13px] font-sans">
@@ -196,6 +200,26 @@ function DocumentsTab({
               const isSelected = selectedDoc?._id === doc._id;
               const isActionsOpen = actionsMenuOpen === doc._id;
 
+              // Resolve summary for this doc
+              const summary = allSummaries.find((s) => {
+                const sid =
+                  s.document && typeof s.document === "object"
+                    ? s.document._id
+                    : typeof s.document === "string"
+                      ? s.document
+                      : null;
+                return sid === doc._id;
+              });
+
+              const noSummaryMessage =
+                doc.status === "processing"
+                  ? "Processing — summary will appear when complete."
+                  : doc.status === "failed"
+                    ? "Processing failed. Please re-upload the document."
+                    : doc.status === "uploaded"
+                      ? "Document uploaded — press more to generate a summary."
+                      : "No summary generated yet.";
+
               return (
                 <div
                   key={doc._id}
@@ -212,7 +236,6 @@ function DocumentsTab({
                     folder={folder}
                   />
 
-                  {/* Actions button */}
                   <ActionButton
                     document={doc}
                     actionsButtonRefs={actionsButtonRefs}
@@ -221,37 +244,16 @@ function DocumentsTab({
                     isActionsOpen={isActionsOpen}
                   />
 
-                  {/* Expanded summary panel */}
                   {isSelected && (
                     <div className="col-span-full mt-3 pt-3 border-t border-primary/10">
-                      {(() => {
-                        const summary = allSummaries.find((s) => {
-                          const summaryDocId =
-                            s.document && typeof s.document === "object"
-                              ? s.document._id
-                              : typeof s.document === "string"
-                                ? s.document
-                                : null;
-                          return summaryDocId === doc._id;
-                        });
-
-                        if (!summary) {
-                          return (
-                            <div className="text-[12px] text-text/30 font-sans flex items-center gap-2">
-                              <span className="text-text/20">◎</span>
-                              {doc.status === "processing"
-                                ? "Processing — summary will appear when complete."
-                                : doc.status === "failed"
-                                  ? "Processing failed. Please re-upload the document."
-                                  : doc.status === "uploaded"
-                                    ? "Document uploaded press more to generate a summary."
-                                    : "No summary generated yet."}
-                            </div>
-                          );
-                        }
-
-                        return <SummaryContents summary={summary} />;
-                      })()}
+                      {summary ? (
+                        <SummaryContents summary={summary} />
+                      ) : (
+                        <div className="text-[12px] text-text/30 font-sans flex items-center gap-2">
+                          <span className="text-text/20">◎</span>
+                          {noSummaryMessage}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -261,7 +263,7 @@ function DocumentsTab({
         </div>
       </div>
 
-      {/* Actions dropdown menu - rendered via Portal */}
+      {/* ── Actions dropdown (portal) ─────────────────────────────────────── */}
       {actionsMenuOpen &&
         dropdownPosition &&
         typeof document !== "undefined" &&
@@ -278,7 +280,7 @@ function DocumentsTab({
           document.body,
         )}
 
-      {/* Load more */}
+      {/* ── Load more ─────────────────────────────────────────────────────── */}
       {hasNextDocPage && (
         <div
           ref={loadMoreRef}
@@ -310,7 +312,7 @@ function DocumentsTab({
         </div>
       )}
 
-      {/* Delete Modal */}
+      {/* ── Modals ────────────────────────────────────────────────────────── */}
       {documentToDelete && (
         <DeleteDocumentModal
           documentId={documentToDelete.id}
@@ -322,7 +324,6 @@ function DocumentsTab({
         />
       )}
 
-      {/* Move to Folder Modal */}
       {documentToMove && (
         <MoveToFolderModal
           documentId={documentToMove.id}

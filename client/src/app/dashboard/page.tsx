@@ -9,7 +9,7 @@ import { lazy, Suspense } from "react";
 import DashboardLoading from "@/components/dashboard/LoadingScreen";
 import ErrorScreen from "@/components/dashboard/ErrorScreen";
 import useDashboardPage from "./useDashboard";
-import DocumentsLoadingSkeleton from "@/components/dashboard/tabs/document/DocumentsLoadingSkeleton";
+import DocumentsLoadingSkeleton from "@/components/dashboard/tabs/document/components/DocumentsLoadingSkeleton";
 import FolderLoadingSkeletion from "@/components/dashboard/tabs/folder/components/FolderLoadingSkeletion";
 import DocumentChatLoading from "@/components/dashboard/tabs/chat/DocumentChatLoading";
 
@@ -18,7 +18,7 @@ const OverViewTab = lazy(() => import("@/components/dashboard/tabs/overview"));
 const DocumentsTab = lazy(() => import("@/components/dashboard/tabs/document"));
 const FolderTab = lazy(() => import("@/components/dashboard/tabs/folder"));
 const UsageTab = lazy(() => import("@/components/dashboard/tabs/usage"));
-const SummaryTab = lazy(() => import("@/components/dashboard/tabs/Summary"));
+const SummaryTab = lazy(() => import("@/components/dashboard/tabs/summary"));
 const ChatsTab = lazy(() => import("@/components/dashboard/tabs/chat"));
 
 const CURRENT_MONTH = new Date().toISOString().slice(0, 7); // YYYY-MM

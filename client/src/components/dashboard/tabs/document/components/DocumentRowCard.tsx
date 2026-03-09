@@ -1,28 +1,22 @@
+import { SetStateAction } from "react";
 import FileIcon from "@/components/FileIcon";
 import STATUS_META from "@/constants/status-meta";
 import sizefmt from "@/helpers/size-format";
 import Doc from "@/types/doc";
-import { SetStateAction } from "react";
 
-interface DocumentRowCardProps {
+interface Props {
   document: Doc;
   isSelected: boolean;
   setSelectedDoc: (value: SetStateAction<Doc | null>) => void;
-  folder:
-    | {
-        _id: string;
-        name: string;
-      }
-    | null
-    | undefined;
+  folder: { _id: string; name: string } | null | undefined;
 }
 
-function DocumentRowCard({
+const DocumentRowCard = ({
   document: doc,
   isSelected,
   setSelectedDoc,
   folder,
-}: DocumentRowCardProps) {
+}: Props) => {
   const sm = STATUS_META[doc.status];
 
   return (
@@ -64,6 +58,6 @@ function DocumentRowCard({
       </span>
     </div>
   );
-}
+};
 
 export default DocumentRowCard;
