@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     "document collaboration",
     "ZenithDocs",
   ],
-  authors: [{ name: "ZenithDocs" }],
+  authors: [{ name: "ZenithSUS" }],
   creator: "ZenithDocs",
   publisher: "ZenithDocs",
   category: "Productivity",
