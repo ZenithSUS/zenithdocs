@@ -1,17 +1,18 @@
-// app/dashboard/layout.tsx
 "use client";
 
 import useDocumentStatus from "@/features/documents/useDocumentStatus";
+import useAuthHydration from "@/features/auth/useAuthHydration";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <DashboardSocketProvider>{children}</DashboardSocketProvider>;
+  return <DashboardProviders>{children}</DashboardProviders>;
 }
 
-function DashboardSocketProvider({ children }: { children: React.ReactNode }) {
+function DashboardProviders({ children }: { children: React.ReactNode }) {
+  useAuthHydration();
   useDocumentStatus();
 
   return <>{children}</>;
