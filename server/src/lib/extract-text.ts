@@ -1,6 +1,11 @@
 import mammoth from "mammoth";
-import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 import fs from "fs/promises";
+import * as pdfParseModule from "pdf-parse-new";
+
+const pdfParse: (buffer: Buffer) => Promise<{ text: string }> =
+  (pdfParseModule as any).default ??
+  (pdfParseModule as any).parse ??
+  pdfParseModule;
 
 /**
  * Extracts the raw text from a file, given its path and MIME type.
@@ -23,52 +28,18 @@ const extractRawText = async (
 ): Promise<string> => {
   switch (mimeType) {
     case "application/pdf": {
-      // Load into a Uint8Array inside an IIFE block so the intermediate
-      // buffers fall out of scope (and become GC-eligible) before pdfjs loads
-      const pdfData = await (async (): Promise<Uint8Array> => {
-        if (filePath.startsWith("http")) {
-          const arrayBuffer = await fetch(filePath).then((r) =>
-            r.arrayBuffer(),
-          );
-          return new Uint8Array(arrayBuffer);
-          // arrayBuffer goes out of scope here
-        } else {
-          const fileBuffer = await fs.readFile(filePath);
-          const copy = new Uint8Array(fileBuffer);
-          return copy;
-          // fileBuffer goes out of scope here
-        }
-      })();
+      let buffer: Buffer;
 
-      const loadingTask = pdfjsLib.getDocument({
-        data: pdfData,
-        disableAutoFetch: true,
-        disableStream: true,
-      });
-
-      const pdf = await loadingTask.promise;
-      const numPages = pdf.numPages;
-
-      const pageTexts: string[] = [];
-
-      for (let i = 1; i <= numPages; i++) {
-        const page = await pdf.getPage(i);
-        const content = await page.getTextContent();
-
-        const pageText = content.items
-          .map((item: any) => ("str" in item ? item.str : ""))
-          .join(" ");
-
-        pageTexts.push(pageText);
-
-        // Release each page's resources immediately after extraction
-        page.cleanup();
-        content.items.length = 0;
+      if (filePath.startsWith("http")) {
+        const response = await fetch(filePath);
+        const arrayBuffer = await response.arrayBuffer();
+        buffer = Buffer.from(arrayBuffer);
+      } else {
+        buffer = await fs.readFile(filePath);
       }
 
-      await loadingTask.destroy();
-
-      return pageTexts.join("\n");
+      const data = await pdfParse(buffer);
+      return data.text;
     }
 
     case "application/vnd.openxmlformats-officedocument.wordprocessingml.document": {
