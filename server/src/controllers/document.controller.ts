@@ -42,6 +42,11 @@ export const createDocumentController = async (
     if (!userId) throw new AppError("Unauthorized", 401);
     if (!req.file || !tempFilePath) throw new AppError("File is required", 400);
 
+    if (req.file.size > 10 * 1024 * 1024) {
+      await unlink(tempFilePath).catch(() => {});
+      throw new AppError("File size must be less than 10MB", 400);
+    }
+
     const data: Partial<IDocument> = req.body;
 
     const rawText = await extractRawText(tempFilePath, req.file.mimetype);
