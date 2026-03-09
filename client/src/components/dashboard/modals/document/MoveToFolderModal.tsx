@@ -60,7 +60,7 @@ const MoveToFolderModal = ({
       const updateData = {
         id: documentId,
         data: {
-          folder: selectedFolder === "none" ? undefined : selectedFolder,
+          folder: selectedFolder === "none" ? null : selectedFolder,
         },
       };
 
