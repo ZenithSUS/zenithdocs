@@ -10,7 +10,7 @@ import DashboardLoading from "@/components/dashboard/LoadingScreen";
 import ErrorScreen from "@/components/dashboard/ErrorScreen";
 import useDashboardPage from "./useDashboard";
 import DocumentsLoadingSkeleton from "@/components/dashboard/tabs/documents/DocumentsLoadingSkeleton";
-import FolderLoadingSkeletion from "@/components/dashboard/tabs/folders/FolderLoadingSkeletion";
+import FolderLoadingSkeletion from "@/components/dashboard/tabs/folders/components/FolderLoadingSkeletion";
 import DocumentChatLoading from "@/components/dashboard/tabs/chats/DocumentChatLoading";
 
 // Lazy-load dashboard tab components for code splitting
@@ -27,24 +27,35 @@ const CURRENT_MONTH = new Date().toISOString().slice(0, 7); // YYYY-MM
 
 export default function DashboardPage() {
   const {
+    // Auth
     user,
     userLoading,
     userError,
     userErrorData,
-    overview,
-    tokenPct,
-    documentPct,
-    handleRefetch,
     refetchUser,
+
+    // Navigation & layout
     nav,
     setNav,
     sidebarOpen,
     setSidebarOpen,
+    mainRef,
     mousePos,
+
+    // Overview
+    overview,
+    overviewLoading,
+
+    // Filters
     filterFolder,
     setFilterFolder,
-    mainRef,
-    overviewLoading,
+
+    // Usage
+    tokenPct,
+    documentPct,
+
+    // Actions
+    handleRefetch,
   } = useDashboardPage();
 
   if (userError) {
