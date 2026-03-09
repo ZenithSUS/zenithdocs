@@ -44,17 +44,12 @@ export const metadata: Metadata = {
   publisher: "ZenithDocs",
   category: "Productivity",
 
-  // Canonical & alternates
-  alternates: {
-    canonical: "/",
-  },
-
   metadataBase: new URL("https://zenithdocs-zen.vercel.app"),
 
   // Open Graph
   openGraph: {
     type: "website",
-
+    url: "https://zenithdocs-zen.vercel.app",
     siteName: "ZenithDocs",
     title: "ZenithDocs — AI-Powered Document Manager",
     description:
