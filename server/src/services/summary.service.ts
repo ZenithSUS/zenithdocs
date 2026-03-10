@@ -1,4 +1,4 @@
-import { summarizeText } from "../lib/mistral/document-summary.service.js";
+import { summarizeText } from "../lib/mistral/services/document-summary.service.js";
 import { ISummary } from "../models/Summary.js";
 import {
   createSummary,
@@ -14,7 +14,7 @@ import AppError from "../utils/app-error.js";
 import mongoose from "mongoose";
 import { updateUsageMonthByUser } from "../repositories/usage.repository.js";
 import PLAN_LIMITS from "../config/plans.js";
-import { generateEmbedding } from "../lib/mistral/embedding.service.js";
+import { generateEmbedding } from "../lib/mistral/services/embedding.service.js";
 import { getSimilaritySummaryScore } from "../repositories/document-chunk.repository.js";
 
 /**

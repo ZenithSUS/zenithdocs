@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import AppError from "../utils/app-error.js";
-import { streamDocumentChatWithContextService } from "../lib/mistral/document-chat.service.js";
+import { streamDocumentChatWithContextService } from "../lib/mistral/services/document-chat.service.js";
 import {
   getChatByDocumentService,
   getChatByUserPaginatedService,

@@ -1,7 +1,7 @@
 import { Queue, Worker } from "bullmq";
 import { bullMQConnection } from "../config/redis.js";
 import { updateDocument } from "../repositories/document.repository.js";
-import { prepareDocumentforRAG } from "../lib/mistral/rag-index.service.js";
+import { prepareDocumentforRAG } from "../lib/mistral/services/rag-index.service.js";
 import { getIO } from "../config/socket.js";
 
 interface EmbeddingJobData {

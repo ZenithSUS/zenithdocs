@@ -1,20 +1,20 @@
-import { getSimilarityScore } from "../../repositories/document-chunk.repository.js";
+import { getSimilarityScore } from "../../../repositories/document-chunk.repository.js";
 import { Response } from "express";
-import client from "./index.js";
+import client from "../index.js";
 import {
   createChat,
   getChatByDocument,
   updateChatSummary,
-} from "../../repositories/chat.repository.js";
+} from "../../../repositories/chat.repository.js";
 import { Types } from "mongoose";
-import { getDocumentByIdService } from "../../services/document.service.js";
-import AppError from "../../utils/app-error.js";
-import { IMessage } from "../../models/Message.js";
+import { getDocumentByIdService } from "../../../services/document.service.js";
+import AppError from "../../../utils/app-error.js";
+import { IMessage } from "../../../models/Message.js";
 import {
   createMessages,
   getRecentMessagesByChatId,
   getTotalMessagesByChatIdAndUser,
-} from "../../repositories/message.repository.js";
+} from "../../../repositories/message.repository.js";
 
 interface StreamChatPayload {
   question: string;

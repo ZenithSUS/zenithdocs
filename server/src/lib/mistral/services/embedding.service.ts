@@ -1,5 +1,5 @@
-import AppError from "../../utils/app-error.js";
-import client from "./index.js";
+import AppError from "../../../utils/app-error.js";
+import client from "../index.js";
 
 export async function generateEmbedding(text: string): Promise<number[]> {
   const response = await client.embeddings.create({
