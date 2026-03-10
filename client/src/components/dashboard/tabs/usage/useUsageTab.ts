@@ -18,14 +18,15 @@ const useUsageTab = ({
 
   const tokensUsed = Math.min(tokenLimit, currentTokensUsed);
   const remainingTokens = Math.max(0, tokenLimit - currentTokensUsed);
-  const documentsThisMonth = usage.reduce(
-    (acc, u) => acc + u.documentsUploaded,
-    0,
-  );
+  const documentsThisMonth =
+    usage.find((u) => u.month === currentMonth)?.documentsUploaded || 0;
 
   const nextMonthDate = new Date(
     new Date().setMonth(new Date().getMonth() + 1),
   );
+
+  nextMonthDate.setDate(1);
+
   const nextMonthLabel = nextMonthDate.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
