@@ -12,8 +12,8 @@ function ChatCard({ documentChat }: ChatCardProps) {
   const { chat } = documentChat;
 
   const messageCount = chat?.messageCount ?? 0;
-  const rawLastMessage = chat?.lastMessage.content ?? "No messages";
-  const lastMessageRole = chat?.lastMessage.role ?? "";
+  const rawLastMessage = chat?.lastMessage?.content ?? "No messages";
+  const lastMessageRole = chat?.lastMessage?.role ?? "";
   const hasMessages = chat?.messageCount ? chat?.messageCount > 0 : false;
 
   const lastMessage = useMemo(() => {
