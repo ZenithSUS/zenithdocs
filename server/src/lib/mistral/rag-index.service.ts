@@ -13,12 +13,14 @@ export async function prepareDocumentforRAG(
   userId: string,
 ) {
   const document = await getDocumentById(documentId);
+
   if (!document || !document.rawText) return;
 
   const chunks = chunkText(document.rawText, MAX_CHAR_PER_CHUNK).slice(
     0,
     MAX_CHUNKS,
   );
+
   const enrichedChunks = [];
 
   for (let i = 0; i < chunks.length; i += BATCH_SIZE) {
@@ -41,6 +43,8 @@ export async function prepareDocumentforRAG(
     embedding: chunk.embedding,
     chunkIndex: index,
   }));
+
+  if (!chunkDocs.length) return;
 
   await createManyDocumentChunks(chunkDocs);
 }

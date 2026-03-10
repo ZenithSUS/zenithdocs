@@ -6,6 +6,7 @@ import {
   getAllDocumentsController,
   getDocumentByIdController,
   getDocumentsByUserPaginatedController,
+  reprocessDocumentController,
   updateDocumentController,
 } from "../controllers/document.controller.js";
 import protect from "../middlewares/protect.middleware.js";
@@ -48,11 +49,10 @@ router.post(
 );
 
 router.post(
-  "/reprocess",
+  "/:id/reprocess",
   protect,
   limiter("reprocessDocument"),
-  upload.single("file"),
-  createDocumentController,
+  reprocessDocumentController,
 );
 
 router.put(

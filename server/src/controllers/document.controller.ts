@@ -9,7 +9,7 @@ import {
   getDocumentByIdService,
   getDocumentsByUserPaginatedService,
   getDocumentsByUserWithChatsPaginatedService,
-  reprocessUploadedDocumentService,
+  reprocessDocumentService,
   updateDocumentService,
 } from "../services/document.service.js";
 import { NextFunction, ParamsDictionary } from "express-serve-static-core";
@@ -99,16 +99,16 @@ export const createDocumentController = async (
 };
 
 /**
- * Reprocess uploaded document
- * @route POST /api/documents/reprocess
+ * Reprocess uploaded or Failed document
+ * @route POST /api/documents/:id/reprocess
  */
-export const reprocessUploadedDocumentController = async (
-  req: Request,
+export const reprocessDocumentController = async (
+  req: Request<DocumentParams>,
   res: Response,
   next: NextFunction,
 ) => {
   try {
-    const { documentId } = req.body;
+    const { id: documentId } = req.params;
     const currentUserId = req.user?.sub;
     const role = req.user?.role;
 
@@ -116,15 +116,11 @@ export const reprocessUploadedDocumentController = async (
       throw new AppError("Unauthorized", 401);
     }
 
-    const document = await reprocessUploadedDocumentService(
-      documentId,
-      currentUserId,
-    );
+    await reprocessDocumentService(documentId, currentUserId);
 
     return res.status(200).json({
       success: true,
-      message: "Document reprocessed successfully",
-      data: document,
+      message: "Document reprocessed started",
     });
   } catch (error) {
     next(error);

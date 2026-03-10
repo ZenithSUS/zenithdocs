@@ -18,8 +18,11 @@ import {
 } from "../repositories/usage.repository.js";
 import { deleteFileFromCloudinary } from "../lib/cloudinary.service.js";
 import colors from "../utils/log-colors.js";
-import { deleteDocumentChunksByDocumentId } from "../repositories/document-chunk.repository.js";
-import { prepareDocumentforRAG } from "../lib/mistral/rag-index.service.js";
+import {
+  deleteDocumentChunksByDocumentId,
+  getDocumentChunksByDocumentId,
+} from "../repositories/document-chunk.repository.js";
+import { embeddingQueue } from "../queues/embedding.queue.js";
 
 /**
  * Creates a new document with the given data
@@ -100,7 +103,7 @@ export const createDocumentService = async (data: Partial<IDocument>) => {
  * @throws {AppError} If current user ID does not match the document's owner ID (403 Forbidden)
  * @returns The reprocessed document with the status set to "completed"
  */
-export const reprocessUploadedDocumentService = async (
+export const reprocessDocumentService = async (
   id: string,
   currentUserId: string,
 ) => {
@@ -118,20 +121,32 @@ export const reprocessUploadedDocumentService = async (
     throw new AppError("Document not found", 404);
   }
 
+  if (document.status === "completed" || document.status === "processing") {
+    throw new AppError("Document already processed", 400);
+  }
+
   if (document.user._id.toString() !== currentUserId) {
     throw new AppError("Forbidden", 403);
   }
 
-  await prepareDocumentforRAG(
-    document._id.toString(),
-    document.user._id.toString(),
+  const documentChunks = await getDocumentChunksByDocumentId(id);
+
+  // Delete existing document chunks
+  if (documentChunks.length > 0) {
+    await deleteDocumentChunksByDocumentId(id);
+  }
+
+  await embeddingQueue.add(
+    "reprocessDocument",
+    { documentId: id, userId: currentUserId },
+    {
+      attempts: 1,
+      backoff: {
+        type: "exponential",
+        delay: 5000,
+      },
+    },
   );
-
-  const updatedDocument = await updateDocument(document._id.toString(), {
-    status: "completed",
-  });
-
-  return updatedDocument;
 };
 
 /**
