@@ -11,8 +11,10 @@ export const initSocket = (server: HttpServer, allowOrigins: string[]) => {
   });
 
   io.on("connection", (socket) => {
-    socket.on("join", (userId: string) => {
+    socket.on("join", (userId: string, callback) => {
       socket.join(userId);
+
+      if (typeof callback === "function") callback();
     });
   });
 
