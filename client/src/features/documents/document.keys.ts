@@ -11,6 +11,7 @@ const documentKeys = {
   update: () => [...documentKeys.all, "update"] as const,
   delete: () => [...documentKeys.all, "delete"] as const,
   upload: () => [...documentKeys.all, "upload"] as const,
+  reprocess: () => [...documentKeys.all, "reprocess"] as const,
 };
 
 export type DocumentKeys = typeof documentKeys;

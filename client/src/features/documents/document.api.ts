@@ -19,6 +19,14 @@ export const createDocument = async (data: Partial<Doc> & { file?: File }) => {
   return res.data;
 };
 
+export const reprocessUploadedDocument = async (documentId: string) => {
+  const { data: res } = await api.post<ResponseWithData<Doc>>(
+    `/api/documents/${documentId}/reprocess`,
+  );
+
+  return res.data;
+};
+
 export const fetchDocumentByUserPaginated = async (
   userId: string,
   page: number,

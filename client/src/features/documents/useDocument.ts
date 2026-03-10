@@ -13,6 +13,7 @@ import {
   updateDocumentById,
   createDocument,
   fetchDocumentByUserWithChatsPaginated,
+  reprocessUploadedDocument,
 } from "./document.api";
 import { AxiosError } from "axios";
 import { ResponseWithPagedData } from "@/types/api";
@@ -80,6 +81,12 @@ const useDocument = (userId: string, documentId: string = "") => {
         },
       );
     },
+  });
+
+  // Reprocess Uploaded or Failed Document
+  const reprocessDocumentMutation = useMutation<Doc, AxiosError, string>({
+    mutationKey: documentKeys.reprocess(),
+    mutationFn: (id) => reprocessUploadedDocument(id),
   });
 
   // Get documents by user ID paginated
@@ -225,6 +232,7 @@ const useDocument = (userId: string, documentId: string = "") => {
     documentsByUserPage,
     documentsByUserWithChatsPage,
     documentById,
+    reprocessDocumentMutation,
     updateDocumentMutation,
     deleteDocumentMutation,
   };
