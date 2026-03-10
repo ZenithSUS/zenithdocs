@@ -11,8 +11,10 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import useAuth from "@/features/auth/useAuth";
+import { AxiosError } from "@/types/api";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
+import { toast } from "sonner";
 
 interface HeaderDropDownProps {
   userId: string;
@@ -28,7 +30,8 @@ export function LogoutModal({ userId }: HeaderDropDownProps) {
       await logout(userId);
       router.push("/login");
     } catch (error) {
-      console.log("Error logging out:", error);
+      const err = error as AxiosError;
+      toast.error(err.response?.data?.message ?? "Failed to logout");
     }
   }, []);
 
