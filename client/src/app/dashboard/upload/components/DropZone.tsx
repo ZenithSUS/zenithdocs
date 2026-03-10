@@ -1,3 +1,4 @@
+import { FileInputIcon } from "lucide-react";
 import { ACCEPTED_FORMATS } from "../upload.types";
 
 interface Props {
@@ -39,8 +40,8 @@ const DropZone = ({
       className="hidden"
     />
 
-    <div className="px-8 py-16 sm:py-20 text-center">
-      <div className="text-5xl sm:text-6xl mb-6 animate-pulse">📁</div>
+    <div className="px-8 py-16 sm:py-20 text-center flex items-center flex-col">
+      <FileInputIcon className="mb-6 animate-pulse" size={50} color="#C9A227" />
       <h2 className="text-xl sm:text-2xl font-normal mb-3 font-serif">
         Drop your files here
       </h2>
