@@ -1,5 +1,5 @@
 import config from "@/config/env";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import io from "socket.io-client";
 import { useQueryClient } from "@tanstack/react-query";
 import documentKeys from "./document.keys";
@@ -17,6 +17,7 @@ const useDocumentStatus = () => {
   const queryClient = useQueryClient();
   const documentLimit = 10;
 
+  const [socketReady, setSocketReady] = useState(false);
   const { userId, accessToken } = useAuthStore();
 
   useEffect(() => {
@@ -24,12 +25,17 @@ const useDocumentStatus = () => {
 
     const socket = io(config.api.baseUrl, {
       auth: { token: accessToken },
+      reconnection: true,
       reconnectionAttempts: 5, // stop retrying after 5 attempts
       reconnectionDelay: 2000, // wait 2s between attempts
       timeout: 10000, // fail connection after 10s
     });
 
-    socket.emit("join", userId);
+    socket.on("connect", () => {
+      socket.emit("join", userId, () => {
+        setSocketReady(true);
+      });
+    });
 
     // --- Connection error handlers ---
     socket.on("connect_error", () => {
@@ -39,10 +45,17 @@ const useDocumentStatus = () => {
     });
 
     socket.on("disconnect", (reason: string) => {
+      setSocketReady(false);
       if (reason === "io server disconnect") {
         toast.warning("Connection lost. Reconnecting...");
         socket.connect(); // manually reconnect since socket.io won't retry
       }
+    });
+
+    socket.on("reconnect", () => {
+      socket.emit("join", userId, () => {
+        setSocketReady(true);
+      });
     });
 
     socket.on("reconnect_failed", () => {
@@ -86,9 +99,11 @@ const useDocumentStatus = () => {
       socket.off("document:processing");
       socket.off("document:completed");
       socket.off("document:failed");
-      socket.disconnect(); // ← you were missing this — always clean up the connection
+      socket.disconnect();
     };
-  }, [userId]);
+  }, [userId, accessToken]);
+
+  return { socketReady };
 };
 
 export default useDocumentStatus;
