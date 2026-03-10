@@ -1,4 +1,5 @@
 import {
+  CogIcon,
   EyeIcon,
   FolderPlus,
   MessageCircle,
@@ -18,6 +19,7 @@ interface Props {
     folderId?: string | null,
   ) => void;
   handleDeleteClick: (docId: string, docTitle: string) => void;
+  handleReprocessClick: (docId: string) => Promise<void>;
   filteredDocs: Doc[];
 }
 
@@ -55,9 +57,11 @@ const ActionsDropDown = ({
   handleNavigate,
   handleMoveClick,
   handleDeleteClick,
+  handleReprocessClick,
   filteredDocs,
 }: Props) => {
   const doc = filteredDocs.find((d) => d._id === actionsMenuOpen);
+  const status = doc?.status ?? "failed";
 
   return (
     <div
@@ -109,6 +113,17 @@ const ActionsDropDown = ({
       />
 
       <div className="border-t border-white/8" />
+
+      {(status === "failed" || status === "uploaded") && (
+        <DropdownButton
+          onClick={(e) => {
+            e.stopPropagation();
+            handleReprocessClick(actionsMenuOpen);
+          }}
+          icon={<CogIcon className="w-4 h-4" />}
+          label="Reprocess"
+        />
+      )}
 
       <DropdownButton
         onClick={(e) => {

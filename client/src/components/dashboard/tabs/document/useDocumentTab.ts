@@ -1,9 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import useDocument from "@/features/documents/useDocument";
 import useFolder from "@/features/folder/useFolder";
 import useSummary from "@/features/summary/useSummary";
 import Doc from "@/types/doc";
+import { toast } from "sonner";
+import { AxiosError } from "@/types/api";
 
 const useDocumentTab = (userId: string, filterFolder: string) => {
   const router = useRouter();
@@ -35,7 +37,10 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
   const actionsButtonRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
 
   // ─── Queries ──────────────────────────────────────────────────────────────
-  const { documentsByUserPage } = useDocument(userId, "");
+  const { documentsByUserPage, reprocessDocumentMutation } = useDocument(
+    userId,
+    "",
+  );
   const {
     data: documentsData,
     isLoading: documentsLoading,
@@ -50,6 +55,9 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
 
   const { summariesByUserPage } = useSummary(userId);
   const { data: summariesData } = summariesByUserPage;
+
+  // ─── Mutations ───────────────────────────────────────────────────
+  const { mutateAsync: reprocessDoc } = reprocessDocumentMutation;
 
   // ─── Flattened data ───────────────────────────────────────────────────────
   const allDocs = documentsData?.pages.flatMap((p) => p.documents) ?? [];
@@ -140,6 +148,20 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
     setActionsMenuOpen(null);
   };
 
+  const handleReprocessClick = useCallback(
+    async (docId: string) => {
+      setActionsMenuOpen(null);
+
+      await reprocessDoc(docId).catch((error) => {
+        const err = error as AxiosError;
+        toast.error(
+          err.response?.data?.message || "Error reprocessing document",
+        );
+      });
+    },
+    [reprocessDoc, setActionsMenuOpen],
+  );
+
   const handleDeleteSuccess = () => {
     if (selectedDoc?._id === documentToDelete?.id) setSelectedDoc(null);
     setDocumentToDelete(null);
@@ -192,6 +214,7 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
     handleDeleteClick,
     handleDeleteSuccess,
     handleMoveSuccess,
+    handleReprocessClick,
     fetchNextDocPage,
 
     // Refs

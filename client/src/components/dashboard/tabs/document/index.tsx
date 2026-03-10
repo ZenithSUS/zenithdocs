@@ -71,6 +71,7 @@ function DocumentsTab({ userId, filterFolder, setFilterFolder }: Props) {
     handleDeleteClick,
     handleDeleteSuccess,
     handleMoveSuccess,
+    handleReprocessClick,
     fetchNextDocPage,
 
     // Refs
@@ -275,6 +276,7 @@ function DocumentsTab({ userId, filterFolder, setFilterFolder }: Props) {
             handleNavigate={handleNavigate}
             handleMoveClick={handleMoveClick}
             handleDeleteClick={handleDeleteClick}
+            handleReprocessClick={handleReprocessClick}
             filteredDocs={filteredDocs}
           />,
           document.body,
