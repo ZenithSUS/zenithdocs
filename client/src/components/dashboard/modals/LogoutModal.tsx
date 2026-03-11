@@ -10,6 +10,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import useAuthStore from "@/features/auth/auth.store";
 import useAuth from "@/features/auth/useAuth";
 import { AxiosError } from "@/types/api";
 import { useRouter } from "next/navigation";
@@ -22,12 +23,17 @@ interface HeaderDropDownProps {
 
 export function LogoutModal({ userId }: HeaderDropDownProps) {
   const router = useRouter();
+
+  const { setUserId, setAccessToken } = useAuthStore();
   const { logoutMutation } = useAuth();
   const { mutateAsync: logout } = logoutMutation;
 
   const handleLogout = useCallback(async () => {
     try {
       await logout(userId);
+
+      setUserId(null);
+      setAccessToken(null);
       router.push("/login");
     } catch (error) {
       const err = error as AxiosError;
