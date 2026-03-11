@@ -97,4 +97,26 @@ export const rateLimiters = {
 
   // Message write
   deleteMessagesByChatId: createLimiter(5, "1 m", "deleteMessagesByChatId"),
+
+  // Global Chat Read
+  getGlobalChatByUser: createLimiter(15, "1 m", "getGlobalChatByUser"),
+
+  // Global Chat Write
+  initGlobalChat: createLimiter(5, "1 m", "initGlobalChat"),
+  createGlobalChat: createLimiter(10, "1 m", "createGlobalChat"),
+  deleteGlobalChatByUser: createLimiter(5, "1 m", "deleteGlobalChatByUser"),
+
+  // Global Message Read
+  getGlobalMessagesByChatPaginated: createLimiter(
+    15,
+    "1 m",
+    "getGlobalMessagesByChatPaginated",
+  ),
+
+  // Global Message Write
+  deleteGlobalMessagesByChatAndUser: createLimiter(
+    5,
+    "1 m",
+    "deleteGlobalMessagesByChatAndUser",
+  ),
 };
