@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import DocumentChunk, {
   IDocumentChunkInput,
 } from "../models/Document_Chunk.js";
+import colors from "../utils/log-colors.js";
 
 /**
  * Creates multiple document chunks in the database.
@@ -54,7 +55,59 @@ export const getSimilarityScore = async (
 
     return results;
   } catch (err) {
-    console.error(`Vector search failed:`, err);
+    const error = err as Error;
+    console.log("=".repeat(50));
+    console.log(`${colors.red}Error: ${colors.reset}${error.message}`);
+    console.log("=".repeat(50));
+    return [];
+  }
+};
+
+/**
+ * Searches for similar document chunks based on the given query embedding and user ID.
+ * It returns up to 20 similar document chunks with the highest similarity score.
+ * @param {number[]} queryEmbedding - The query embedding to search for similar document chunks.
+ * @param {string} userId - The ID of the user to search for similar document chunks.
+ * @returns {Promise<IDocumentChunk[]>} An array of up to 20 similar document chunks with the highest similarity score.
+ */
+export const getDocumentUserSimilarityScore = async (
+  queryEmbedding: number[],
+  userId: string,
+) => {
+  try {
+    if (!queryEmbedding.length) return [];
+
+    const results = await DocumentChunk.aggregate([
+      {
+        $vectorSearch: {
+          index: "embedding",
+          path: "embedding",
+          queryVector: queryEmbedding,
+          numCandidates: 200,
+          limit: 20,
+          filter: {
+            userId: new mongoose.Types.ObjectId(userId),
+          },
+        },
+      },
+      {
+        $project: {
+          text: 1,
+          chunkIndex: 1,
+          documentId: 1,
+          score: { $meta: "vectorSearchScore" },
+        },
+      },
+    ]);
+
+    return results;
+  } catch (error) {
+    const err = error as Error;
+    console.log("=".repeat(50));
+    console.error(
+      `${colors.red}Chunk Similarity Error: ${colors.reset}${err.message}`,
+    );
+    console.log("=".repeat(50));
     return [];
   }
 };
@@ -72,7 +125,7 @@ export const getSimilaritySummaryScore = async (
   queryEmbedding: number[],
   documentId: string,
   minScore = 0.6,
-  limit = 5, // ← add this
+  limit = 5,
 ) => {
   const results = await DocumentChunk.aggregate([
     {
@@ -81,7 +134,7 @@ export const getSimilaritySummaryScore = async (
         path: "embedding",
         queryVector: queryEmbedding,
         numCandidates: 150,
-        limit: limit * 2, // fetch double, filter down
+        limit: limit * 2,
         filter: {
           documentId: { $eq: new mongoose.Types.ObjectId(documentId) },
         },
