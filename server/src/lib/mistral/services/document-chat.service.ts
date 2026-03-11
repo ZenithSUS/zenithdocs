@@ -9,12 +9,12 @@ import {
 import { Types } from "mongoose";
 import { getDocumentByIdService } from "../../../services/document.service.js";
 import AppError from "../../../utils/app-error.js";
-import { IMessage } from "../../../models/Message.js";
 import {
-  createMessages,
+  createMessage,
   getRecentMessagesByChatId,
   getTotalMessagesByChatIdAndUser,
 } from "../../../repositories/message.repository.js";
+import summarizeOldMessages from "../utils/summarize-message.js";
 
 interface StreamChatPayload {
   question: string;
@@ -25,23 +25,6 @@ interface StreamChatPayload {
 }
 
 const MAX_HISTORY_LENGTH = 10;
-
-const summarizeOldMessages = async (messages: IMessage[]) => {
-  const text = messages.map((m) => `${m.role}: ${m.content}`).join("\n\n");
-
-  const response = await client.chat.complete({
-    model: "mistral-large-latest",
-    messages: [
-      {
-        role: "user",
-        content: "Summarize this conversion briefy 2-3 sentences:\n\n" + text,
-      },
-    ],
-    temperature: 0.4,
-  });
-
-  return response.choices?.[0]?.message?.content ?? "";
-};
 
 const queryEmbedding = async (question: string) => {
   const response = await client.embeddings.create({
@@ -139,6 +122,14 @@ ${context}`;
     topP: 1,
   });
 
+  await createMessage({
+    chatId: chat._id.toString(),
+    userId,
+    role: "user",
+    content: question,
+    createdAt: new Date(),
+  });
+
   for await (const chunk of stream) {
     const token = chunk.data.choices[0].delta.content;
     if (token) {
@@ -151,22 +142,13 @@ ${context}`;
   res.write(`data: [DONE]\n\n`);
   res.end();
 
-  await createMessages([
-    {
-      chatId: chat._id.toString(),
-      userId,
-      role: "user",
-      content: question,
-      createdAt: new Date(),
-    },
-    {
-      chatId: chat._id.toString(),
-      userId,
-      role: "assistant",
-      content: fullResponse,
-      createdAt: new Date(Date.now() + 1000),
-    },
-  ]);
+  await createMessage({
+    chatId: chat._id.toString(),
+    userId,
+    role: "assistant",
+    content: fullResponse,
+    createdAt: new Date(),
+  });
 
   return fullResponse;
 };
