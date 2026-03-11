@@ -25,8 +25,12 @@ export const loginService = async (email: string, password: string) => {
   const user = await getUserByEmail(email);
   if (!user) throw new AppError("User not found", 404);
 
+  if (!user.password) {
+    throw new AppError("Invalid credentials", 401);
+  }
+
   // Check if password is correct
-  const isMatch = await comparePassword(password, user.password!);
+  const isMatch = await comparePassword(password, user.password);
   if (!isMatch) throw new AppError("Invalid credentials", 401);
 
   // Generate access token and refresh token
