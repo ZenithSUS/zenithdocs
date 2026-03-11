@@ -27,6 +27,8 @@ import usageRouter from "./routes/usage.route.js";
 import dashboardRouter from "./routes/dashboard.route.js";
 import chatRouter from "./routes/chat.route.js";
 import messageRouter from "./routes/message.route.js";
+import globalChatRouter from "./routes/global-chat.route.js";
+import globalMessageRouter from "./routes/global-message.route.js";
 
 // Passport
 import session from "express-session";
@@ -123,6 +125,8 @@ app.use("/api/usages", requireApiKey, usageRouter);
 app.use("/api/dashboard", requireApiKey, dashboardRouter);
 app.use("/api/chat", requireApiKey, chatRouter);
 app.use("/api/messages", requireApiKey, messageRouter);
+app.use("/api/global-chats", requireApiKey, globalChatRouter);
+app.use("/api/global-messages", requireApiKey, globalMessageRouter);
 
 // Error Handlers
 app.use(notFound);
