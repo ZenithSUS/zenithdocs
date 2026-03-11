@@ -1,7 +1,7 @@
 import { createManyDocumentChunks } from "../../../repositories/document-chunk.repository.js";
 import { getDocumentById } from "../../../repositories/document.repository.js";
-import chunkText from "../chunk.util.js";
 import { generateEmbedding } from "./embedding.service.js";
+import chunkText from "../utils/chunk-text.js";
 
 const MAX_CHAR_PER_CHUNK = 2000;
 const MAX_CHUNKS = 50;

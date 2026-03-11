@@ -1,5 +1,5 @@
 import AppError from "../../../utils/app-error.js";
-import chunkText from "../chunk.util.js";
+import chunkText from "../utils/chunk-text.js";
 import client from "../index.js";
 
 type SummaryType = "short" | "bullet" | "detailed" | "executive";
