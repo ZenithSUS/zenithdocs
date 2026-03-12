@@ -8,9 +8,9 @@ import useChat from "@/features/chat/useChat";
 import useDocument from "@/features/documents/useDocument";
 import useMessage from "@/features/message/useMessage";
 import useMousePosition from "@/features/ui/useMousePostion";
+import useAutoResizeTextarea from "@/features/ui/useAutoResizeArea";
 
 import useDropdown from "@/app/dashboard/chat/hooks/useDropdown";
-import useAutoResizeTextarea from "@/app/dashboard/chat/hooks/useAutoResizeArea";
 import useChatScroll from "@/app/dashboard/chat/hooks/useChatScroll";
 import useMessageStream from "@/app/dashboard/chat/hooks/useMessageStream";
 
