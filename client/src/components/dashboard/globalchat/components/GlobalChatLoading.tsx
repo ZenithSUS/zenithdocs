@@ -4,8 +4,9 @@ function GlobalChatLoading() {
   return (
     <div
       className="relative overflow-hidden flex flex-col items-center justify-center gap-3
-          bg-[#0d0d0f] h-[50vh] w-[30vw] rounded-2xl
-          border border-white/6 shadow-2xl"
+          bg-[#0d0d0f] rounded-2xl
+          border border-white/6 shadow-2xl 
+          sm:h-[58vh] sm:w-[32vw] sm:min-w-85 sm:max-w-120 sm:rounded-2xl gc-container z-50"
       style={{
         boxShadow:
           "0 0 60px rgba(201,162,39,0.04), 0 25px 50px rgba(0,0,0,0.5)",
@@ -24,6 +25,21 @@ function GlobalChatLoading() {
       <p className="text-white/30 text-[11px] tracking-[0.15em] uppercase font-mono">
         Loading messages
       </p>
+
+      <style>
+        {`
+        @media (max-width: 640px) {
+          .gc-container {
+            position: fixed !important;
+            inset: 0 !important;
+            width: 100vw !important;
+            height: 100dvh !important;
+            border-radius: 0 !important;
+            border: none !important;
+            z-index: 100;
+          }
+        }`}
+      </style>
     </div>
   );
 }
