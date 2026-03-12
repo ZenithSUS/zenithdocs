@@ -5,13 +5,15 @@ import DashboardHeader from "@/components/dashboard/Header";
 import DashboardTabLoading from "@/components/dashboard/DashBoardTabLoading";
 import DashBoardSidebar from "@/components/dashboard/Sidebar";
 
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState } from "react";
 import DashboardLoading from "@/components/dashboard/LoadingScreen";
 import ErrorScreen from "@/components/dashboard/ErrorScreen";
 import useDashboardPage from "./useDashboard";
 import DocumentsLoadingSkeleton from "@/components/dashboard/tabs/document/components/DocumentsLoadingSkeleton";
 import FolderLoadingSkeletion from "@/components/dashboard/tabs/folder/components/FolderLoadingSkeletion";
 import DocumentChatLoading from "@/components/dashboard/tabs/chat/DocumentChatLoading";
+import GlobalChat from "@/components/dashboard/globalchat";
+import { Zap } from "lucide-react";
 
 // Lazy-load dashboard tab components for code splitting
 const OverViewTab = lazy(() => import("@/components/dashboard/tabs/overview"));
@@ -24,6 +26,8 @@ const ChatsTab = lazy(() => import("@/components/dashboard/tabs/chat"));
 const CURRENT_MONTH = new Date().toISOString().slice(0, 7); // YYYY-MM
 
 export default function DashboardPage() {
+  const [chatBotOpen, setChatBotOpen] = useState(false);
+
   const {
     // Auth
     user,
@@ -73,6 +77,22 @@ export default function DashboardPage() {
     <div className="h-screen bg-background text-text font-serif flex overflow-hidden">
       {/* Ambient cursor glow */}
       <CursorGlow mousePos={mousePos} />
+
+      {/* Global ChatBot */}
+      {chatBotOpen ? (
+        <div className="fixed bottom-5 right-5 z-50">
+          <GlobalChat user={user ?? null} setIsOpen={setChatBotOpen} />
+        </div>
+      ) : (
+        <div className="bg-background rounded-full p-2 border border-primary fixed bottom-5 right-5 z-50 hover:bg-primary/10 hover:scale-105 transition-transform">
+          <Zap
+            onClick={() => setChatBotOpen(true)}
+            className="cursor-pointer hover:scale-105 transition-transform"
+            size={20}
+            strokeWidth={2}
+          />
+        </div>
+      )}
 
       {/* ── SIDEBAR ────────────────────────────────────────────────────────── */}
       {/* Mobile overlay */}

@@ -10,9 +10,13 @@ import FolderSelect from "./components/FolderSelect";
 import DropZone from "./components/DropZone";
 import FileList from "./components/FileList";
 import UploadActions from "./components/UploadActions";
+import GlobalChat from "@/components/dashboard/globalchat";
+import { Zap } from "lucide-react";
+import { useState } from "react";
 
 export default function UploadPage() {
   const router = useRouter();
+  const [chatBotOpen, setChatBotOpen] = useState(false);
 
   const {
     // Auth
@@ -61,6 +65,22 @@ export default function UploadPage() {
   return (
     <div className="min-h-screen bg-[#111111] text-[#F5F5F5] font-serif overflow-hidden">
       <CursorGlow mousePos={mousePos} />
+
+      {/* Chatbot button */}
+      {chatBotOpen ? (
+        <div className="fixed bottom-5 right-5 z-50">
+          <GlobalChat user={user ?? null} setIsOpen={setChatBotOpen} />
+        </div>
+      ) : (
+        <div className="bg-background rounded-full p-2 border border-primary fixed bottom-5 right-5 z-50 hover:bg-primary/10 hover:scale-105 transition-transform">
+          <Zap
+            onClick={() => setChatBotOpen(true)}
+            className="cursor-pointer hover:scale-105 transition-transform"
+            size={20}
+            strokeWidth={2}
+          />
+        </div>
+      )}
 
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 px-5 sm:px-8 md:px-12 py-5 bg-[#111111]/92 backdrop-blur-xl border-b border-[#C9A227]/12">

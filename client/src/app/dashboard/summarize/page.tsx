@@ -1,8 +1,8 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Lightbulb, Sparkles, XCircle } from "lucide-react";
+import { Lightbulb, Sparkles, XCircle, Zap } from "lucide-react";
 
 import CursorGlow from "@/components/CursorGlow";
 import FileIcon from "@/components/FileIcon";
@@ -13,10 +13,12 @@ import sizefmt from "@/helpers/size-format";
 import useSummarizePage from "./useSummarizePage";
 import SummaryTypeSelector from "./components/SummaryTypeSelector";
 import SummaryResult from "./components/SummaryResult";
+import GlobalChat from "@/components/dashboard/globalchat";
 
 // ─── Page content ─────────────────────────────────────────────────────────────
 function SummarizePageContent() {
   const router = useRouter();
+  const [chatBotOpen, setChatBotOpen] = useState(false);
 
   const {
     // Auth
@@ -81,6 +83,22 @@ function SummarizePageContent() {
   return (
     <div className="min-h-screen bg-[#111111] text-[#F5F5F5] font-serif">
       <CursorGlow mousePos={mousePos} />
+
+      {/* Chatbot button */}
+      {chatBotOpen ? (
+        <div className="fixed bottom-5 right-5 z-50">
+          <GlobalChat user={user ?? null} setIsOpen={setChatBotOpen} />
+        </div>
+      ) : (
+        <div className="bg-background rounded-full p-2 border border-primary fixed bottom-5 right-5 z-50 hover:bg-primary/10 hover:scale-105 transition-transform">
+          <Zap
+            onClick={() => setChatBotOpen(true)}
+            className="cursor-pointer hover:scale-105 transition-transform"
+            size={20}
+            strokeWidth={2}
+          />
+        </div>
+      )}
 
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 px-5 sm:px-8 md:px-12 py-5 bg-[#111111]/92 backdrop-blur-xl border-b border-[#C9A227]/12">

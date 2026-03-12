@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import {
@@ -10,13 +10,19 @@ import {
   ArrowLeft,
   ChevronUp,
   MoreHorizontal,
+  Zap,
 } from "lucide-react";
 
 import CursorGlow from "@/components/CursorGlow";
 import ErrorScreen from "@/components/dashboard/ErrorScreen";
 import DeleteMessagesModal from "@/components/dashboard/modals/chat/DeleteMessagesModal";
-import { markdownComponents } from "@/app/dashboard/chat/components/markdownComponents";
 import useChatPage from "./useChatPage";
+import {
+  markdownComponents,
+  remarkGfm,
+} from "@/components/ui/markdownComponents";
+import rehypeRaw from "rehype-raw";
+import GlobalChat from "@/components/dashboard/globalchat";
 
 // ─── Loading fallback (shared between Suspense boundary + internal states) ───
 const FullPageSpinner = ({
@@ -35,6 +41,7 @@ const FullPageSpinner = ({
 // ─── Page ────────────────────────────────────────────────────────────────────
 function DocumentChatContent() {
   const router = useRouter();
+  const [chatBotOpen, setChatBotOpen] = useState(false);
 
   const {
     // Auth
@@ -104,11 +111,24 @@ function DocumentChatContent() {
     );
   }
 
-  // ─── Render ───────────────────────────────────────────────────────────────
-
   return (
     <div className="h-screen bg-[#111111] text-[#F5F5F5] font-serif flex flex-col overflow-hidden relative">
       <CursorGlow mousePos={mousePos} />
+
+      {chatBotOpen ? (
+        <div className="fixed bottom-5 right-5 z-50">
+          <GlobalChat user={user ?? null} setIsOpen={setChatBotOpen} />
+        </div>
+      ) : (
+        <div className="bg-background rounded-full p-2 border border-primary fixed bottom-5 right-5 z-50 hover:bg-primary/10 hover:scale-105 transition-transform">
+          <Zap
+            onClick={() => setChatBotOpen(true)}
+            className="cursor-pointer hover:scale-105 transition-transform"
+            size={20}
+            strokeWidth={2}
+          />
+        </div>
+      )}
 
       {/* Background grid */}
       <div
@@ -272,7 +292,7 @@ function DocumentChatContent() {
 
                 {allMessages.map((msg, idx) => (
                   <div
-                    key={msg._id ?? idx}
+                    key={`message-${msg._id}-${idx}`}
                     className={`flex gap-4 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                   >
                     {msg.role === "assistant" && (
@@ -292,7 +312,11 @@ function DocumentChatContent() {
                       >
                         {msg.role === "assistant" ? (
                           <div className="prose prose-invert prose-sm max-w-none">
-                            <ReactMarkdown components={markdownComponents}>
+                            <ReactMarkdown
+                              components={markdownComponents}
+                              remarkPlugins={[remarkGfm]}
+                              rehypePlugins={[rehypeRaw]}
+                            >
                               {msg.content}
                             </ReactMarkdown>
                           </div>
@@ -336,7 +360,11 @@ function DocumentChatContent() {
                             ))}
                           </div>
                         ) : (
-                          <ReactMarkdown components={markdownComponents}>
+                          <ReactMarkdown
+                            components={markdownComponents}
+                            remarkPlugins={[remarkGfm]}
+                            rehypePlugins={[rehypeRaw]}
+                          >
                             {streamingBubble.content}
                           </ReactMarkdown>
                         )}
@@ -360,7 +388,7 @@ function DocumentChatContent() {
               ref={(e) => {
                 register("message").ref(e);
                 (
-                  textareaRef as React.MutableRefObject<HTMLTextAreaElement | null>
+                  textareaRef as React.RefObject<HTMLTextAreaElement | null>
                 ).current = e;
               }}
               onKeyDown={handleKeyDown}

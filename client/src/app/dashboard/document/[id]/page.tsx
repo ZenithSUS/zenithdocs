@@ -1,7 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowLeft, FileX2Icon, MessageCircle, Sparkles } from "lucide-react";
+import {
+  ArrowLeft,
+  FileX2Icon,
+  MessageCircle,
+  Sparkles,
+  Zap,
+} from "lucide-react";
 
 import CursorGlow from "@/components/CursorGlow";
 import LoadingScreen from "@/components/dashboard/LoadingScreen";
@@ -12,9 +18,12 @@ import DocumentHeader from "./components/DocumentHeader";
 import DocumentTabs from "./components/DocumentTabs";
 import DocumentDetailsTab from "./components/DocumentDetailsTab";
 import DocumentSummariesTab from "./components/DocumentSummariesTab";
+import GlobalChat from "@/components/dashboard/globalchat";
+import { useState } from "react";
 
 export default function DocumentViewPage() {
   const router = useRouter();
+  const [chatBotOpen, setChatBotOpen] = useState(false);
 
   const {
     // IDs
@@ -22,6 +31,7 @@ export default function DocumentViewPage() {
     userId,
 
     // Auth
+    user,
     userLoading,
     userError,
     userErrorData,
@@ -80,6 +90,22 @@ export default function DocumentViewPage() {
   return (
     <div className="min-h-screen bg-[#111111] text-[#F5F5F5] font-serif">
       <CursorGlow mousePos={mousePos} />
+
+      {/* Chatbot button */}
+      {chatBotOpen ? (
+        <div className="fixed bottom-5 right-5 z-50">
+          <GlobalChat user={user ?? null} setIsOpen={setChatBotOpen} />
+        </div>
+      ) : (
+        <div className="bg-background rounded-full p-2 border border-primary fixed bottom-5 right-5 z-50 hover:bg-primary/10 hover:scale-105 transition-transform">
+          <Zap
+            onClick={() => setChatBotOpen(true)}
+            className="cursor-pointer hover:scale-105 transition-transform"
+            size={20}
+            strokeWidth={2}
+          />
+        </div>
+      )}
 
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 px-5 sm:px-8 md:px-12 py-5 bg-[#111111]/92 backdrop-blur-xl border-b border-[#C9A227]/12">
