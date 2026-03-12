@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { Zap } from "lucide-react";
+import { Sparkles, Zap } from "lucide-react";
 
 import CursorGlow from "@/components/CursorGlow";
 import ErrorScreen from "@/components/dashboard/ErrorScreen";
@@ -137,11 +137,24 @@ function DocumentChatContent() {
                 )}
 
                 {allMessages.map((msg, idx) => (
-                  <MessageCard
-                    message={msg}
-                    index={idx}
-                    email={user?.email ?? "?"}
-                  />
+                  <div
+                    key={`message-${msg._id}-${idx}`}
+                    className={`flex gap-4 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                  >
+                    {msg.role === "assistant" && (
+                      <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 mt-1">
+                        <Sparkles className="w-4 h-4 text-primary" />
+                      </div>
+                    )}
+                    <MessageCard message={msg} />
+                    {msg.role === "user" && (
+                      <div className="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center shrink-0 mt-1">
+                        <span className="text-[12px] text-text/70 font-sans font-medium">
+                          {user?.email[0].toUpperCase() ?? "?"}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 ))}
 
                 {/* Streaming bubble */}
