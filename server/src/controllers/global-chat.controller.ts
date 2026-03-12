@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import AppError from "../utils/app-error.js";
-import { streamDocumentUserChat } from "../lib/mistral/services/document-user-chat.service.js";
+import { streamDocumentUserChat } from "../lib/mistral/services/document-global-user-chat.service.js";
 import {
   deleteGlobalChatByUserService,
   getGlobalChatByUserService,
