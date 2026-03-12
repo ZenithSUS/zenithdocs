@@ -1,6 +1,10 @@
 import config from "@/config/env";
-import { api } from "@/lib/axios";
-import { ResponseWithData, ResponseWithPagedData } from "@/types/api";
+import { api, authApi } from "@/lib/axios";
+import {
+  RefreshTokenResponse,
+  ResponseWithData,
+  ResponseWithPagedData,
+} from "@/types/api";
 import { Chat, MessageInput } from "@/types/chat";
 
 export const initChatForDocument = async (documentId: string) => {
@@ -49,7 +53,7 @@ export const createChatStream = async (
   data: MessageInput,
   onChunk: (chunk: string) => void,
   onDone: () => void,
-) => {
+): Promise<void> => {
   const token = localStorage.getItem("accessToken") as string;
 
   const response = await fetch(`${config.api.baseUrl}/api/chat`, {
@@ -62,7 +66,30 @@ export const createChatStream = async (
     body: JSON.stringify(data),
   });
 
-  if (!response.ok) throw new Error("Failed to send message");
+  if (!response.ok) {
+    const authError = response.headers.get("x-auth-error");
+
+    const isTokenError =
+      authError === "missing_token" ||
+      authError === "token_expired" ||
+      authError === "invalid_token";
+
+    if (isTokenError) {
+      // Trigger refresh via your route handler, then retry
+      const refreshRes =
+        await authApi.post<RefreshTokenResponse>("/api/auth/refresh");
+
+      const newToken = refreshRes.data.data.accessToken;
+      localStorage.setItem("accessToken", newToken);
+
+      if (!newToken) throw new Error("Session expired");
+
+      return createChatStream(data, onChunk, onDone);
+    }
+
+    throw new Error("Failed to send message");
+  }
+
   if (!response.body) throw new Error("No stream body");
 
   const reader = response.body.getReader();
