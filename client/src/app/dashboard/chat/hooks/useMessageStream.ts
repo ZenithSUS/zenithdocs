@@ -12,7 +12,7 @@ import { Message } from "@/types/message";
 import messageKeys from "@/features/message/message.keys";
 import documentKeys from "@/features/documents/document.keys";
 
-interface MessageFormValues {
+export interface MessageFormValues {
   message: string;
 }
 
