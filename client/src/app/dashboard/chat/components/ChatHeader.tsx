@@ -1,7 +1,7 @@
 import DeleteMessagesModal from "@/components/dashboard/modals/chat/DeleteMessagesModal";
 import Doc from "@/types/doc";
 import { ArrowLeft, FileText, MoreHorizontal } from "lucide-react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 interface ChatHeaderProps {
   docId: string;
