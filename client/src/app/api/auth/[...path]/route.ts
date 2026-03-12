@@ -46,7 +46,16 @@ async function handler(
 
     const authorization = req.headers.get("authorization");
     const refreshTokenCookie = req.cookies.get("refreshToken")?.value;
-    const body = req.method !== "GET" ? await req.text() : undefined;
+
+    let body = req.method !== "GET" ? await req.text() : undefined;
+
+    if (
+      path === "auth/refresh" &&
+      (!body || body === "{}") &&
+      refreshTokenCookie
+    ) {
+      body = JSON.stringify({ refreshToken: refreshTokenCookie });
+    }
 
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
