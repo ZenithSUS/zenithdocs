@@ -37,7 +37,7 @@ export const removeMessageFromCache = (
       ...oldData,
       pages: oldData.pages.map((page) => ({
         ...page,
-        messages: page.messages.filter((m) => (m as any)._id !== tempId),
+        messages: page.messages.filter((m) => m._id !== tempId),
       })),
     };
   });
