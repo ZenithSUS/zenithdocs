@@ -1,10 +1,13 @@
-import useGlobalChatUI from "./useGlobalChatUI";
-import GlobalMessageCard from "./components/GlobalMessageCard";
-import { User } from "@/types/user";
 import React, { useEffect, useRef } from "react";
+
+import { User } from "@/types/user";
+
+import useGlobalChatUI from "./useGlobalChatUI";
+
+import GlobalMessageCard from "./components/GlobalMessageCard";
 import GlobalChatLoading from "./components/GlobalChatLoading";
-import InputArea from "./components/InputArea";
-import LoadMoreButton from "./components/LoadMoreButton";
+import GlobalInputArea from "./components/GlobalMessageInputArea";
+import LoadMoreGlobalMessageButton from "./components/LoadMoreGlobalMessageButton";
 import EmptyStateGlobalMessage from "./components/EmptyStateGlobalMessage";
 import StreamingBubbleCard from "./components/StreamingBubbleCard";
 import GlobalMessageWrapper from "./components/GlobalMessageWrapper";
@@ -118,7 +121,7 @@ function GlobalChat({ user, setIsOpen }: GlobalChatProps) {
           <>
             {/* ── Load more button — top of message list ── */}
             {hasNextGlobalMessagePage && (
-              <LoadMoreButton
+              <LoadMoreGlobalMessageButton
                 isFetchingMore={isFetchingMore}
                 handleLoadMore={handleLoadMore}
               />
@@ -156,7 +159,7 @@ function GlobalChat({ user, setIsOpen }: GlobalChatProps) {
       </div>
 
       {/* ── Input Area ── */}
-      <InputArea
+      <GlobalInputArea
         register={register}
         textareaRef={textareaRef}
         messageValue={messageValue}

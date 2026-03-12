@@ -6,7 +6,7 @@ import {
 } from "../hooks/useGlobalMessageStream";
 import React from "react";
 
-interface InputAreaProps {
+interface GlobalInputAreaProps {
   register: UseFormRegister<GlobalMessageFormValues>;
   textareaRef: React.RefObject<HTMLTextAreaElement | null>;
   messageValue: string;
@@ -19,7 +19,7 @@ interface InputAreaProps {
   handleKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
 }
 
-function InputArea({
+function GlobalInputArea({
   register,
   textareaRef,
   messageValue,
@@ -27,7 +27,7 @@ function InputArea({
   onSubmit,
   handleSubmit,
   handleKeyDown,
-}: InputAreaProps) {
+}: GlobalInputAreaProps) {
   return (
     <div className="shrink-0 px-3 pb-3 pt-2">
       <div
@@ -123,4 +123,4 @@ function InputArea({
   );
 }
 
-export default InputArea;
+export default GlobalInputArea;

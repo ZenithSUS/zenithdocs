@@ -1,14 +1,14 @@
 import { ChevronUp } from "lucide-react";
 
-interface LoadMoreButtonProps {
+interface LoadMoreGlobalMessageButtonProps {
   isFetchingMore: boolean;
   handleLoadMore: () => void;
 }
 
-function LoadMoreButton({
+function LoadMoreGlobalMessageButton({
   isFetchingMore,
   handleLoadMore,
-}: LoadMoreButtonProps) {
+}: LoadMoreGlobalMessageButtonProps) {
   return (
     <div className="flex justify-center pt-1 pb-2">
       <button
@@ -59,4 +59,4 @@ function LoadMoreButton({
   );
 }
 
-export default LoadMoreButton;
+export default LoadMoreGlobalMessageButton;
