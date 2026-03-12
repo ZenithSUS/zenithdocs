@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import HeaderDropDown from "./HeaderDropDown";
 import { useRouter } from "next/navigation";
 import { Upload } from "lucide-react";
@@ -42,9 +42,25 @@ function DashboardHeader({
 }: DashboardHeaderProps) {
   const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    if (!isDropdownOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [isDropdownOpen]);
 
   return (
-    <header className="px-5 sm:px-8 py-4 border-b border-white/6 flex items-center justify-between bg-background/90 backdrop-blur-sm sticky top-0 z-20">
+    <header className="px-5 sm:px-8 py-4 border-b border-white/6 flex items-center justify-between bg-background/90 backdrop-blur-sm sticky top-0 z-10">
       <div className="flex items-center gap-4">
         <button
           className="lg:hidden text-text/50 hover:text-text/80 text-xl transition-colors"
@@ -67,25 +83,28 @@ function DashboardHeader({
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3">
+        {/* Upload — desktop */}
         <button
           type="button"
-          className="hidden sm:flex items-center gap-2 px-4 py-2 bg-primary text-black rounded-sm text-[11px] font-bold tracking-widest font-sans hover:bg-[#e0b530] transition-colors duration-200 cursor-pointer"
+          className="hidden sm:flex items-center gap-2 px-4 py-2 bg-primary text-black rounded-sm
+            text-[11px] font-bold tracking-widest font-sans hover:bg-[#e0b530] transition-colors duration-200"
           onClick={() => router.push("/dashboard/upload")}
         >
-          <span>
-            <Upload className="w-4 h-4" />
-          </span>{" "}
+          <Upload className="w-4 h-4" />
           UPLOAD
         </button>
+
+        {/* Upload — mobile icon only */}
         <button
-          className="sm:hidden text-black font-bold p-2 bg-primary text-background rounded-sm text-[14px] hover:bg-[#e0b530] transition-colors"
+          className="sm:hidden p-2 bg-primary text-black rounded-sm hover:bg-[#e0b530] transition-colors"
           onClick={() => router.push("/dashboard/upload")}
+          aria-label="Upload"
         >
           <Upload className="w-4 h-4" />
         </button>
 
-        <div className="relative">
-          {/* User dropdown */}
+        {/* Avatar + dropdown */}
+        <div className="relative" ref={dropdownRef}>
           {isDropdownOpen && (
             <HeaderDropDown
               userId={userId}
@@ -100,10 +119,11 @@ function DashboardHeader({
             />
           )}
 
-          {/* Avatar */}
           <div
-            className="w-8 h-8 rounded-full cursor-pointer bg-primary/20 border border-primary/30 flex items-center justify-center text-[11px] text-primary font-bold font-sans"
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="w-8 h-8 rounded-full cursor-pointer bg-primary/20 border border-primary/30
+              flex items-center justify-center text-[11px] text-primary font-bold font-sans
+              hover:bg-primary/30 transition-colors duration-150 select-none"
+            onClick={() => setIsDropdownOpen((prev) => !prev)}
           >
             {email.slice(0, 1).toUpperCase()}
           </div>
