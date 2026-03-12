@@ -18,7 +18,7 @@ function ChatHeader({ docId, chatId, documentData, options }: ChatHeaderProps) {
   const router = useRouter();
 
   return (
-    <header className="relative z-50 border-b border-white/8 bg-background/80 backdrop-blur-sm">
+    <header className="relative z-45 border-b border-white/8 bg-background/80 backdrop-blur-sm">
       <div className="max-w-4xl mx-auto px-5 sm:px-8 py-4 flex items-center justify-between gap-2">
         <button
           onClick={() => router.push(`/dashboard/document/${docId}`)}
