@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
 import DocumentChunk, {
   IDocumentChunkInput,
-} from "../models/Document_Chunk.js";
+  IDocumentChunkOutput,
+} from "../models/DocumentChunk.js";
 import colors from "../utils/log-colors.js";
 
 /**
@@ -30,7 +31,7 @@ export const getSimilarityScore = async (
   try {
     if (!queryEmbedding?.length) return [];
 
-    const results = await DocumentChunk.aggregate([
+    const results = await DocumentChunk.aggregate<IDocumentChunkOutput>([
       {
         $vectorSearch: {
           index: "embedding",
@@ -78,7 +79,7 @@ export const getDocumentUserSimilarityScore = async (
   try {
     if (!queryEmbedding.length) return [];
 
-    const results = await DocumentChunk.aggregate([
+    const results = await DocumentChunk.aggregate<IDocumentChunkOutput>([
       {
         $vectorSearch: {
           index: "embedding",
@@ -129,7 +130,7 @@ export const getSimilaritySummaryScore = async (
   minScore = 0.6,
   limit = 5,
 ) => {
-  const results = await DocumentChunk.aggregate([
+  const results = await DocumentChunk.aggregate<IDocumentChunkOutput>([
     {
       $vectorSearch: {
         index: "embedding",
