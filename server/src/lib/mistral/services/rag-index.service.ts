@@ -38,6 +38,7 @@ export async function prepareDocumentforRAG(
 
   const chunkDocs = enrichedChunks.map((chunk, index) => ({
     documentId: document._id.toString(),
+    documentName: document.title,
     userId: userId,
     text: chunk.text,
     embedding: chunk.embedding,

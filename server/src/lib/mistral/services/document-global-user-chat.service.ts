@@ -11,6 +11,7 @@ import {
 import { initGlobalChatService } from "../../../services/global-chat.service.js";
 import summarizeOldMessages from "../utils/summarize-message.js";
 import { updateGlobalChatSummary } from "../../../repositories/global-chat.repository.js";
+import generateSearchQueries from "../utils/generate-search-queries.js";
 
 interface streamDocumentUserChatPayload {
   userId: string;
@@ -22,7 +23,8 @@ const getSystemPrompt = (context: string, summary: string) => {
   return `You are ZenithDocs AI, the assistant inside the ZenithDocs platform.
 
 About ZenithDocs:
-ZenithDocs is an AI-powered document management and knowledge assistant created by ZenithSUS. 
+ZenithDocs is an AI-powered document management and knowledge assistant created by ZenithSUS.
+
 It helps users:
 - Upload and organize documents
 - Search information inside documents using AI
@@ -44,15 +46,32 @@ Summary Types:
 - Detailed Summary
 - Executive Summary
 
-You assist users by answering questions based on their uploaded documents.
+Your Role:
+You answer user questions using information from their uploaded documents.
+
+The provided context contains excerpts from uploaded documents. 
+Each section may come from different files.
 
 ${summary ? "\nPrevious Conversation Summary:\n" + summary + "\n" : ""}
 
 Rules:
-- Answer questions using ONLY the provided document context when the question is about document content.
-- If the user asks about ZenithDocs or the system itself, you may answer using the ZenithDocs description above.
+- Use the provided document context as the PRIMARY source of truth.
+- Do NOT rely on your general knowledge unless the question is about ZenithDocs itself.
+- If the answer is not present in the context, say:
+
+"The uploaded documents do not contain information about this question."
+
 - If the question is unrelated to both the context and ZenithDocs, say:
-  "I can't answer that because it is not related to the documents or ZenithDocs."
+
+"I can't answer that because it is not related to the documents or ZenithDocs."
+
+- Never guess.
+- Never invent information.
+
+Special Case:
+If the context is "NO_RELEVANT_DOCUMENT_CONTEXT", respond:
+
+"The uploaded documents do not contain information about this question."
 
 Formatting Rules:
 - Use markdown formatting
@@ -60,6 +79,9 @@ Formatting Rules:
 - Use bullet points or numbered lists for multiple items
 - Use headers (##) for longer explanations
 - Keep technical terms in \`backticks\`
+
+When possible:
+- Mention which document the information came from.
 
 Context:
 ${context}`;
@@ -109,9 +131,51 @@ export const streamDocumentUserChat = async ({
     content: m.content,
   }));
 
-  const embeddings = await generateEmbedding(question);
-  const chunks = await getDocumentUserSimilarityScore(embeddings, userId);
-  const context = chunks.map((chunk) => chunk.text).join("\n\n");
+  const MAX_PER_DOC = 3;
+  const docCount = new Map();
+
+  const questionEmbedding = await generateEmbedding(question);
+  const queries = [
+    question,
+    ...(await generateSearchQueries(question)).slice(0, 2),
+  ];
+
+  const allChunks = (
+    await Promise.all(
+      queries.map(async (q) => {
+        const embedding = await generateEmbedding(q);
+        return getDocumentUserSimilarityScore(embedding, userId);
+      }),
+    )
+  ).flat();
+
+  const uniqueChunks = Array.from(
+    new Map(allChunks.map((c) => [c._id.toString(), c])).values(),
+  );
+
+  const filteredChunks = uniqueChunks
+    .filter((c) => c.score >= 0.82)
+    .sort((a, b) => b.score - a.score)
+    .filter((chunk) => {
+      const count = docCount.get(chunk.documentId.toString()) || 0;
+      if (count >= MAX_PER_DOC) return false;
+      docCount.set(chunk.documentId.toString(), count + 1);
+      return true;
+    })
+    .slice(0, 5);
+
+  const context =
+    filteredChunks.length > 0
+      ? filteredChunks
+          .map(
+            (chunk, i) => `
+Document ${i + 1}
+Source: ${chunk.documentName}
+
+${chunk.text}`,
+          )
+          .join("\n\n---\n\n")
+      : "NO_RELEVANT_DOCUMENT_CONTEXT";
 
   const systemPrompt = getSystemPrompt(context, globalSummary);
 
@@ -125,10 +189,11 @@ export const streamDocumentUserChat = async ({
     stream: true,
     temperature: 0.4,
     topP: 1,
+    maxTokens: 2000,
   });
 
   const relatedDocumentIds = new Set(
-    chunks.map((chunk) => chunk.documentId.toString()),
+    filteredChunks.map((chunk) => chunk.documentId.toString()),
   );
 
   await createGlobalMessage({
@@ -137,13 +202,17 @@ export const streamDocumentUserChat = async ({
     userId,
     chatId: globalChat._id.toString(),
     relatedDocumentIds: Array.from(relatedDocumentIds),
-    embedding: embeddings,
+    embedding: questionEmbedding,
   });
 
   let fullResponse = "";
 
   for await (const chunk of stream) {
     const token = chunk.data.choices[0].delta.content;
+
+    if (chunk.data.usage?.totalTokens) {
+      console.log("Token used: ", chunk.data.usage?.totalTokens);
+    }
 
     if (token) {
       fullResponse += token;

@@ -13,7 +13,10 @@ const summarizeOldMessages = async (messages: IMessage[]) => {
       },
     ],
     temperature: 0.4,
+    maxTokens: 80,
   });
+
+  console.log("Summarize token usage:", response.usage);
 
   return response.choices?.[0]?.message?.content ?? "";
 };

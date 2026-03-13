@@ -3,6 +3,7 @@ import { vectorDB } from "../config/db.js";
 
 export interface IDocumentChunk extends Document {
   documentId: Types.ObjectId;
+  documentName: string;
   userId: Types.ObjectId;
   text: string;
   embedding: number[];
@@ -12,6 +13,7 @@ export interface IDocumentChunk extends Document {
 
 export interface IDocumentChunkInput {
   documentId: string;
+  documentName: string;
   userId: string;
   text: string;
   embedding: number[];
@@ -25,6 +27,10 @@ const documentChunkSchema = new Schema<IDocumentChunk>(
       ref: "Document",
       required: true,
       index: true,
+    },
+    documentName: {
+      type: String,
+      required: true,
     },
     userId: {
       type: Schema.Types.ObjectId,
