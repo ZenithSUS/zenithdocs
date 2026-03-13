@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema, Types } from "mongoose";
+import { Document, Schema, Types } from "mongoose";
 import { vectorDB } from "../config/db.js";
 
 export interface IDocumentChunk extends Document {
@@ -18,6 +18,15 @@ export interface IDocumentChunkInput {
   text: string;
   embedding: number[];
   chunkIndex: number;
+}
+
+export interface IDocumentChunkOutput {
+  _id: string;
+  text: string;
+  chunkIndex: number;
+  documentId: string;
+  documentName: string;
+  score: number;
 }
 
 const documentChunkSchema = new Schema<IDocumentChunk>(
