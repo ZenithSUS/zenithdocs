@@ -9,6 +9,7 @@ export interface IGlobalMessage extends Document {
   relatedDocumentIds?: Types.ObjectId[]; // Optional: documents relevant to this message
   comparisonDocumentIds?: Types.ObjectId[]; // Optional: for document comparisons
   embedding?: number[]; // Optional embedding for semantic search
+  confidenceScore: number; // The accuracy of the response
   createdAt: Date;
 }
 
@@ -20,6 +21,7 @@ export interface IGlobalMessageInput {
   relatedDocumentIds?: string[];
   comparisonDocumentIds?: string[];
   embedding?: number[]; // Optional embedding for semantic search (for user message only)
+  confidenceScore?: number; // Optional for show accuracy (for assistant message only)
 }
 
 const globalMessageSchema = new Schema<IGlobalMessage>(
@@ -31,6 +33,7 @@ const globalMessageSchema = new Schema<IGlobalMessage>(
     relatedDocumentIds: [{ type: Schema.Types.ObjectId, ref: "Document" }],
     comparisonDocumentIds: [{ type: Schema.Types.ObjectId, ref: "Document" }],
     embedding: { type: [Number], default: [] },
+    confidenceScore: { type: Number, required: false, default: 0 },
     createdAt: { type: Date, default: Date.now },
   },
   { timestamps: true },
