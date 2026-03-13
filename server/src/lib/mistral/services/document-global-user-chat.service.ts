@@ -12,6 +12,7 @@ import { initGlobalChatService } from "../../../services/global-chat.service.js"
 import summarizeOldMessages from "../utils/summarize-message.js";
 import { updateGlobalChatSummary } from "../../../repositories/global-chat.repository.js";
 import generateSearchQueries from "../utils/generate-search-queries.js";
+import calculateConfidenceScore from "../utils/confidence-score.js";
 
 interface streamDocumentUserChatPayload {
   userId: string;
@@ -164,6 +165,8 @@ export const streamDocumentUserChat = async ({
     })
     .slice(0, 5);
 
+  const confidenceScore = calculateConfidenceScore(filteredChunks);
+
   const context =
     filteredChunks.length > 0
       ? filteredChunks
@@ -207,12 +210,13 @@ ${chunk.text}`,
 
   let fullResponse = "";
 
+  // Write the initial confidence score
+  res.write(
+    `data: [CONFIDENCE]:${JSON.stringify({ score: confidenceScore })}\n\n`,
+  );
+
   for await (const chunk of stream) {
     const token = chunk.data.choices[0].delta.content;
-
-    if (chunk.data.usage?.totalTokens) {
-      console.log("Token used: ", chunk.data.usage?.totalTokens);
-    }
 
     if (token) {
       fullResponse += token;
@@ -231,6 +235,7 @@ ${chunk.text}`,
     userId,
     chatId: globalChat._id.toString(),
     relatedDocumentIds: Array.from(relatedDocumentIds),
+    confidenceScore: confidenceScore,
   });
 
   return fullResponse;
