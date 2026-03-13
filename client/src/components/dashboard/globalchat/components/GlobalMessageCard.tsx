@@ -4,6 +4,8 @@ import rehypeRaw from "rehype-raw";
 import { markdownComponents, remarkGfm } from "../../../ui/markdownComponents";
 import { Copy, Check } from "lucide-react";
 import { useState } from "react";
+import getConfidenceMessage from "@/utils/confidence-message";
+import ConfidenceMessage from "./ConfidenceMessage";
 
 interface GlobalMessageCardProps {
   globalMessage: GlobalMessage;
@@ -42,6 +44,8 @@ function GlobalMessageCard({ globalMessage: msg }: GlobalMessageCardProps) {
           >
             {msg.content}
           </ReactMarkdown>
+
+          <ConfidenceMessage confidenceScore={msg.confidenceScore} />
         </div>
       )}
 

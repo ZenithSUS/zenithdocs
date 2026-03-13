@@ -39,8 +39,14 @@ const useGlobalChat = (userId: string) => {
       input: string,
       onChunk: (chunk: string) => void,
       onDone: () => void,
+      setConfidence: (confidence: number) => void,
     ) => {
-      return await createGlobalChatStream(input, onChunk, onDone);
+      return await createGlobalChatStream(
+        input,
+        onChunk,
+        onDone,
+        setConfidence,
+      );
     },
     [],
   );

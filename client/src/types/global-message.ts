@@ -7,5 +7,6 @@ export interface GlobalMessage {
   relatedDocumentIds?: string[];
   comparisonDocumentIds?: string[];
   embedding?: number[];
+  confidenceScore?: number;
   createdAt: Date;
 }

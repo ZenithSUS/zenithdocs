@@ -6,12 +6,18 @@ import { Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import { StreamingBubble } from "../hooks/useGlobalMessageStream";
+import getConfidenceMessage from "@/utils/confidence-message";
+import ConfidenceMessage from "./ConfidenceMessage";
 
 interface StreamingBubbleProps {
   streamingBubble: StreamingBubble;
+  confidenceScore: number;
 }
 
-function StreamingBubbleCard({ streamingBubble }: StreamingBubbleProps) {
+function StreamingBubbleCard({
+  streamingBubble,
+  confidenceScore,
+}: StreamingBubbleProps) {
   return (
     <div
       className="flex gap-2 justify-start min-w-0"
@@ -62,6 +68,8 @@ function StreamingBubbleCard({ streamingBubble }: StreamingBubbleProps) {
             >
               {streamingBubble.content}
             </ReactMarkdown>
+
+            <ConfidenceMessage confidenceScore={confidenceScore} />
           </div>
         )}
       </div>

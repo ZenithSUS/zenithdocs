@@ -30,8 +30,10 @@ const useGlobalMessageStream = ({
 }: useGlobalMessageStreamProps) => {
   const queryClient = useQueryClient();
   const accumulatedRef = useRef("");
+  const confidenceRef = useRef(0);
 
   const [isTyping, setIsTyping] = useState(false);
+  const [confidence, setConfidence] = useState(0);
   const [streamingBubble, setStreamingBubble] =
     useState<StreamingBubble | null>(null);
 
@@ -39,6 +41,11 @@ const useGlobalMessageStream = ({
     useForm<GlobalMessageFormValues>({
       defaultValues: { message: "" },
     });
+
+  const updateConfidence = useCallback((value: number) => {
+    confidenceRef.current = value;
+    setConfidence(value);
+  }, []);
 
   const messageValue = watch("message");
 
@@ -86,6 +93,7 @@ const useGlobalMessageStream = ({
               userId,
               role: "assistant",
               content: finalContent,
+              confidenceScore: confidenceRef.current,
               createdAt: new Date(),
             };
 
@@ -95,6 +103,7 @@ const useGlobalMessageStream = ({
               aiMessage,
             );
           },
+          updateConfidence,
         );
       } catch (error) {
         const err = error as AxiosError;
@@ -108,7 +117,15 @@ const useGlobalMessageStream = ({
         setStreamingBubble(null);
       }
     },
-    [chatId, isTyping, queryClient, sendGlobalMessageStream, userId, reset],
+    [
+      chatId,
+      isTyping,
+      queryClient,
+      sendGlobalMessageStream,
+      userId,
+      reset,
+      confidence,
+    ],
   );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -132,6 +149,7 @@ const useGlobalMessageStream = ({
     // Stream
     isTyping,
     streamingBubble,
+    confidence,
   };
 };
 

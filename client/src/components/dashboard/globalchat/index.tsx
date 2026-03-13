@@ -36,6 +36,7 @@ function GlobalChat({ user, setIsOpen }: GlobalChatProps) {
     isTyping,
     hasNextGlobalMessagePage,
     fetchNextGlobalMessagePage,
+    confidence,
   } = useGlobalChatUI(user?._id ?? "");
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -145,7 +146,10 @@ function GlobalChat({ user, setIsOpen }: GlobalChatProps) {
 
             {/* Streaming bubble */}
             {streamingBubble && (
-              <StreamingBubbleCard streamingBubble={streamingBubble} />
+              <StreamingBubbleCard
+                streamingBubble={streamingBubble}
+                confidenceScore={confidence}
+              />
             )}
 
             <div ref={messagesEndRef} />
