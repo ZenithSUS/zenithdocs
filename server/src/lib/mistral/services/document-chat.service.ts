@@ -120,6 +120,7 @@ ${context}`;
     stream: true,
     temperature: 0.4,
     topP: 1,
+    maxTokens: 2000,
   });
 
   await createMessage({
@@ -132,6 +133,7 @@ ${context}`;
 
   for await (const chunk of stream) {
     const token = chunk.data.choices[0].delta.content;
+
     if (token) {
       fullResponse += token;
 
