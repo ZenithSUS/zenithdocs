@@ -12,7 +12,7 @@ import { initGlobalChatService } from "../../../services/global-chat.service.js"
 import summarizeOldMessages from "../utils/summarize-message.js";
 import { updateGlobalChatSummary } from "../../../repositories/global-chat.repository.js";
 import generateSearchQueries from "../utils/generate-search-queries.js";
-import calculateConfidenceScore from "../utils/confidence-score.js";
+import calculateGlobalConfidenceScore from "../utils/global-confidence-score.js";
 
 interface streamDocumentUserChatPayload {
   userId: string;
@@ -165,7 +165,7 @@ export const streamDocumentUserChat = async ({
     })
     .slice(0, 5);
 
-  const confidenceScore = calculateConfidenceScore(filteredChunks);
+  const confidenceScore = calculateGlobalConfidenceScore(filteredChunks);
 
   const context =
     filteredChunks.length > 0

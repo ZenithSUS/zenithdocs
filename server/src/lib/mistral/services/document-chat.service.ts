@@ -15,6 +15,7 @@ import {
   getTotalMessagesByChatIdAndUser,
 } from "../../../repositories/message.repository.js";
 import summarizeOldMessages from "../utils/summarize-message.js";
+import calculateDocumentConfidenceScore from "../utils/document-confidence.score.js";
 
 interface StreamChatPayload {
   question: string;
@@ -83,6 +84,7 @@ export const streamDocumentChatWithContextService = async ({
   const embedding = await queryEmbedding(question);
   const chunks = await getSimilarityScore(embedding, documentId);
   const context = chunks.map((c) => c.text).join("\n\n");
+  const confidenceScore = calculateDocumentConfidenceScore(chunks);
 
   const systemPrompt = `
 You are a helpful AI assistant. Answer the user's question based ONLY on the context provided below.
@@ -108,8 +110,6 @@ ${context}`;
   res.setHeader("X-Accel-Buffering", "no");
   res.flushHeaders();
 
-  let fullResponse = "";
-
   const stream = await client.chat.stream({
     model: "mistral-large-latest",
     messages: [
@@ -131,6 +131,12 @@ ${context}`;
     createdAt: new Date(),
   });
 
+  let fullResponse = "";
+
+  res.write(
+    `data: [CONFIDENCE]:${JSON.stringify({ score: confidenceScore })}\n\n`,
+  );
+
   for await (const chunk of stream) {
     const token = chunk.data.choices[0].delta.content;
 
@@ -149,6 +155,7 @@ ${context}`;
     userId,
     role: "assistant",
     content: fullResponse,
+    confidenceScore,
     createdAt: new Date(),
   });
 

@@ -4,12 +4,17 @@ import remarkGfm from "remark-gfm";
 import ReactMarkdown from "react-markdown";
 import { markdownComponents } from "@/components/ui/markdownComponents";
 import { StreamingBubble } from "../hooks/useMessageStream";
+import ConfidenceMessage from "./ConfidenceMessage";
 
 interface StreamingBubbleCardProps {
   streamingBubble: StreamingBubble;
+  confidenceScore: number;
 }
 
-function StreamingBubbleCard({ streamingBubble }: StreamingBubbleCardProps) {
+function StreamingBubbleCard({
+  streamingBubble,
+  confidenceScore,
+}: StreamingBubbleCardProps) {
   return (
     <div className="flex gap-4 justify-start">
       <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 mt-1">
@@ -28,13 +33,16 @@ function StreamingBubbleCard({ streamingBubble }: StreamingBubbleCardProps) {
               ))}
             </div>
           ) : (
-            <ReactMarkdown
-              components={markdownComponents}
-              remarkPlugins={[remarkGfm]}
-              rehypePlugins={[rehypeRaw]}
-            >
-              {streamingBubble.content}
-            </ReactMarkdown>
+            <div className="min-w-0 overflow-x-auto">
+              <ReactMarkdown
+                components={markdownComponents}
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeRaw]}
+              >
+                {streamingBubble.content}
+              </ReactMarkdown>
+              <ConfidenceMessage confidenceScore={confidenceScore} />
+            </div>
           )}
         </div>
       </div>

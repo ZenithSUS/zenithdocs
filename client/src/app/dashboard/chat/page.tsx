@@ -58,6 +58,9 @@ function DocumentChatContent() {
     // Refs
     textareaRef,
     messagesEndRef,
+
+    // States
+    confidence,
   } = useChatPage();
 
   // ─── Guards ──────────────────────────────────────────────────────────────
@@ -159,7 +162,10 @@ function DocumentChatContent() {
 
                 {/* Streaming bubble */}
                 {streamingBubble && (
-                  <StreamingBubbleCard streamingBubble={streamingBubble} />
+                  <StreamingBubbleCard
+                    streamingBubble={streamingBubble}
+                    confidenceScore={confidence}
+                  />
                 )}
 
                 <div ref={messagesEndRef} />

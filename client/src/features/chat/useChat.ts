@@ -86,16 +86,22 @@ const useChat = (userId: string) => {
       input: MessageInput,
       onChunk: (chunk: string) => void,
       onDone: () => void,
+      setConfidence: (confidence: number) => void,
     ) => {
-      return createChatStream(input, onChunk, () => {
-        queryClient.invalidateQueries({
-          queryKey: chatKeys.byDocumentUser(input.documentId, userId),
-        });
-        queryClient.invalidateQueries({
-          queryKey: chatKeys.byId(userId),
-        });
-        onDone();
-      });
+      return createChatStream(
+        input,
+        onChunk,
+        () => {
+          queryClient.invalidateQueries({
+            queryKey: chatKeys.byDocumentUser(input.documentId, userId),
+          });
+          queryClient.invalidateQueries({
+            queryKey: chatKeys.byId(userId),
+          });
+          onDone();
+        },
+        setConfidence,
+      );
     },
     [],
   );

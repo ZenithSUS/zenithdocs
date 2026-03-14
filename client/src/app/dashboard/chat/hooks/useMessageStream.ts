@@ -33,10 +33,12 @@ const useMessageStream = ({
 }: UseMessageStreamOptions) => {
   const queryClient = useQueryClient();
   const accumulatedRef = useRef("");
+  const confidenceRef = useRef(0);
 
   const [isTyping, setIsTyping] = useState(false);
   const [streamingBubble, setStreamingBubble] =
     useState<StreamingBubble | null>(null);
+  const [confidence, setConfidence] = useState(0);
 
   const { register, handleSubmit, watch, reset, setValue } =
     useForm<MessageFormValues>({ defaultValues: { message: "" } });
@@ -44,6 +46,11 @@ const useMessageStream = ({
   const messageValue = watch("message");
 
   const { sendMessageStream } = useChat(userId);
+
+  const updateConfidence = useCallback((confidence: number) => {
+    confidenceRef.current = confidence;
+    setConfidence(confidence);
+  }, []);
 
   const onSubmit = useCallback(
     async (values: MessageFormValues) => {
@@ -90,6 +97,7 @@ const useMessageStream = ({
               userId,
               role: "assistant",
               content: finalContent,
+              confidenceScore: confidenceRef.current,
               createdAt: new Date(),
             };
 
@@ -99,6 +107,7 @@ const useMessageStream = ({
               aiMessage,
             );
           },
+          updateConfidence,
         );
 
         queryClient.invalidateQueries({
@@ -136,6 +145,7 @@ const useMessageStream = ({
     // Stream state
     isTyping,
     streamingBubble,
+    confidence,
   };
 };
 

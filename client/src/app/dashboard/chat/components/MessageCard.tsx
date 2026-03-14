@@ -4,6 +4,7 @@ import { Sparkles } from "lucide-react";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import ReactMarkdown from "react-markdown";
+import ConfidenceMessage from "./ConfidenceMessage";
 
 interface MessageCardProps {
   message: Message;
@@ -30,6 +31,8 @@ function MessageCard({ message: msg }: MessageCardProps) {
             >
               {msg.content}
             </ReactMarkdown>
+
+            <ConfidenceMessage confidenceScore={msg.confidenceScore} />
           </div>
         ) : (
           <p className="whitespace-pre-wrap">{msg.content}</p>

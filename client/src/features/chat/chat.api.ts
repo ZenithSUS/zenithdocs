@@ -53,6 +53,7 @@ export const createChatStream = async (
   data: MessageInput,
   onChunk: (chunk: string) => void,
   onDone: () => void,
+  setConfidence: (confidence: number) => void,
 ): Promise<void> => {
   const token = localStorage.getItem("accessToken") as string;
 
@@ -84,7 +85,7 @@ export const createChatStream = async (
 
       if (!newToken) throw new Error("Session expired");
 
-      return createChatStream(data, onChunk, onDone);
+      return createChatStream(data, onChunk, onDone, setConfidence);
     }
 
     throw new Error("Failed to send message");
@@ -111,6 +112,12 @@ export const createChatStream = async (
       if (!line.startsWith("data: ")) continue;
 
       const text = line.slice(6);
+
+      if (text.startsWith("[CONFIDENCE]:")) {
+        const { score } = JSON.parse(text.slice("[CONFIDENCE]:".length));
+        setConfidence(score);
+        continue;
+      }
 
       if (text === "[DONE]") {
         onDone();

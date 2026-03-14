@@ -2,6 +2,7 @@ export interface Message {
   _id: string;
   role: "user" | "assistant";
   content: string;
+  confidenceScore?: number;
   createdAt: Date;
 }
 

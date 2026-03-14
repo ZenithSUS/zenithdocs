@@ -6,6 +6,7 @@ export interface IMessage extends Document {
   userId: Types.ObjectId;
   role: "user" | "assistant";
   content: string;
+  confidenceScore?: number;
   createdAt: Date;
 }
 
@@ -14,6 +15,7 @@ export interface MessageInput {
   userId: string;
   role: "user" | "assistant";
   content: string;
+  confidenceScore?: number;
   createdAt?: Date;
 }
 
@@ -37,6 +39,11 @@ const messageSchema = new Schema<IMessage>(
     content: {
       type: String,
       required: true,
+    },
+    confidenceScore: {
+      type: Number,
+      required: false,
+      default: 0,
     },
     createdAt: {
       type: Date,

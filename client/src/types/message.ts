@@ -4,5 +4,6 @@ export interface Message {
   userId: string;
   role: "user" | "assistant";
   content: string;
+  confidenceScore?: number;
   createdAt: Date;
 }
