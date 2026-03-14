@@ -1,20 +1,16 @@
 import { Redis } from "ioredis";
 import config from "./env.js";
 
-export const bullMQConnection = {
+const redisOptions = {
   host: config.redis.host,
   port: config.redis.port,
   password: config.redis.password,
-  tls: config.nodeEnv === "production" ? {} : undefined,
+  tls: {},
   maxRetriesPerRequest: null,
 };
 
-const redis = new Redis({
-  host: config.redis.host,
-  port: config.redis.port,
-  password: config.redis.password,
-  tls: config.nodeEnv === "production" ? {} : undefined,
-  maxRetriesPerRequest: null,
-});
+const redis = new Redis(redisOptions);
+
+export const bullMQConnection = redisOptions;
 
 export default redis;
