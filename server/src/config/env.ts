@@ -41,7 +41,9 @@ const config = {
   },
   redis: {
     host: process.env.REDIS_HOST || "",
+    bullmqHost: process.env.REDIS_BULLMQ_HOST || "",
     port: Number(process.env.REDIS_PORT),
+    username: process.env.REDIS_USERNAME || "",
     password: process.env.REDIS_PASSWORD || "",
   },
   google: {
@@ -71,6 +73,7 @@ const requiredEnvVars = [
   "CLIENT_URL",
   "REDIS_HOST",
   "REDIS_PORT",
+  "REDIS_USERNAME",
   "REDIS_PASSWORD",
 ];
 
