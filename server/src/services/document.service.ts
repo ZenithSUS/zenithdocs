@@ -136,7 +136,14 @@ export const reprocessDocumentService = async (
     await deleteDocumentChunksByDocumentId(id);
   }
 
-  processEmbedding({ documentId: id, userId: currentUserId });
+  processEmbedding({ documentId: id, userId: currentUserId }).catch((error) => {
+    const err = error as Error;
+    console.error(
+      `${colors.red}[Reprocess] ${colors.reset}Embedding failed: ${err.message ?? error}`,
+    );
+  });
+
+  return { ...document, status: "processing" };
 };
 
 /**

@@ -1,4 +1,3 @@
-import queryClient from "@/lib/tanstack";
 import { ResponseWithPagedData } from "@/types/api";
 import Doc from "@/types/doc";
 import { InfiniteData, QueryClient } from "@tanstack/react-query";

@@ -15,7 +15,6 @@ interface DocStatus {
 
 const useDocumentStatus = () => {
   const queryClient = useQueryClient();
-  const documentLimit = 10;
 
   const [socketReady, setSocketReady] = useState(false);
   const { userId, accessToken } = useAuthStore();
@@ -72,16 +71,17 @@ const useDocumentStatus = () => {
     socket.on("document:processing", (data: DocStatus) => {
       updateInfiniteDocumentStatus(
         queryClient,
-        documentKeys.byUserPage(userId, documentLimit),
+        documentKeys.byUserPage(userId),
         data,
       );
+
       queryClient.refetchQueries({ queryKey: dashboardKeys.overview() });
     });
 
     socket.on("document:completed", (data: DocStatus) => {
       updateInfiniteDocumentStatus(
         queryClient,
-        documentKeys.byUserPage(userId, documentLimit),
+        documentKeys.byUserPage(userId),
         data,
       );
       queryClient.refetchQueries({ queryKey: dashboardKeys.overview() });
@@ -91,7 +91,7 @@ const useDocumentStatus = () => {
     socket.on("document:failed", (data: DocStatus) => {
       updateInfiniteDocumentStatus(
         queryClient,
-        documentKeys.byUserPage(userId, documentLimit),
+        documentKeys.byUserPage(userId),
         data,
       );
       queryClient.refetchQueries({ queryKey: dashboardKeys.overview() });

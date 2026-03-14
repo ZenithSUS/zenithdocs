@@ -61,7 +61,7 @@ const useDocument = (userId: string, documentId: string = "") => {
     mutationFn: (data) => createDocument(data),
     onSuccess: (newDocs) => {
       queryClient.setQueryData<DocumentsInfiniteData>(
-        documentKeys.byUserPage(userId, documentLimit),
+        documentKeys.byUserPage(userId),
         (oldData) => {
           if (!oldData) return oldData;
 
@@ -97,7 +97,7 @@ const useDocument = (userId: string, documentId: string = "") => {
     ReturnType<typeof documentKeys.byUserPage>,
     number
   >({
-    queryKey: documentKeys.byUserPage(userId, documentLimit),
+    queryKey: documentKeys.byUserPage(userId),
     queryFn: ({ pageParam = 1 }) =>
       fetchDocumentByUserPaginated(userId, pageParam, documentLimit),
     initialPageParam: 1,
@@ -146,16 +146,16 @@ const useDocument = (userId: string, documentId: string = "") => {
       updateDocumentById(id, data),
     onMutate: async ({ id, data }) => {
       await queryClient.cancelQueries({
-        queryKey: documentKeys.byUserPage(userId, documentLimit),
+        queryKey: documentKeys.byUserPage(userId),
       });
 
       const previousDoc = queryClient.getQueryData<DocumentsInfiniteData>(
-        documentKeys.byUserPage(userId, documentLimit),
+        documentKeys.byUserPage(userId),
       );
 
       if (previousDoc) {
         queryClient.setQueryData<DocumentsInfiniteData>(
-          documentKeys.byUserPage(userId, documentLimit),
+          documentKeys.byUserPage(userId),
           (oldData) => {
             if (!oldData) return oldData;
 
@@ -178,7 +178,7 @@ const useDocument = (userId: string, documentId: string = "") => {
     onError: (_, __, context) => {
       if (context?.previousDoc) {
         queryClient.setQueryData(
-          documentKeys.byUserPage(userId, documentLimit),
+          documentKeys.byUserPage(userId),
           context.previousDoc,
         );
       }
@@ -186,7 +186,7 @@ const useDocument = (userId: string, documentId: string = "") => {
     onSuccess: (updatedDoc: Doc) => {
       updateInfiniteDocument(
         queryClient,
-        documentKeys.byUserPage(userId, documentLimit),
+        documentKeys.byUserPage(userId),
         updatedDoc,
       );
 
@@ -205,18 +205,14 @@ const useDocument = (userId: string, documentId: string = "") => {
     mutationFn: (id) => deleteDocumentById(id),
     onMutate: async (id) => {
       await queryClient.cancelQueries({
-        queryKey: documentKeys.byUserPage(userId, documentLimit),
+        queryKey: documentKeys.byUserPage(userId),
       });
 
       const previousDoc = queryClient.getQueryData<DocumentsInfiniteData>(
-        documentKeys.byUserPage(userId, documentLimit),
+        documentKeys.byUserPage(userId),
       );
 
-      removeInfiniteDocument(
-        queryClient,
-        documentKeys.byUserPage(userId, documentLimit),
-        id,
-      );
+      removeInfiniteDocument(queryClient, documentKeys.byUserPage(userId), id);
 
       return { previousDoc };
     },
