@@ -22,7 +22,7 @@ const withRetry = async <T>(
         console.warn(
           `${colors.yellow}[Mistral]${colors.reset} Rate limited. Retrying in ${wait}ms... (${i + 1}/${retries})`,
         );
-        console.log("=".repeat(50));
+        console.log("=".repeat(50) + "\n");
         await sleep(wait);
         continue;
       }

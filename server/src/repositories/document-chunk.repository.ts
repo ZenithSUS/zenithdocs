@@ -60,7 +60,7 @@ export const getSimilarityScore = async (
     const error = err as Error;
     console.log("=".repeat(50));
     console.log(`${colors.red}Error: ${colors.reset}${error.message}`);
-    console.log("=".repeat(50));
+    console.log("=".repeat(50) + "\n");
     return [];
   }
 };
@@ -110,7 +110,7 @@ export const getDocumentUserSimilarityScore = async (
     console.error(
       `${colors.red}Chunk Similarity Error: ${colors.reset}${err.message}`,
     );
-    console.log("=".repeat(50));
+    console.log("=".repeat(50) + "\n");
     return [];
   }
 };

@@ -32,7 +32,7 @@ httpServer.listen(config.server.port, () => {
   console.log(
     `${colors.blue}ZenithDocs Socket server listening on port ${config.server.port} ${colors.reset}`,
   );
-  console.log("=".repeat(50));
+  console.log("=".repeat(50) + "\n");
 });
 
 // Start the server
@@ -41,5 +41,5 @@ app.listen(config.server.port, () => {
   console.log(
     `${colors.green}ZenithDocs server listening on port ${config.server.port} ${colors.reset}`,
   );
-  console.log("=".repeat(50));
+  console.log("=".repeat(50) + "\n");
 });

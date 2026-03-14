@@ -1,6 +1,7 @@
 import rateLimit, { RateLimitRequestHandler } from "express-rate-limit";
 import { RedisReply, RedisStore } from "rate-limit-redis";
 import redis from "../../config/redis.js";
+import colors from "../../utils/log-colors.js";
 
 const durationToMs: Record<string, number> = {
   "10 s": 10_000,
@@ -34,9 +35,11 @@ export const createLimiter = (
           const remaining = Number(res.getHeader("RateLimit-Remaining"));
           const reset = res.getHeader("RateLimit-Reset");
           const used = limit - remaining;
+          console.log("=".repeat(50));
           console.log(
-            `[RateLimit:${identifier}] ${key} → ${used}/${limit} used | ${remaining} remaining | resets in ${reset}s`,
+            `${colors.yellow}[RateLimit:${identifier}]${colors.reset} ${key} → ${used}/${limit} used | ${remaining} remaining | resets in ${reset}s`,
           );
+          console.log("=".repeat(50) + "\n");
         });
       }
 

@@ -70,19 +70,26 @@ embeddingWorker.on("completed", (job) => {
   console.log(
     `${colors.green}Job ${job.id} completed!${colors.green}${colors.reset}`,
   );
-  console.log("=".repeat(50));
+  console.log("=".repeat(50) + "\n");
 });
 
 const shutdown = async (signal: string) => {
+  console.log("=".repeat(50));
   console.log(`[Embedding] Received ${signal}, shutting down gracefully...`);
+  console.log("=".repeat(50) + "\n");
 
   try {
     // Stop accepting new jobs, wait for active job to finish
     await embeddingWorker.close();
     await embeddingQueue.close();
+
+    console.log("=".repeat(50));
     console.log("[Embedding] Worker and queue closed.");
+    console.log("=".repeat(50) + "\n");
   } catch (err) {
+    console.log("=".repeat(50));
     console.error("[Embedding] Error during shutdown:", err);
+    console.log("=".repeat(50) + "\n");
     process.exit(1);
   }
 

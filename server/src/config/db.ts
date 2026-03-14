@@ -26,7 +26,7 @@ const connectDB = async () => {
     console.log(
       `${colors.green}Main MongoDB Connected: ${colors.reset}${mainDB.host}`,
     );
-    console.log("=".repeat(50));
+    console.log("=".repeat(50) + "\n");
 
     // Vector connection
     await vectorDB.asPromise();
@@ -34,7 +34,7 @@ const connectDB = async () => {
     console.log(
       `${colors.green}Vector MongoDB (Atlas) Connected: ${colors.reset}${vectorDB.host}`,
     );
-    console.log("=".repeat(50));
+    console.log("=".repeat(50) + "\n");
   } catch (error: unknown) {
     const err = error as Error;
     console.error(

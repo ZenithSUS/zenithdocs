@@ -349,7 +349,7 @@ export const deleteDocumentByIdService = async (
         `${colors.yellow}Failed to delete Cloudinary file: ${existingDocument.publicId}${colors.reset}`,
         err,
       );
-      console.log("=".repeat(50));
+      console.log("=".repeat(50) + "\n");
       // We ignore the error so the document can still be deleted in DB
     }
   }

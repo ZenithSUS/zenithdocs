@@ -41,6 +41,7 @@ const requestLogger = (req: Request, res: Response, next: NextFunction) => {
 
   const methodColor = getMethodColor(req.method);
 
+  console.log("=".repeat(50));
   // Log the request
   console.log(
     `${methodColor}${colors.bright}${req.method}${colors.reset} ` +
