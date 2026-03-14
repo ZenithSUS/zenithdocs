@@ -3,11 +3,18 @@ import { bullMQConnection } from "../config/redis.js";
 import { updateDocument } from "../repositories/document.repository.js";
 import { prepareDocumentforRAG } from "../lib/mistral/services/rag-index.service.js";
 import { getIO } from "../config/socket.js";
+import colors from "../utils/log-colors.js";
 
 interface EmbeddingJobData {
   documentId: string;
   userId: string;
 }
+
+const shutdown = async () => {
+  await embeddingWorker.close();
+  await embeddingQueue.close();
+  process.exit(0);
+};
 
 export const embeddingQueue = new Queue("embedding", {
   connection: bullMQConnection,
@@ -46,8 +53,29 @@ export const embeddingWorker = new Worker(
   {
     connection: bullMQConnection,
     concurrency: 1,
-    stalledInterval: 300000, // 5 min instead of 30s
     lockDuration: 60000,
-    lockRenewTime: 30000, // renew lock halfway through
+    lockRenewTime: 30000,
+    stalledInterval: 30000, // check for stalled jobs every 30s
+    skipVersionCheck: true,
   },
 );
+
+embeddingWorker.on("failed", (job, err) => {
+  console.error(
+    `[Embedding] Job ${job?.id} failed after ${job?.attemptsMade} attempts:`,
+    err.message,
+  );
+});
+
+embeddingWorker.on("error", (err) => {
+  console.error("[Embedding Worker Error]", err);
+});
+
+embeddingWorker.on("completed", (job) => {
+  console.log("=".repeat(50));
+  console.log(`${colors.green}Job ${job.id} completed!${colors.green}`);
+  console.log("=".repeat(50));
+});
+
+process.on("SIGTERM", shutdown);
+process.on("SIGINT", shutdown);

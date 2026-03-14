@@ -40,18 +40,9 @@ const config = {
     apiSecret: process.env.CLOUDINARY_API_SECRET || "",
   },
   redis: {
-    get connection() {
-      const redisUrl = new URL(process.env.UPSTASH_REDIS_URL!);
-      return {
-        host: redisUrl.hostname,
-        port: Number(redisUrl.port),
-        password: redisUrl.password,
-        tls: {},
-        maxRetriesPerRequest: null as null,
-      };
-    },
-    restUrl: process.env.UPSTASH_REDIS_REST_URL || "",
-    restToken: process.env.UPSTASH_REDIS_REST_TOKEN || "",
+    host: process.env.REDIS_HOST || "",
+    port: Number(process.env.REDIS_PORT),
+    password: process.env.REDIS_PASSWORD || "",
   },
   google: {
     clientId: process.env.GOOGLE_CLIENT_ID || "",
@@ -78,9 +69,9 @@ const requiredEnvVars = [
   "BACKEND_URL",
   "CLIENT_URL_DEV",
   "CLIENT_URL",
-  "UPSTASH_REDIS_URL",
-  "UPSTASH_REDIS_REST_URL",
-  "UPSTASH_REDIS_REST_TOKEN",
+  "REDIS_HOST",
+  "REDIS_PORT",
+  "REDIS_PASSWORD",
 ];
 
 requiredEnvVars.forEach((envVar) => {

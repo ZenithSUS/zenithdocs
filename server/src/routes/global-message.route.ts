@@ -4,7 +4,7 @@ import {
   deleteGlobalMessagesByChatAndUserIdController,
   getGlobalMessagesByChatIdPaginatedController,
 } from "../controllers/global-messsage.controller.js";
-import limiter from "../middlewares/express-limiter.middleware.js";
+import limiter from "../middlewares/limiter.middleware.js";
 
 const router = Router();
 

@@ -7,7 +7,7 @@ import {
 } from "../controllers/global-chat.controller.js";
 import protect from "../middlewares/protect.middleware.js";
 import authorizeSelfOrAdmin from "../middlewares/authorize-self-or-admin.middleware.js";
-import limiter from "../middlewares/express-limiter.middleware.js";
+import limiter from "../middlewares/limiter.middleware.js";
 
 const router = Router();
 

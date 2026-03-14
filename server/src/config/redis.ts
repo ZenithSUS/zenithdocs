@@ -1,17 +1,20 @@
-import { Redis } from "@upstash/redis";
+import { Redis } from "ioredis";
 import config from "./env.js";
 
-const redis = new Redis({
-  url: config.redis.restUrl,
-  token: config.redis.restToken,
-});
-
 export const bullMQConnection = {
-  host: config.redis.connection.host,
-  port: config.redis.connection.port,
-  password: config.redis.connection.password,
-  tls: {},
+  host: config.redis.host,
+  port: config.redis.port,
+  password: config.redis.password,
+  tls: config.nodeEnv === "production" ? {} : undefined,
   maxRetriesPerRequest: null,
 };
+
+const redis = new Redis({
+  host: config.redis.host,
+  port: config.redis.port,
+  password: config.redis.password,
+  tls: config.nodeEnv === "production" ? {} : undefined,
+  maxRetriesPerRequest: null,
+});
 
 export default redis;

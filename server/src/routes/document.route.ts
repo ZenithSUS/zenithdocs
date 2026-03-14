@@ -12,7 +12,7 @@ import {
 import protect from "../middlewares/protect.middleware.js";
 import requireAdmin from "../middlewares/require-admin.middleware.js";
 import upload from "../middlewares/upload.middleware.js";
-import limiter from "../middlewares/express-limiter.middleware.js";
+import limiter from "../middlewares/limiter.middleware.js";
 
 const router = Router();
 

@@ -10,7 +10,7 @@ import {
 } from "../controllers/auth.controller.js";
 import passport from "../config/passport.js";
 import config from "../config/env.js";
-import limiter from "../middlewares/express-limiter.middleware.js";
+import limiter from "../middlewares/limiter.middleware.js";
 
 const router = Router();
 

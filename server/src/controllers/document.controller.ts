@@ -17,8 +17,10 @@ import AppError from "../utils/app-error.js";
 import cloudinary, { uploadToCloudinary } from "../lib/cloudinary.service.js";
 import extractRawText from "../lib/extract-text.js";
 import mongoose from "mongoose";
-import { processEmbedding } from "../queues/process-embedding.queue.js";
-import colors from "../utils/log-colors.js";
+import { embeddingQueue } from "../queues/embedding.queue.js";
+import { updateDocument } from "../repositories/document.repository.js";
+import { prepareDocumentforRAG } from "../lib/mistral/services/rag-index.service.js";
+import { getIO } from "../config/socket.js";
 
 const unlink = promisify(fs.unlink);
 
@@ -75,16 +77,28 @@ export const createDocumentController = async (
 
     await unlink(tempFilePath).catch(() => {});
 
-    processEmbedding({ documentId: document._id.toString(), userId }).catch(
-      (error) => {
-        const err = error as Error;
-        console.log("=".repeat(50));
-        console.log(
-          `${colors.red}Error processing embedding: ${colors.reset}${err.message}`,
-        );
-        console.log("=".repeat(50));
-      },
-    );
+    setImmediate(async () => {
+      await updateDocument(document._id.toString(), { status: "processing" });
+      getIO().to(userId).emit("document:processing", {
+        documentId: document._id.toString(),
+        status: "processing",
+      });
+
+      try {
+        await prepareDocumentforRAG(document._id.toString(), userId);
+        await updateDocument(document._id.toString(), { status: "completed" });
+        getIO().to(userId).emit("document:completed", {
+          documentId: document._id.toString(),
+          status: "completed",
+        });
+      } catch {
+        await updateDocument(document._id.toString(), { status: "failed" });
+        getIO().to(userId).emit("document:failed", {
+          documentId: document._id.toString(),
+          status: "failed",
+        });
+      }
+    });
 
     return res.status(201).json({
       success: true,

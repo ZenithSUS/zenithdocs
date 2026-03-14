@@ -22,7 +22,7 @@ import {
   deleteDocumentChunksByDocumentId,
   getDocumentChunksByDocumentId,
 } from "../repositories/document-chunk.repository.js";
-import { processEmbedding } from "../queues/process-embedding.queue.js";
+import { embeddingQueue } from "../queues/embedding.queue.js";
 
 /**
  * Creates a new document with the given data
@@ -136,12 +136,17 @@ export const reprocessDocumentService = async (
     await deleteDocumentChunksByDocumentId(id);
   }
 
-  processEmbedding({ documentId: id, userId: currentUserId }).catch((error) => {
-    const err = error as Error;
-    console.error(
-      `${colors.red}[Reprocess] ${colors.reset}Embedding failed: ${err.message ?? error}`,
-    );
-  });
+  await embeddingQueue.add(
+    "reprocessDocument",
+    { documentId: id, userId: currentUserId },
+    {
+      attempts: 1,
+      backoff: {
+        type: "exponential",
+        delay: 5000,
+      },
+    },
+  );
 
   return { ...document, status: "processing" };
 };

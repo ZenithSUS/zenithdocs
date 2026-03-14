@@ -1,4 +1,6 @@
 import rateLimit, { RateLimitRequestHandler } from "express-rate-limit";
+import { RedisReply, RedisStore } from "rate-limit-redis";
+import redis from "../../config/redis.js";
 
 const durationToMs: Record<string, number> = {
   "10 s": 10_000,
@@ -16,16 +18,34 @@ export const createLimiter = (
   return rateLimit({
     windowMs: durationToMs[duration],
     max: requests,
+    store: new RedisStore({
+      sendCommand: (command: string, ...args: string[]) => {
+        return redis.call(command, ...args) as Promise<RedisReply>;
+      },
+      prefix: `ratelimit:${identifier}:`,
+    }),
     keyGenerator: (req, res) => {
       const ip = req.ip ?? req.socket.remoteAddress ?? "unknown";
-      const key = `${identifier}:${req.user?.sub ?? ip}`;
+      const key = `${req.user?.sub ?? ip}`;
+
+      if (process.env.NODE_ENV === "development") {
+        res.on("finish", () => {
+          const limit = Number(res.getHeader("RateLimit-Limit"));
+          const remaining = Number(res.getHeader("RateLimit-Remaining"));
+          const reset = res.getHeader("RateLimit-Reset");
+          const used = limit - remaining;
+          console.log(
+            `[RateLimit:${identifier}] ${key} → ${used}/${limit} used | ${remaining} remaining | resets in ${reset}s`,
+          );
+        });
+      }
+
       return key;
     },
     handler: (req, res) => {
       const limit = Number(res.getHeader("RateLimit-Limit"));
       const remaining = Number(res.getHeader("RateLimit-Remaining"));
       const reset = Number(res.getHeader("RateLimit-Reset"));
-
       return res.status(429).json({
         success: false,
         message: "Too many requests. Try again later.",
@@ -34,11 +54,8 @@ export const createLimiter = (
         reset,
       });
     },
-    validate: {
-      keyGeneratorIpFallback: false,
-    },
+    validate: { keyGeneratorIpFallback: false },
     standardHeaders: true,
     legacyHeaders: false,
-    message: { success: false, message: "Too many requests. Try again later." },
   });
 };
