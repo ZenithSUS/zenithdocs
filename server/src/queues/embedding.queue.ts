@@ -72,3 +72,22 @@ embeddingWorker.on("completed", (job) => {
   );
   console.log("=".repeat(50));
 });
+
+const shutdown = async (signal: string) => {
+  console.log(`[Embedding] Received ${signal}, shutting down gracefully...`);
+
+  try {
+    // Stop accepting new jobs, wait for active job to finish
+    await embeddingWorker.close();
+    await embeddingQueue.close();
+    console.log("[Embedding] Worker and queue closed.");
+  } catch (err) {
+    console.error("[Embedding] Error during shutdown:", err);
+    process.exit(1);
+  }
+
+  process.exit(0);
+};
+
+process.on("SIGTERM", () => shutdown("SIGTERM")); // Docker/K8s stop
+process.on("SIGINT", () => shutdown("SIGINT")); // Ctrl-C
