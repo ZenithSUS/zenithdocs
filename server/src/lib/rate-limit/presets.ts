@@ -1,4 +1,4 @@
-import { createLimiter } from "./limiter.js";
+import { createLimiter } from "./express-limiter.js";
 
 export const rateLimiters = {
   // Auth

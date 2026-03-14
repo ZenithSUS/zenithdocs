@@ -11,7 +11,7 @@ import {
   getSummaryByUserPaginatedController,
 } from "../controllers/summary.controller.js";
 import authorizeSelfOrAdmin from "../middlewares/authorize-self-or-admin.middleware.js";
-import limiter from "../middlewares/limiter.middleware.js";
+import limiter from "../middlewares/express-limiter.middleware.js";
 
 const router = Router();
 

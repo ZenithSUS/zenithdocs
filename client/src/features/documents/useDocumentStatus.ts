@@ -23,24 +23,29 @@ const useDocumentStatus = () => {
   useEffect(() => {
     if (!userId || !accessToken || !config.api.baseUrl) return;
 
+    let attemptCount = 0;
+
     const socket = io(config.api.baseUrl, {
       auth: { token: accessToken },
       reconnection: true,
-      reconnectionAttempts: 5, // stop retrying after 5 attempts
-      reconnectionDelay: 2000, // wait 2s between attempts
-      timeout: 10000, // fail connection after 10s
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 2000,
+      reconnectionDelayMax: 10000,
+      timeout: 10000,
     });
 
+    // --- Connection handlers ---
     socket.on("connect", () => {
+      attemptCount = 0;
       socket.emit("join", userId, () => {
         setSocketReady(true);
       });
     });
 
-    // --- Connection error handlers ---
     socket.on("connect_error", () => {
-      if (socket.io.reconnectionAttempts() === 5) {
-        toast.error("Real-time updates unavailable. Please refresh.");
+      attemptCount++;
+      if (attemptCount === 3) {
+        toast.warning("Having trouble connecting. Retrying...");
       }
     });
 
@@ -48,11 +53,12 @@ const useDocumentStatus = () => {
       setSocketReady(false);
       if (reason === "io server disconnect") {
         toast.warning("Connection lost. Reconnecting...");
-        socket.connect(); // manually reconnect since socket.io won't retry
+        socket.connect();
       }
     });
 
     socket.on("reconnect", () => {
+      attemptCount = 0;
       socket.emit("join", userId, () => {
         setSocketReady(true);
       });
@@ -93,8 +99,10 @@ const useDocumentStatus = () => {
     });
 
     return () => {
+      socket.off("connect");
       socket.off("connect_error");
       socket.off("disconnect");
+      socket.off("reconnect");
       socket.off("reconnect_failed");
       socket.off("document:processing");
       socket.off("document:completed");

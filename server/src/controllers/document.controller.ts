@@ -17,7 +17,8 @@ import AppError from "../utils/app-error.js";
 import cloudinary, { uploadToCloudinary } from "../lib/cloudinary.service.js";
 import extractRawText from "../lib/extract-text.js";
 import mongoose from "mongoose";
-import { embeddingQueue } from "../queues/embedding.queue.js";
+import { processEmbedding } from "../queues/process-embedding.queue.js";
+import colors from "../utils/log-colors.js";
 
 const unlink = promisify(fs.unlink);
 
@@ -74,10 +75,15 @@ export const createDocumentController = async (
 
     await unlink(tempFilePath).catch(() => {});
 
-    await embeddingQueue.add(
-      "embed-document",
-      { documentId: document._id.toString(), userId },
-      { attempts: 3, backoff: { type: "exponential", delay: 5000 } },
+    processEmbedding({ documentId: document._id.toString(), userId }).catch(
+      (error) => {
+        const err = error as Error;
+        console.log("=".repeat(50));
+        console.log(
+          `${colors.red}Error processing embedding: ${colors.reset}${err.message}`,
+        );
+        console.log("=".repeat(50));
+      },
     );
 
     return res.status(201).json({
