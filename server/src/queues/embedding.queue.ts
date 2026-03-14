@@ -10,12 +10,6 @@ interface EmbeddingJobData {
   userId: string;
 }
 
-const shutdown = async () => {
-  await embeddingWorker.close();
-  await embeddingQueue.close();
-  process.exit(0);
-};
-
 export const embeddingQueue = new Queue("embedding", {
   connection: bullMQConnection,
   defaultJobOptions: {
@@ -73,9 +67,8 @@ embeddingWorker.on("error", (err) => {
 
 embeddingWorker.on("completed", (job) => {
   console.log("=".repeat(50));
-  console.log(`${colors.green}Job ${job.id} completed!${colors.green}`);
+  console.log(
+    `${colors.green}Job ${job.id} completed!${colors.green}${colors.reset}`,
+  );
   console.log("=".repeat(50));
 });
-
-process.on("SIGTERM", shutdown);
-process.on("SIGINT", shutdown);

@@ -137,7 +137,7 @@ export const reprocessDocumentService = async (
   }
 
   await embeddingQueue.add(
-    "reprocessDocument",
+    "embedding",
     { documentId: id, userId: currentUserId },
     {
       attempts: 1,

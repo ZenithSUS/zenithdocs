@@ -77,7 +77,17 @@ export const createDocumentController = async (
 
     await unlink(tempFilePath).catch(() => {});
 
-    await embeddingQueue.add("embedding", { documentId: document._id, userId });
+    await embeddingQueue.add(
+      "embedding",
+      { documentId: document._id.toString(), userId: document.user.toString() },
+      {
+        attempts: 1,
+        backoff: {
+          type: "exponential",
+          delay: 5000,
+        },
+      },
+    );
 
     return res.status(201).json({
       success: true,
