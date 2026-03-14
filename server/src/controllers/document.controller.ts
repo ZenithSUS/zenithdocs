@@ -77,28 +77,7 @@ export const createDocumentController = async (
 
     await unlink(tempFilePath).catch(() => {});
 
-    setImmediate(async () => {
-      await updateDocument(document._id.toString(), { status: "processing" });
-      getIO().to(userId).emit("document:processing", {
-        documentId: document._id.toString(),
-        status: "processing",
-      });
-
-      try {
-        await prepareDocumentforRAG(document._id.toString(), userId);
-        await updateDocument(document._id.toString(), { status: "completed" });
-        getIO().to(userId).emit("document:completed", {
-          documentId: document._id.toString(),
-          status: "completed",
-        });
-      } catch {
-        await updateDocument(document._id.toString(), { status: "failed" });
-        getIO().to(userId).emit("document:failed", {
-          documentId: document._id.toString(),
-          status: "failed",
-        });
-      }
-    });
+    await embeddingQueue.add("embedding", { documentId: document._id, userId });
 
     return res.status(201).json({
       success: true,
