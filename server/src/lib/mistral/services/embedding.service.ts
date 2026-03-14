@@ -1,4 +1,5 @@
 import AppError from "../../../utils/app-error.js";
+import colors from "../../../utils/log-colors.js";
 import client from "../index.js";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -17,9 +18,11 @@ const withRetry = async <T>(
 
       if (isRateLimit && !isLastAttempt) {
         const wait = delay * Math.pow(2, i); // 5s → 10s → 20s
+        console.log("=".repeat(50));
         console.warn(
-          `[Mistral] Rate limited. Retrying in ${wait}ms... (${i + 1}/${retries})`,
+          `${colors.yellow}[Mistral]${colors.reset} Rate limited. Retrying in ${wait}ms... (${i + 1}/${retries})`,
         );
+        console.log("=".repeat(50));
         await sleep(wait);
         continue;
       }
