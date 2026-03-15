@@ -2,10 +2,34 @@ import mammoth from "mammoth";
 import fs from "fs/promises";
 import * as pdfParseModule from "pdf-parse-new";
 
+// Suppress pdf-parse/PDF.js internal logs
+const originalConsoleLog = console.log;
+const originalConsoleWarn = console.warn;
+
 const pdfParse: (buffer: Buffer) => Promise<{ text: string }> =
   (pdfParseModule as any).default ??
   (pdfParseModule as any).parse ??
   pdfParseModule;
+
+const suppressPdfLogs = <T>(fn: () => Promise<T>): Promise<T> => {
+  console.log = (...args: any[]) => {
+    const msg = args[0]?.toString() ?? "";
+    if (!msg.startsWith("Info:") && !msg.startsWith("Warning:")) {
+      originalConsoleLog(...args);
+    }
+  };
+  console.warn = (...args: any[]) => {
+    const msg = args[0]?.toString() ?? "";
+    if (!msg.startsWith("Warning: fetchStandardFontData")) {
+      originalConsoleWarn(...args);
+    }
+  };
+
+  return fn().finally(() => {
+    console.log = originalConsoleLog;
+    console.warn = originalConsoleWarn;
+  });
+};
 
 /**
  * Extracts the raw text from a file, given its path and MIME type.
@@ -28,18 +52,13 @@ const extractRawText = async (
 ): Promise<string> => {
   switch (mimeType) {
     case "application/pdf": {
-      let buffer: Buffer;
+      const buffer = filePath.startsWith("http")
+        ? await fetch(filePath)
+            .then((r) => r.arrayBuffer())
+            .then((ab) => Buffer.from(ab))
+        : await fs.readFile(filePath);
 
-      if (filePath.startsWith("http")) {
-        const response = await fetch(filePath);
-        const arrayBuffer = await response.arrayBuffer();
-        buffer = Buffer.from(arrayBuffer);
-      } else {
-        buffer = await fs.readFile(filePath);
-      }
-
-      const data = await pdfParse(buffer);
-      return data.text;
+      return suppressPdfLogs(() => pdfParse(buffer)).then((data) => data.text);
     }
 
     case "application/vnd.openxmlformats-officedocument.wordprocessingml.document": {
