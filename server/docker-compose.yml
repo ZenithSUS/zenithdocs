@@ -1,0 +1,12 @@
+services:
+  zenithdocs:
+    build: .
+    ports:
+      - "4000:4000"
+    env_file:
+      - .env # load your base .env
+    environment:
+      - NODE_ENV=production # override specific vars
+      - PORT=4000
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
