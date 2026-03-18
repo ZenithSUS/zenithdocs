@@ -31,7 +31,6 @@ export function LogoutModal({ userId }: HeaderDropDownProps) {
   const handleLogout = useCallback(async () => {
     try {
       await logout(userId);
-
       setUserId(null);
       setAccessToken(null);
       router.push("/login");
@@ -39,7 +38,7 @@ export function LogoutModal({ userId }: HeaderDropDownProps) {
       const err = error as AxiosError;
       toast.error(err.response?.data?.message ?? "Failed to logout");
     }
-  }, []);
+  }, [logout, userId, setUserId, setAccessToken, router]);
 
   return (
     <AlertDialog>
@@ -54,8 +53,13 @@ export function LogoutModal({ userId }: HeaderDropDownProps) {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction className="text-black" onClick={handleLogout}>
+          <AlertDialogCancel className="cursor-pointer">
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction
+            className="text-black cursor-pointer"
+            onClick={handleLogout}
+          >
             Sign out
           </AlertDialogAction>
         </AlertDialogFooter>
