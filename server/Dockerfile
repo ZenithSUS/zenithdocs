@@ -1,19 +1,18 @@
-# Use Node 20
+# Use Node 20 Alpine
 FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy package files
+# Copy package.json and install deps
 COPY package*.json ./
-
-# Install dependencies including devDependencies (for TS)
 RUN npm install
 
-# Copy all source files
+# Copy source code
 COPY . .
 
-# Expose port
+# Expose port for API
 EXPOSE 8000
 
-# Run TypeScript directly
-CMD ["npx", "tsx", "src/server.ts"]
+# Run API and Worker simultaneously
+RUN npm install -g concurrently
+CMD ["concurrently", "npm run start", "npm run start:worker"]
