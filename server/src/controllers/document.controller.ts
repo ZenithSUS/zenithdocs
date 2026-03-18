@@ -18,9 +18,6 @@ import cloudinary, { uploadToCloudinary } from "../lib/cloudinary.service.js";
 import extractRawText from "../lib/extract-text.js";
 import mongoose from "mongoose";
 import { embeddingQueue } from "../queues/embedding.queue.js";
-import { updateDocument } from "../repositories/document.repository.js";
-import { prepareDocumentforRAG } from "../lib/mistral/services/rag-index.service.js";
-import { getIO } from "../config/socket.js";
 
 const unlink = promisify(fs.unlink);
 

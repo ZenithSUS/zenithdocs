@@ -5,9 +5,12 @@ import connectDB from "./config/db.js";
 
 import { createServer } from "http";
 import { initSocket } from "./config/socket.js";
+import startEventBridge from "./config/event-listener.js";
 
 const httpServer = createServer(app);
 initSocket(httpServer, config.server.allowedOrigins.split(","));
+
+await startEventBridge();
 
 connectDB();
 

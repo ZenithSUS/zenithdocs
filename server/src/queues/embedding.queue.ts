@@ -1,14 +1,5 @@
-import { Queue, Worker } from "bullmq";
+import { Queue } from "bullmq";
 import { bullMQConnection } from "../config/redis.js";
-import { updateDocument } from "../repositories/document.repository.js";
-import { prepareDocumentforRAG } from "../lib/mistral/services/rag-index.service.js";
-import { getIO } from "../config/socket.js";
-import colors from "../utils/log-colors.js";
-
-interface EmbeddingJobData {
-  documentId: string;
-  userId: string;
-}
 
 export const embeddingQueue = new Queue("embedding", {
   connection: bullMQConnection,
@@ -20,59 +11,6 @@ export const embeddingQueue = new Queue("embedding", {
   },
 });
 
-export const embeddingWorker = new Worker(
-  "embedding",
-  async (job) => {
-    const { documentId, userId }: EmbeddingJobData = job.data;
-
-    await updateDocument(documentId, { status: "processing" });
-    getIO()
-      .to(userId)
-      .emit("document:processing", { documentId, status: "processing" });
-
-    try {
-      await prepareDocumentforRAG(documentId, userId);
-      await updateDocument(documentId, { status: "completed" });
-      getIO()
-        .to(userId)
-        .emit("document:completed", { documentId, status: "completed" });
-    } catch (error) {
-      await updateDocument(documentId, { status: "failed" });
-      getIO()
-        .to(userId)
-        .emit("document:failed", { documentId, status: "failed" });
-      throw error;
-    }
-  },
-  {
-    connection: bullMQConnection,
-    concurrency: 1,
-    lockDuration: 60000,
-    lockRenewTime: 30000,
-    stalledInterval: 30000, // check for stalled jobs every 30s
-    skipVersionCheck: true,
-  },
-);
-
-embeddingWorker.on("failed", (job, err) => {
-  console.error(
-    `[Embedding] Job ${job?.id} failed after ${job?.attemptsMade} attempts:`,
-    err.message,
-  );
-});
-
-embeddingWorker.on("error", (err) => {
-  console.error("[Embedding Worker Error]", err);
-});
-
-embeddingWorker.on("completed", (job) => {
-  console.log("=".repeat(50));
-  console.log(
-    `${colors.green}Job ${job.id} completed!${colors.green}${colors.reset}`,
-  );
-  console.log("=".repeat(50) + "\n");
-});
-
 const shutdown = async (signal: string) => {
   console.log("=".repeat(50));
   console.log(`[Embedding] Received ${signal}, shutting down gracefully...`);
@@ -80,11 +18,10 @@ const shutdown = async (signal: string) => {
 
   try {
     // Stop accepting new jobs, wait for active job to finish
-    await embeddingWorker.close();
     await embeddingQueue.close();
 
     console.log("=".repeat(50));
-    console.log("[Embedding] Worker and queue closed.");
+    console.log("[Embedding] Queue closed.");
     console.log("=".repeat(50) + "\n");
   } catch (err) {
     console.log("=".repeat(50));

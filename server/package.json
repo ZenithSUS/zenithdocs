@@ -69,8 +69,10 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Testing not implemented\" && exit 1",
-    "dev": "cross-env NODE_ENV=development nodemon src/server.ts",
+    "dev": "cross-env NODE_ENV=development tsx watch src/server.ts",
+    "dev:worker": "cross-env NODE_ENV=development tsx watch src/worker.ts",
     "start": "cross-env NODE_ENV=production tsx src/server.ts",
+    "worker": "cross-env NODE_ENV=production tsx src/worker.ts",
     "build": "tsc",
     "check": "tsc --noEmit"
   },
