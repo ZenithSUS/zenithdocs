@@ -106,10 +106,18 @@ function DocumentChatContent() {
         }}
       />
 
+      {/* Document panel */}
       <div
-        className={`fixed inset-y-0 left-0 z-40 bg-background border-r border-white/6 flex flex-col transition-all duration-300 ease-in-out ${
-          panelOpen ? "w-120" : "w-0 overflow-hidden border-r-0"
-        }`}
+        className={`
+    fixed z-40 bg-background border-white/6 flex flex-col
+    transition-all duration-300 ease-in-out
+    /* Mobile: bottom sheet */
+    bottom-0 left-0 right-0 border-t
+    ${panelOpen ? "h-[60vh]" : "h-0 overflow-hidden border-t-0"}
+    /* Desktop: left sidebar */
+    md:bottom-auto md:right-auto md:inset-y-0 md:left-0 md:border-t-0 md:border-r
+    ${panelOpen ? "md:w-120 md:h-auto" : "md:w-0 md:overflow-hidden md:border-r-0"}
+  `}
       >
         <div className="px-4 py-3 border-b border-white/6 shrink-0 flex items-center justify-between">
           <div className="min-w-0">
@@ -120,6 +128,13 @@ function DocumentChatContent() {
               {documentData.title}
             </h2>
           </div>
+          {/* Close button visible on mobile */}
+          <button
+            onClick={() => setPanelOpen(false)}
+            className="md:hidden p-1.5 rounded hover:bg-white/10 text-[#F5F5F5]/50"
+          >
+            <ChevronLeft size={16} className="-rotate-90" />
+          </button>
         </div>
         <div className="flex-1 overflow-hidden">
           <DocumentViewer document={documentData} />
@@ -149,9 +164,10 @@ function DocumentChatContent() {
         )}
       </button>
 
+      {/* Main content */}
       <div
         className={`flex flex-col flex-1 min-h-0 transition-all duration-300 ease-in-out ${
-          panelOpen ? "ml-120" : "ml-0"
+          panelOpen ? "md:ml-120" : "md:ml-0"
         }`}
       >
         {/* ── Header ─────────────────────────────────────────────────────────── */}

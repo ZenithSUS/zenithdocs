@@ -129,10 +129,7 @@ export default function DocumentViewer({ document }: DocumentViewerProps) {
         onMouseDown={(e) => {
           if (scale <= 1) return;
           setIsDragging(true);
-          dragStart.current = {
-            x: e.clientX,
-            y: e.clientY,
-          };
+          dragStart.current = { x: e.clientX, y: e.clientY };
         }}
         onMouseMove={(e) => {
           if (!isDragging) return;
@@ -144,6 +141,18 @@ export default function DocumentViewer({ document }: DocumentViewerProps) {
         }}
         onMouseUp={() => setIsDragging(false)}
         onMouseLeave={() => setIsDragging(false)}
+        onTouchStart={(e) => {
+          const t = e.touches[0];
+          dragStart.current = { x: t.clientX, y: t.clientY };
+        }}
+        onTouchMove={(e) => {
+          const t = e.touches[0];
+          const dx = t.clientX - dragStart.current.x;
+          const dy = t.clientY - dragStart.current.y;
+          e.currentTarget.scrollLeft -= dx;
+          e.currentTarget.scrollTop -= dy;
+          dragStart.current = { x: t.clientX, y: t.clientY };
+        }}
       >
         <div
           className={`flex py-4 min-h-full ${pageWidth > containerWidth ? "justify-start px-4" : "justify-center"}`}
