@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { Sparkles, Zap } from "lucide-react";
+import { ChevronLeft, Sparkles, Zap } from "lucide-react";
 
 import CursorGlow from "@/components/CursorGlow";
 import ErrorScreen from "@/components/dashboard/ErrorScreen";
@@ -16,9 +16,11 @@ import MessageInputArea from "./components/MessageInputArea";
 import LoadMoreMessageButton from "./components/LoadMoreMessageButton";
 import FullPageSpinner from "./components/FullPageSpinner";
 import ChatNotFound from "./components/ChatNotFound";
+import DocumentViewer from "./components/DocumentViewerWrapper";
 
 function DocumentChatContent() {
   const [chatBotOpen, setChatBotOpen] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(false);
 
   const {
     // Auth
@@ -104,86 +106,135 @@ function DocumentChatContent() {
         }}
       />
 
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <ChatHeader
-        docId={docId}
-        chatId={initChat?._id ?? ""}
-        documentData={documentData}
-        options={options}
-      />
-
-      {/* ── Messages ───────────────────────────────────────────────────────── */}
-      <main className="relative z-10 flex-1 overflow-y-auto">
-        <div className="max-w-4xl mx-auto px-5 sm:px-8 py-8">
-          {/* Skeleton */}
-          {isLoadingMessages && <MessageSkeleton />}
-
-          {/* Empty state */}
-          {!isLoadingMessages &&
-            allMessages.length === 0 &&
-            !streamingBubble && (
-              <EmptyStateMessage
-                title={documentData.title}
-                setValue={setValue}
-              />
-            )}
-
-          {/* Message list */}
-          {!isLoadingMessages &&
-            (allMessages.length > 0 || streamingBubble) && (
-              <div className="space-y-8">
-                {hasNextPage && (
-                  <LoadMoreMessageButton
-                    isFetchingNextPage={isFetchingNextPage}
-                    handleLoadMore={handleLoadMore}
-                  />
-                )}
-
-                {allMessages.map((msg, idx) => (
-                  <div
-                    key={`message-${msg._id}-${idx}`}
-                    className={`flex gap-4 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                  >
-                    {msg.role === "assistant" && (
-                      <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 mt-1">
-                        <Sparkles className="w-4 h-4 text-primary" />
-                      </div>
-                    )}
-                    <MessageCard message={msg} />
-                    {msg.role === "user" && (
-                      <div className="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center shrink-0 mt-1">
-                        <span className="text-[12px] text-text/70 font-sans font-medium">
-                          {user?.email[0].toUpperCase() ?? "?"}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                ))}
-
-                {/* Streaming bubble */}
-                {streamingBubble && (
-                  <StreamingBubbleCard
-                    streamingBubble={streamingBubble}
-                    confidenceScore={confidence}
-                  />
-                )}
-
-                <div ref={messagesEndRef} />
-              </div>
-            )}
+      <div
+        className={`fixed inset-y-0 left-0 z-40 bg-background border-r border-white/6 flex flex-col transition-all duration-300 ease-in-out ${
+          panelOpen ? "w-120" : "w-0 overflow-hidden border-r-0"
+        }`}
+      >
+        <div className="px-4 py-3 border-b border-white/6 shrink-0 flex items-center justify-between">
+          <div className="min-w-0">
+            <p className="text-xs text-[#F5F5F5]/40 font-sans uppercase tracking-widest mb-0.5">
+              Document
+            </p>
+            <h2 className="text-sm font-medium text-[#F5F5F5] truncate">
+              {documentData.title}
+            </h2>
+          </div>
         </div>
-      </main>
+        <div className="flex-1 overflow-hidden">
+          <DocumentViewer document={documentData} />
+        </div>
+      </div>
 
-      {/* ── Input ──────────────────────────────────────────────────────────── */}
-      <MessageInputArea
-        register={register}
-        textareaRef={textareaRef}
-        handleKeyDown={handleKeyDown}
-        isTyping={isTyping}
-        messageValue={messageValue}
-        onSubmit={onSubmit}
-        handleSubmit={handleSubmit}
-      />
+      {/* Toggle Tab — sticks to the right edge of the panel */}
+      <button
+        onClick={() => setPanelOpen((v) => !v)}
+        className={`fixed top-1/2 -translate-y-1/2 z-50 transition-all duration-300 ease-in-out
+    bg-background border border-white/10 hover:bg-white/5
+    rounded-r-lg px-1 py-4 flex flex-col items-center gap-1.5
+    ${panelOpen ? "left-120" : "left-0"}`}
+      >
+        {/* Animated chevron */}
+        <ChevronLeft
+          size={14}
+          className={`text-[#F5F5F5]/50 transition-transform duration-300 ${panelOpen ? "" : "rotate-180"}`}
+        />
+        {!panelOpen && (
+          <span
+            className="text-[10px] text-[#F5F5F5]/30 font-sans uppercase tracking-widest"
+            style={{ writingMode: "vertical-rl" }}
+          >
+            Document
+          </span>
+        )}
+      </button>
+
+      <div
+        className={`flex flex-col flex-1 min-h-0 transition-all duration-300 ease-in-out ${
+          panelOpen ? "ml-120" : "ml-0"
+        }`}
+      >
+        {/* ── Header ─────────────────────────────────────────────────────────── */}
+        <ChatHeader
+          docId={docId}
+          chatId={initChat?._id ?? ""}
+          documentData={documentData}
+          options={options}
+        />
+
+        {/* ── Messages ───────────────────────────────────────────────────────── */}
+        <main className="relative z-10 flex-1 overflow-y-auto">
+          <div className="max-w-4xl mx-auto px-5 sm:px-8 py-8">
+            {/* Skeleton */}
+            {isLoadingMessages && <MessageSkeleton />}
+
+            {/* Empty state */}
+            {!isLoadingMessages &&
+              allMessages.length === 0 &&
+              !streamingBubble && (
+                <EmptyStateMessage
+                  title={documentData.title}
+                  setValue={setValue}
+                />
+              )}
+
+            {/* Message list */}
+            {!isLoadingMessages &&
+              (allMessages.length > 0 || streamingBubble) && (
+                <div className="space-y-8">
+                  {hasNextPage && (
+                    <LoadMoreMessageButton
+                      isFetchingNextPage={isFetchingNextPage}
+                      handleLoadMore={handleLoadMore}
+                    />
+                  )}
+
+                  {allMessages.map((msg, idx) => (
+                    <div
+                      key={`message-${msg._id}-${idx}`}
+                      className={`flex gap-4 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                    >
+                      {msg.role === "assistant" && (
+                        <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 mt-1">
+                          <Sparkles className="w-4 h-4 text-primary" />
+                        </div>
+                      )}
+                      <MessageCard message={msg} />
+                      {msg.role === "user" && (
+                        <div className="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center shrink-0 mt-1">
+                          <span className="text-[12px] text-text/70 font-sans font-medium">
+                            {user?.email[0].toUpperCase() ?? "?"}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+
+                  {/* Streaming bubble */}
+                  {streamingBubble && (
+                    <StreamingBubbleCard
+                      streamingBubble={streamingBubble}
+                      confidenceScore={confidence}
+                    />
+                  )}
+
+                  <div ref={messagesEndRef} />
+                </div>
+              )}
+          </div>
+        </main>
+
+        {/* ── Input ──────────────────────────────────────────────────────────── */}
+        <MessageInputArea
+          register={register}
+          textareaRef={textareaRef}
+          handleKeyDown={handleKeyDown}
+          isTyping={isTyping}
+          messageValue={messageValue}
+          onSubmit={onSubmit}
+          handleSubmit={handleSubmit}
+        />
+      </div>
 
       <style>{`
         @keyframes bounce {
