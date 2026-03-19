@@ -184,7 +184,8 @@ async function handler(
     console.log(`[Route Handler] ${backendRes.status} /${path}`);
     return res;
   } catch (error) {
-    console.error("[Route Handler] Unexpected error:", error);
+    const err = error as Error;
+    console.error("[Route Handler] Unexpected error:", err.message);
     return NextResponse.json(
       { success: false, message: "Internal server error" },
       { status: 500 },
