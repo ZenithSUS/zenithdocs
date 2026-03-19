@@ -124,7 +124,6 @@ export default function DashboardPage() {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden lg:pl-64">
         {/* Top bar */}
         <DashboardHeader
-          refetch={refetchUser}
           email={user?.email || "..."}
           userId={user?._id || ""}
           plan={user?.plan || ""}

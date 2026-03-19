@@ -4,11 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import HeaderDropDown from "./HeaderDropDown";
 import { useRouter } from "next/navigation";
 import { Upload } from "lucide-react";
+import useDropdown from "@/features/ui/useDropdown";
 
 interface DashboardHeaderProps {
   userId: string;
   plan: string;
-  refetch: () => void;
   email: string;
   nav: string;
   setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -26,7 +26,6 @@ interface DashboardHeaderProps {
 function DashboardHeader({
   userId,
   plan,
-  refetch,
   email,
   nav,
   setSidebarOpen,
@@ -41,23 +40,7 @@ function DashboardHeader({
   documentPct,
 }: DashboardHeaderProps) {
   const router = useRouter();
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    if (!isDropdownOpen) return;
-    const handler = (e: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
-      ) {
-        setIsDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [isDropdownOpen]);
+  const options = useDropdown();
 
   return (
     <header className="px-5 sm:px-8 py-4 border-b border-white/6 flex items-center justify-between bg-background/90 backdrop-blur-sm sticky top-0 z-10">
@@ -104,8 +87,8 @@ function DashboardHeader({
         </button>
 
         {/* Avatar + dropdown */}
-        <div className="relative" ref={dropdownRef}>
-          {isDropdownOpen && (
+        <div className="relative" ref={options.ref}>
+          {options.isOpen && (
             <HeaderDropDown
               userId={userId}
               email={email}
@@ -123,7 +106,7 @@ function DashboardHeader({
             className="w-8 h-8 rounded-full cursor-pointer bg-primary/20 border border-primary/30
               flex items-center justify-center text-[11px] text-primary font-bold font-sans
               hover:bg-primary/30 transition-colors duration-150 select-none"
-            onClick={() => setIsDropdownOpen((prev) => !prev)}
+            onClick={() => options.setIsOpen((prev) => !prev)}
           >
             {email.slice(0, 1).toUpperCase()}
           </div>
