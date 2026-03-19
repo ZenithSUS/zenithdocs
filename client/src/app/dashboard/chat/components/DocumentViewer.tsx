@@ -118,7 +118,7 @@ export default function DocumentViewer({ document }: DocumentViewerProps) {
         </div>
       </div>
 
-      {/* PDF Render Area — this is the key part */}
+      {/* PDF Render Area*/}
       <div
         ref={containerRef}
         className="flex-1 overflow-auto select-none"
