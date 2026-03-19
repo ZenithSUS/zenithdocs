@@ -109,14 +109,12 @@ function DocumentChatContent() {
       {/* Document panel */}
       <div
         className={`
-    fixed z-40 bg-background border-white/6 flex flex-col
+    fixed z-45 bg-background border-white/6 flex flex-col
     transition-all duration-300 ease-in-out
-    /* Mobile: bottom sheet */
     bottom-0 left-0 right-0 border-t
     ${panelOpen ? "h-[60vh]" : "h-0 overflow-hidden border-t-0"}
-    /* Desktop: left sidebar */
-    md:bottom-auto md:right-auto md:inset-y-0 md:left-0 md:border-t-0 md:border-r
-    ${panelOpen ? "md:w-120 md:h-auto" : "md:w-0 md:overflow-hidden md:border-r-0"}
+    md:bottom-auto md:right-auto md:inset-y-0 md:left-0 md:border-t-0 md:border-r md:h-screen
+    ${panelOpen ? "md:w-120" : "md:w-0 md:overflow-hidden md:border-r-0"}
   `}
       >
         <div className="px-4 py-3 border-b border-white/6 shrink-0 flex items-center justify-between">
@@ -136,7 +134,7 @@ function DocumentChatContent() {
             <ChevronLeft size={16} className="-rotate-90" />
           </button>
         </div>
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden min-h-0">
           <DocumentViewer document={documentData} />
         </div>
       </div>
@@ -167,7 +165,7 @@ function DocumentChatContent() {
       {/* Main content */}
       <div
         className={`flex flex-col flex-1 min-h-0 transition-all duration-300 ease-in-out ${
-          panelOpen ? "md:ml-120" : "md:ml-0"
+          panelOpen ? "md:ml-100 lg:120" : "md:ml-0"
         }`}
       >
         {/* ── Header ─────────────────────────────────────────────────────────── */}
@@ -179,7 +177,7 @@ function DocumentChatContent() {
         />
 
         {/* ── Messages ───────────────────────────────────────────────────────── */}
-        <main className="relative z-10 flex-1 overflow-y-auto">
+        <main className="relative z-10 flex-1 overflow-y-auto min-h-0">
           <div className="max-w-4xl mx-auto px-5 sm:px-8 py-8">
             {/* Skeleton */}
             {isLoadingMessages && <MessageSkeleton />}

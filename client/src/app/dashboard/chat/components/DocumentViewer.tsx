@@ -4,13 +4,7 @@ import { useState, useCallback, useRef } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ZoomIn,
-  ZoomOut,
-  RotateCw,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
 import type Doc from "@/types/doc";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -67,7 +61,7 @@ export default function DocumentViewer({ document }: DocumentViewerProps) {
   const pageWidth = (containerWidth || 600) * scale;
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-h-0">
       {/* Controls */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-white/6 shrink-0">
         {/* Page navigation */}
@@ -118,13 +112,14 @@ export default function DocumentViewer({ document }: DocumentViewerProps) {
         </div>
       </div>
 
-      {/* PDF Render Area*/}
+      {/* PDF Render Area */}
       <div
         ref={containerRef}
         className="flex-1 overflow-auto select-none"
         style={{
           backgroundColor: "#1a1a1a",
           cursor: isDragging ? "grabbing" : scale > 1 ? "grab" : "default",
+          WebkitOverflowScrolling: "touch",
         }}
         onMouseDown={(e) => {
           if (scale <= 1) return;
@@ -159,15 +154,16 @@ export default function DocumentViewer({ document }: DocumentViewerProps) {
         >
           {containerWidth > 0 && (
             <Document
+              key={document._id}
               file={document.fileUrl}
               onLoadSuccess={({ numPages }) => setNumPages(numPages)}
               loading={
-                <div className="flex items-center justify-center h-40 text-[#F5F5F5]/40 text-sm animate-pulse">
+                <div className="flex items-center justify-center h-full text-[#F5F5F5]/40 text-sm animate-pulse">
                   Loading document…
                 </div>
               }
               error={
-                <div className="flex items-center justify-center h-40 text-red-400/70 text-sm">
+                <div className="flex items-center justify-center h-full text-red-400/70 text-sm">
                   Failed to load PDF. Check CORS settings.
                 </div>
               }
