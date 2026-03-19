@@ -139,10 +139,10 @@ function DocumentChatContent() {
         </div>
       </div>
 
-      {/* Toggle Tab  */}
+      {/* Toggle Tab button */}
       <button
         onClick={() => setPanelOpen((v) => !v)}
-        className={`fixed top-1/2 -translate-y-1/2 z-50 transition-all duration-300 ease-in-out
+        className={`fixed top-1/2 -translate-y-1/2 z-40 transition-all duration-300 ease-in-out
     bg-background border border-white/10 hover:bg-white/5
     rounded-r-lg px-1 py-4 flex flex-col items-center gap-1.5
     ${panelOpen ? "md:left-72 lg:left-96 xl:left-120" : "left-0"}`}
