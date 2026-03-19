@@ -57,15 +57,14 @@ export default function DocumentViewer({ document }: DocumentViewerProps) {
     );
   }
 
-  // Fill the full container width at 100%, scale multiplies on top
   const pageWidth = (containerWidth || 600) * scale;
 
   return (
     <div className="flex flex-col h-full min-h-0">
       {/* Controls */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-white/6 shrink-0">
+      <div className="flex items-center justify-center px-3 py-2 border-b border-white/6 shrink-0 gap-3 overflow-x-auto scrollbar-none">
         {/* Page navigation */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 shrink-0">
           <button
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage <= 1}
@@ -85,8 +84,34 @@ export default function DocumentViewer({ document }: DocumentViewerProps) {
           </button>
         </div>
 
+        {/* Divider */}
+        <div className="w-px h-4 bg-white/10 shrink-0" />
+
+        {/* Page Selector */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="text-xs text-[#F5F5F5]/40 font-sans shrink-0">
+            Go to
+          </span>
+          <select
+            value={currentPage}
+            onChange={(e) => setCurrentPage(parseInt(e.target.value))}
+            className="w-14 px-1.5 py-1 bg-[rgba(31,41,55,0.4)] border border-[#C9A227]/18 rounded text-[#F5F5F5] text-xs font-sans focus:outline-none focus:border-[#C9A227]/40 transition-colors"
+          >
+            {Array.from({ length: numPages || 1 }, (_, i) => i + 1).map(
+              (page) => (
+                <option key={page} value={page} className="bg-background">
+                  {page}
+                </option>
+              ),
+            )}
+          </select>
+        </div>
+
+        {/* Divider */}
+        <div className="w-px h-4 bg-white/10 shrink-0" />
+
         {/* Zoom controls */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 shrink-0">
           <button
             onClick={() =>
               setScale((s) => Math.max(0.5, +(s - 0.25).toFixed(2)))

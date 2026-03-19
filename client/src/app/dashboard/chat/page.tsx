@@ -114,7 +114,7 @@ function DocumentChatContent() {
     bottom-0 left-0 right-0 border-t
     ${panelOpen ? "h-[60vh]" : "h-0 overflow-hidden border-t-0"}
     md:bottom-auto md:right-auto md:inset-y-0 md:left-0 md:border-t-0 md:border-r md:h-screen
-    ${panelOpen ? "md:w-120" : "md:w-0 md:overflow-hidden md:border-r-0"}
+    ${panelOpen ? "md:w-72 lg:w-96 xl:w-120" : "md:w-0 md:overflow-hidden md:border-r-0"}
   `}
       >
         <div className="px-4 py-3 border-b border-white/6 shrink-0 flex items-center justify-between">
@@ -134,18 +134,18 @@ function DocumentChatContent() {
             <ChevronLeft size={16} className="-rotate-90" />
           </button>
         </div>
-        <div className="flex-1 overflow-hidden min-h-0">
+        <div className="flex-1 min-h-0 flex flex-col overflow-auto">
           <DocumentViewer document={documentData} />
         </div>
       </div>
 
-      {/* Toggle Tab — sticks to the right edge of the panel */}
+      {/* Toggle Tab  */}
       <button
         onClick={() => setPanelOpen((v) => !v)}
         className={`fixed top-1/2 -translate-y-1/2 z-50 transition-all duration-300 ease-in-out
     bg-background border border-white/10 hover:bg-white/5
     rounded-r-lg px-1 py-4 flex flex-col items-center gap-1.5
-    ${panelOpen ? "left-120" : "left-0"}`}
+    ${panelOpen ? "md:left-72 lg:left-96 xl:left-120" : "left-0"}`}
       >
         {/* Animated chevron */}
         <ChevronLeft
@@ -165,7 +165,7 @@ function DocumentChatContent() {
       {/* Main content */}
       <div
         className={`flex flex-col flex-1 min-h-0 transition-all duration-300 ease-in-out ${
-          panelOpen ? "md:ml-100 lg:120" : "md:ml-0"
+          panelOpen ? "md:ml-72 lg:ml-96 xl:ml-120" : "md:ml-0"
         }`}
       >
         {/* ── Header ─────────────────────────────────────────────────────────── */}
