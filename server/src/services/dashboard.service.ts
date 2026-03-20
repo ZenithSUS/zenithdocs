@@ -15,6 +15,7 @@ import {
   getRecentSummaryByUser,
   getTotalSummaryByUser,
 } from "../repositories/summary.repository.js";
+import { getDashboardOverviewSchema } from "../schemas/dashboard.schema.js";
 
 /**
  * Retrieves an overview of the dashboard for a user
@@ -25,13 +26,7 @@ import {
 export const getDashboardOverviewService = async (userId: string) => {
   const month = new Date().toISOString().slice(0, 7); // YYYY-MM
 
-  if (!userId) {
-    throw new AppError("User ID is required", 400);
-  }
-
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    throw new AppError("Invalid user ID", 400);
-  }
+  const validated = getDashboardOverviewSchema.parse({ userId, month });
 
   const [
     totalDocuments,
@@ -45,16 +40,16 @@ export const getDashboardOverviewService = async (userId: string) => {
     recentDocuments,
     recentSummary,
   ] = await Promise.all([
-    getTotalDocumentsByUser(userId),
-    getTotalFoldersByUser(userId),
-    getTotalSummaryByUser(userId),
-    getAllTotalEachSummaryTypesByUser(userId),
-    getUsageByUserAndMonth(userId, month),
-    getLastSixMonthsUsageByUser(userId),
-    getTotalStatusDocumentsByUser(userId, "completed"),
-    getTotalStatusDocumentsByUser(userId, "processing"),
-    getRecentDocumentsByUser(userId),
-    getRecentSummaryByUser(userId),
+    getTotalDocumentsByUser(validated.userId),
+    getTotalFoldersByUser(validated.userId),
+    getTotalSummaryByUser(validated.userId),
+    getAllTotalEachSummaryTypesByUser(validated.userId),
+    getUsageByUserAndMonth(validated.userId, month),
+    getLastSixMonthsUsageByUser(validated.userId),
+    getTotalStatusDocumentsByUser(validated.userId, "completed"),
+    getTotalStatusDocumentsByUser(validated.userId, "processing"),
+    getRecentDocumentsByUser(validated.userId),
+    getRecentSummaryByUser(validated.userId),
   ]);
 
   const overview = {
