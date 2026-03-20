@@ -29,6 +29,7 @@ import chatRouter from "./routes/chat.route.js";
 import messageRouter from "./routes/message.route.js";
 import globalChatRouter from "./routes/global-chat.route.js";
 import globalMessageRouter from "./routes/global-message.route.js";
+import documentShareRouter from "./routes/document-share.route.js";
 
 // Passport
 import session from "express-session";
@@ -129,6 +130,7 @@ app.use("/api/chat", requireApiKey, chatRouter);
 app.use("/api/messages", requireApiKey, messageRouter);
 app.use("/api/global-chats", requireApiKey, globalChatRouter);
 app.use("/api/global-messages", requireApiKey, globalMessageRouter);
+app.use("/api/document-shares", requireApiKey, documentShareRouter);
 
 // Error Handlers
 app.use(notFound);
