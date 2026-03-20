@@ -15,13 +15,14 @@ import {
   fetchDocumentByUserWithChatsPaginated,
   reprocessUploadedDocument,
 } from "./document.api";
-import { AxiosError } from "axios";
-import { ResponseWithPagedData } from "@/types/api";
+import { ResponseWithPagedData, AxiosError } from "@/types/api";
 import Doc, { DocWithChat } from "@/types/doc";
 import {
   removeInfiniteDocument,
   updateInfiniteDocument,
 } from "./document.cache";
+import { UseFormOptions } from "@/types/form";
+import { toast } from "sonner";
 
 type DocumentPage = ResponseWithPagedData<Doc, "documents">["data"];
 type DocumentWithChatPage = ResponseWithPagedData<
@@ -51,9 +52,14 @@ type MutationContext = {
  *   - updateDocumentMutation: A mutation that updates a document by its ID.
  *   - deleteDocumentMutation: A mutation that deletes a document by its ID.
  */
-const useDocument = (userId: string, documentId: string = "") => {
+const useDocument = (
+  userId: string,
+  documentId: string = "",
+  options: UseFormOptions<Partial<Doc>> = {},
+) => {
   const queryClient = useQueryClient();
   const documentLimit = 10;
+  const { setError } = options;
 
   // Create document
   const createDocumentMutation = useMutation<Doc, AxiosError, Partial<Doc>>({
@@ -80,6 +86,16 @@ const useDocument = (userId: string, documentId: string = "") => {
           };
         },
       );
+    },
+    onError: (err) => {
+      const data = err.response?.data;
+      if (data?.errors && setError) {
+        data.errors.forEach((e: { field: string; message: string }) => {
+          setError(e.field as keyof Partial<Doc>, { message: e.message });
+        });
+      } else {
+        toast.error(data?.message ?? "Something went wrong");
+      }
     },
   });
 
