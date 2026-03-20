@@ -5,7 +5,7 @@ export interface IUser extends Document {
   email: string;
   password?: string;
   role: "user" | "admin";
-  plan: string;
+  plan: "free" | "premium";
   tokenVersion: number;
   refreshToken?: string | null;
   createdAt: Date;

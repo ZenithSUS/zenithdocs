@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import { IUser } from "../models/User.js";
 import {
   deleteUser,
@@ -10,11 +9,12 @@ import {
 import AppError from "../utils/app-error.js";
 import { hashPassword } from "../utils/bcrypt-password.js";
 import PLAN_LIMITS from "../config/plans.js";
-import {
-  createUsageService,
-  getUsageByUserAndMonthService,
-} from "./usage.service.js";
 import { updateUsageMonthByUser } from "../repositories/usage.repository.js";
+import {
+  getUserByEmailSchema,
+  updateUserSchema,
+  userParamsSchema,
+} from "../schemas/user.schema.js";
 
 /**
  * Get user by ID
@@ -26,9 +26,9 @@ import { updateUsageMonthByUser } from "../repositories/usage.repository.js";
 export const getUserByIdService = async (id: string) => {
   const month = new Date().toISOString().slice(0, 7);
 
-  if (!id) throw new AppError("User ID is required", 400);
+  const { userId: validatedId } = userParamsSchema.parse({ userId: id });
 
-  const user = await getUserById(id);
+  const user = await getUserById(validatedId);
 
   if (!user) throw new AppError("User not found", 404);
 
@@ -62,9 +62,9 @@ export const getAllUsersService = async () => {
  * @returns User if found, null otherwise
  */
 export const getUserByEmailService = async (email: string) => {
-  if (!email) throw new AppError("Email is required", 400);
+  const validated = getUserByEmailSchema.parse({ email });
 
-  const user = await getUserByEmail(email);
+  const user = await getUserByEmail(validated.email);
   return user;
 };
 
@@ -76,20 +76,14 @@ export const getUserByEmailService = async (email: string) => {
  *
  */
 export const updateUserService = async (id: string, data: Partial<IUser>) => {
-  if (!id) throw new AppError("User ID is required", 400);
-
-  if (!mongoose.Types.ObjectId.isValid(id))
-    throw new AppError("Invalid User ID", 400);
-
-  if (!data || Object.keys(data).length === 0)
-    throw new AppError("Data is required", 400);
+  const validated = updateUserSchema.parse({ userId: id, data });
 
   // If password is being updated, hash it
-  if (data.password) {
-    data.password = await hashPassword(data.password);
+  if (validated.data.password) {
+    validated.data.password = await hashPassword(validated.data.password);
   }
 
-  const user = await updateUser(id, data);
+  const user = await updateUser(validated.userId, validated.data);
 
   if (!user) throw new AppError("User not found", 404);
   return user;
@@ -101,12 +95,9 @@ export const updateUserService = async (id: string, data: Partial<IUser>) => {
  * @returns Deleted user if found, null otherwise
  */
 export const deleteUserService = async (id: string) => {
-  if (!id) throw new AppError("User ID is required", 400);
+  const { userId: validatedId } = userParamsSchema.parse({ userId: id });
 
-  if (!mongoose.Types.ObjectId.isValid(id))
-    throw new AppError("Invalid User ID", 400);
-
-  const user = await deleteUser(id);
+  const user = await deleteUser(validatedId);
 
   if (!user) throw new AppError("User not found", 404);
   return user;
