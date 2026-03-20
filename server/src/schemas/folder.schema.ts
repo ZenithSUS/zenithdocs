@@ -1,5 +1,5 @@
 import z from "zod";
-import { objectId } from "../utils/zod.utils.js";
+import { objectId, paginationFields } from "../utils/zod.utils.js";
 
 export const folderParamsSchema = z.object({
   folderId: objectId,
@@ -20,20 +20,7 @@ export const getFolderByUserSchema = z.object({
 
 export const getFolderByUserPageSchema = z.object({
   userId: objectId,
-  page: z
-    .number()
-    .min(1)
-    .default(1)
-    .refine((page) => page > 0, {
-      message: "Page must be a positive number.",
-    }),
-  limit: z
-    .number()
-    .min(1)
-    .default(10)
-    .refine((limit) => limit > 0, {
-      message: "Limit must be a positive number.",
-    }),
+  ...paginationFields,
 });
 
 export const updateFolderSchema = createFolderSchema.partial();
