@@ -1,7 +1,7 @@
 import { Document, Schema, Types } from "mongoose";
 import { mainDB } from "../config/db.js";
 
-interface IDocumentShare extends Document {
+export interface IDocumentShare extends Document {
   documentId: Types.ObjectId;
   ownerId: Types.ObjectId;
 
@@ -27,6 +27,21 @@ interface IDocumentShare extends Document {
 
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface IDocumentShareInput {
+  documentId: string;
+  ownerId: string;
+  type: "public" | "private";
+  shareToken?: string;
+  publicPermission?: "read" | "write";
+  allowedUsers?: {
+    userId: string;
+    permission: "read" | "write";
+  }[];
+  isActive: boolean;
+  expiresAt?: Date;
+  allowDownload: boolean;
 }
 
 const documentShareSchema = new Schema<IDocumentShare>({
@@ -93,6 +108,9 @@ const documentShareSchema = new Schema<IDocumentShare>({
     default: Date.now,
   },
 });
+
+documentShareSchema.index({ documentId: 1, ownerId: 1 }, { unique: true });
+documentShareSchema.index({ shareToken: 1 }, { unique: true });
 
 export default mainDB.model<IDocumentShare>(
   "DocumentShare",
