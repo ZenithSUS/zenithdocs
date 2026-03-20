@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import AppError from "../utils/app-error.js";
 import {
   deleteGlobalMessagesByChatAndUserId,
@@ -8,6 +7,10 @@ import {
   getGlobalChatByUserId,
   updateGlobalChatSummary,
 } from "../repositories/global-chat.repository.js";
+import {
+  deleteGlobalMessagesSchema,
+  getGlobalMessagesPaginatedSchema,
+} from "../schemas/global-message.schema.js";
 
 /**
  * Retrieves all global messages associated with a given chat ID in a paginated manner.
@@ -24,27 +27,18 @@ export const getGlobalMessagesByChatIdPaginatedService = async (
   page: number,
   limit: number,
 ) => {
-  if (!chatId) {
-    throw new AppError("Chat ID is required", 400);
-  }
-
-  if (!mongoose.Types.ObjectId.isValid(chatId)) {
-    throw new AppError("Invalid chat ID", 400);
-  }
-
-  if (!page || !limit) {
-    throw new AppError("Page and limit is required", 400);
-  }
-
-  if (page < 1 || limit < 1) {
-    throw new AppError("Page and limit must be positive integers", 400);
-  }
-
-  const globalMessages = await getGlobalMessagesByChatIdPaginated(
+  const validated = getGlobalMessagesPaginatedSchema.parse({
     chatId,
     page,
     limit,
+  });
+
+  const globalMessages = await getGlobalMessagesByChatIdPaginated(
+    validated.chatId,
+    validated.page,
+    validated.limit,
   );
+
   return globalMessages;
 };
 
@@ -53,45 +47,31 @@ export const getGlobalMessagesByChatIdPaginatedService = async (
  * @param {string} chatId - The ID of the chat to delete global messages for.
  * @param {string} userId - The ID of the user to delete global messages for.
  * @returns {Promise<number>} The number of global messages deleted.
- * @throws {AppError} If chat ID is invalid or missing.
- * @throws {AppError} If user ID is invalid or missing.
+ * @throws {ZodError} If chat ID is invalid or missing.
+ * @throws {ZodError} If user ID is invalid or missing.
+ * @throws {AppError} If chat is not found.
  */
 export const deleteGlobalMessagesByChatAndUserIdService = async (
   chatId: string,
   userId: string,
 ) => {
-  if (!chatId) {
-    throw new AppError("Chat ID is required", 400);
-  }
+  const validated = deleteGlobalMessagesSchema.parse({ chatId, userId });
 
-  if (!userId) {
-    throw new AppError("User ID is required", 400);
-  }
-
-  if (!mongoose.Types.ObjectId.isValid(chatId)) {
-    throw new AppError("Invalid chat ID", 400);
-  }
-
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    throw new AppError("Invalid user ID", 400);
-  }
-
-  const globalChat = await getGlobalChatByUserId(userId);
-
+  const globalChat = await getGlobalChatByUserId(validated.userId);
   if (!globalChat) {
     throw new AppError("Global chat not found", 404);
   }
 
-  if (globalChat.userId.toString() !== userId) {
+  if (globalChat.userId.toString() !== validated.userId) {
     throw new AppError("Forbidden", 403);
   }
 
   const globalMessages = await deleteGlobalMessagesByChatAndUserId(
-    chatId,
-    userId,
+    validated.chatId,
+    validated.userId,
   );
 
-  await updateGlobalChatSummary(userId, "");
+  await updateGlobalChatSummary(validated.userId, "");
 
   return globalMessages;
 };
