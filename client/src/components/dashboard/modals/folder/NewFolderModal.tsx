@@ -45,6 +45,7 @@ const NewFolderModal = ({
   } = createFolderMutation(userId);
 
   const [open, setOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const { register, handleSubmit, formState, reset } = useForm<FolderForm>({
     resolver: zodResolver(folderSchema),
@@ -52,6 +53,7 @@ const NewFolderModal = ({
 
   const createNewFolder = useCallback(async (data: FolderForm) => {
     try {
+      setErrorMessage("");
       await createFolder({
         name: data.name,
         user: userId,
@@ -64,16 +66,10 @@ const NewFolderModal = ({
       setOpen(false);
     } catch (error) {
       const err = error as AxiosError;
+      setErrorMessage(err?.response?.data?.message || "");
       toast.error(err?.response?.data?.message || "Something went wrong.");
     }
   }, []);
-
-  const errorMessage = useMemo(
-    () =>
-      error?.response?.data?.message ||
-      "Something went wrong. Please try again.",
-    [],
-  );
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

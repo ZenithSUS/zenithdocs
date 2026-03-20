@@ -9,6 +9,10 @@ export interface IFolder extends Document {
   updatedAt: Date;
 }
 
+export interface IFolderInput {
+  name: string;
+}
+
 const folderSchema = new Schema<IFolder>(
   {
     name: {

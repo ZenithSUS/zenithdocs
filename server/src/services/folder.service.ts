@@ -1,5 +1,4 @@
-import mongoose from "mongoose";
-import { IFolder } from "../models/Folder.js";
+import { IFolderInput } from "../models/Folder.js";
 import {
   createFolder,
   deleteFolder,
@@ -11,81 +10,71 @@ import {
   updateFolder,
 } from "../repositories/folder.repository.js";
 import AppError from "../utils/app-error.js";
+import {
+  createFolderSchema,
+  folderParamsSchema,
+  getFolderByNameSchema,
+  getFolderByUserPageSchema,
+  getFolderByUserSchema,
+  updateFolderSchema,
+} from "../schemas/folder.schema.js";
+import { userTokenSchema } from "../utils/zod.utils.js";
 
 /**
- * Service to create a new folder
- * @param {Partial<IFolder>} data - Data to create folder
- * @return The created folder
- * @throws AppError if folder data is invalid
- * @throws AppError if folder name or user ID is missing
- * @throws AppError if folder name is not a string
+ * Creates a new folder with the given data
+ * @param {IFolderInput} data - Data to create folder
+ * @param {string} currentUserId - Current user ID
+ * @returns The created folder
+ * @throws {ZodError} If data is invalid or missing
+ * @throws {ZodError} If user ID is invalid or missing
  */
 export const createFolderService = async (
-  data: Partial<IFolder>,
+  data: IFolderInput,
   currentUserId: string,
 ) => {
-  if (!data || typeof data !== "object") {
-    throw new AppError("Folder data is required", 400);
-  }
-
-  if (!data.name || typeof data.name !== "string") {
-    throw new AppError("Folder name must be a string", 400);
-  }
-
-  if (!mongoose.Types.ObjectId.isValid(currentUserId)) {
-    throw new AppError("Invalid user ID", 400);
-  }
-
-  return await createFolder({
-    name: data.name.trim(),
-    user: new mongoose.Types.ObjectId(currentUserId),
+  const validated = createFolderSchema.parse({
+    name: data.name,
+    user: currentUserId,
   });
+
+  const existingFolder = await getFolderByName(validated.name);
+
+  if (existingFolder) {
+    throw new AppError("Folder already exists", 400);
+  }
+
+  return await createFolder(validated);
 };
 
 /**
  * Retrieves all folders (admin only)
  * @returns An array of folders if found, null otherwise
- * @throws {AppError} If the user is not an admin
  */
 export const getAllFoldersAdminService = async () => {
   return await getAllFoldersAdmin();
 };
 
 /**
- * Retrieves a single folder by its ID
+ * Retrieves a folder by its ID
  * @param {string} id - Folder ID
- * @returns The retrieved folder if found, null otherwise
- * @throws {AppError} If the folder ID is invalid or missing
+ * @returns The folder if found, null otherwise
+ * @throws {AppError} If folder ID is invalid or missing
  */
 export const getFoldersByIdService = async (id: string) => {
-  if (!id || typeof id !== "string") {
-    throw new AppError("Folder ID is required and must be a string", 400);
-  }
-
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw new AppError("Invalid folder ID", 400);
-  }
-
-  return await getFolderById(id);
+  const { folderId } = folderParamsSchema.parse({ folderId: id });
+  return await getFolderById(folderId);
 };
 
 /**
  * Retrieves all folders belonging to a user
  * @param {string} userId - User ID
  * @returns An array of folders if found, null otherwise
- * @throws {AppError} If the user ID is invalid or missing
- * @throws {AppError} If folders are not found
+ * @throws {AppError} If user ID is invalid or missing
  */
 export const getFoldersByUserService = async (userId: string) => {
-  if (!userId || typeof userId !== "string") {
-    throw new AppError("User ID is required and must be a string", 400);
-  }
+  const { userId: folderUserId } = getFolderByUserSchema.parse({ userId });
 
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    throw new AppError("Invalid user ID", 400);
-  }
-
-  const folders = await getFoldersByUser(userId);
+  const folders = await getFoldersByUser(folderUserId);
   return folders;
 };
 
@@ -93,64 +82,48 @@ export const getFoldersByUserService = async (userId: string) => {
  * Retrieves a single folder by its name
  * @param {string} name - Folder name
  * @returns The retrieved folder if found, null otherwise
- * @throws {AppError} If the folder name is invalid or missing
+ * @throws {AppError} If folder name is invalid or missing
  */
 export const getFolderByNameService = async (name: string) => {
-  if (!name || typeof name !== "string") {
-    throw new AppError("Folder name is required and must be a string", 400);
-  }
-
-  return await getFolderByName(name);
+  const { name: folderName } = getFolderByNameSchema.parse({ name });
+  return await getFolderByName(folderName);
 };
 
 /**
  * Retrieves a single folder by its ID
  * @param {string} id - Folder ID
  * @returns The retrieved folder if found, null otherwise
- * @throws {AppError} If the folder ID is invalid or missing
+ * @throws {AppError} If folder ID is invalid or missing
  */
 export const getFolderByIdService = async (id: string) => {
-  if (!id || typeof id !== "string") {
-    throw new AppError("Folder ID is required and must be a string", 400);
-  }
+  const { folderId } = folderParamsSchema.parse({ folderId: id });
 
-  const folder = await getFolderById(id);
-
+  const folder = await getFolderById(folderId);
   return folder;
 };
 
 /**
- * Retrieves folders belonging to a user in a paginated manner
+ * Retrieves all folders belonging to a user in a paginated manner
  * @param {string} userId - User ID
  * @param {number} page - Page number to retrieve
  * @param {number} limit - Number of folders to retrieve per page
  * @returns An object containing the folders and the count of folders belonging to the user
- * @throws {AppError} If the user ID is invalid or missing
- * @throws {AppError} If the page number is invalid or missing
- * @throws {AppError} If the limit is invalid or missing
- * @throws {AppError} If folders are not found
+ * @throws {AppError} If user ID is invalid or missing
+ * @throws {AppError} If page or limit is invalid or missing
+ * @throws {AppError} If page or limit is not a positive integer
  */
 export const getFolderByUserPaginatedService = async (
   userId: string,
   page: number,
   limit: number,
 ) => {
-  if (!userId || typeof userId !== "string") {
-    throw new AppError("User ID is required and must be a string", 400);
-  }
+  const validated = getFolderByUserPageSchema.parse({ userId, page, limit });
 
-  if (!page || typeof page !== "number" || page < 1) {
-    throw new AppError(
-      "Page number is required and must be a positive integer",
-      400,
-    );
-  }
-
-  if (!limit || typeof limit !== "number" || limit < 1) {
-    throw new AppError("Limit is required and must be a positive integer", 400);
-  }
-
-  const folders = await getFoldersByUserPaginated(userId, page, limit);
+  const folders = await getFoldersByUserPaginated(
+    validated.userId,
+    validated.page,
+    validated.limit,
+  );
 
   if (!folders) {
     throw new AppError("Folders not found", 404);
@@ -162,67 +135,63 @@ export const getFolderByUserPaginatedService = async (
 /**
  * Updates a folder by its ID
  * @param {string} id - Folder ID
- * @param {Partial<IFolder>} data - Folder data to update
+ * @param {Partial<IFolderInput>} data - Folder data to update
  * @param {string} currentUserId - Current user ID (used for authorization)
- * @param {"user" | "admin"} role - Role of the current user (used for authorization)
- * @returns The updated folder if found, null otherwise
- * @throws {AppError} If the folder ID is invalid or missing
- * @throws {AppError} If the folder data is invalid or missing
- * @throws {AppError} If the folder is not found
- * @throws {AppError} If the user is not authorized to update the folder
+ * @param {"user" | "admin"} role - User role (used for authorization)
+ * @returns Updated folder if found, null otherwise
+ * @throws {AppError} If folder ID is invalid or missing
+ * @throws {AppError} If folder is not found
+ * @throws {AppError} If current user ID does not match the folder's owner ID (401 Unauthorized)
  */
 export const updateFolderService = async (
   id: string,
-  data: Partial<IFolder>,
+  data: Partial<IFolderInput>,
   currentUserId: string,
   role: "user" | "admin",
 ) => {
-  if (!id || typeof id !== "string") {
-    throw new AppError("Folder ID is required and must be a string", 400);
-  }
+  const { folderId } = folderParamsSchema.parse({ folderId: id });
+  const authUser = userTokenSchema.parse({ userId: currentUserId, role });
+  const validated = updateFolderSchema.parse({ name: data.name });
 
-  if (!data || Object.keys(data).length === 0 || typeof data !== "object") {
-    throw new AppError("Folder data is required", 400);
-  }
-
-  const existingFolder = await getFolderById(id);
+  const existingFolder = await getFolderById(folderId);
 
   if (!existingFolder) {
     throw new AppError("Folder not found", 404);
   }
 
+  if (existingFolder.name === validated.name) {
+    return existingFolder;
+  }
+
   const ownerId = existingFolder.user._id.toString();
 
-  if (ownerId !== currentUserId && role !== "admin") {
+  if (ownerId !== authUser.userId && authUser.role !== "admin") {
     throw new AppError("Unauthorized", 401);
   }
 
-  // Prevent updating the user field
-  delete data.user;
-
-  const updatedFolder = await updateFolder(id, data);
-
+  const updatedFolder = await updateFolder(folderId, validated);
   return updatedFolder;
 };
 
 /**
- *  Deletes a folder by its ID
+ * Deletes a folder by its ID
  * @param {string} id - Folder ID
- * @param {string} currentUserId - ID of the current user (for authorization)
- * @param {"user" | "admin"} role - Role of the current user (for authorization)
- * @returns The deleted folder if found, null otherwise
- * @throws {AppError} If the folder ID is invalid or missing
+ * @param {string} currentUserId - Current user ID (used for authorization)
+ * @param {"user" | "admin"} role - User role (used for authorization)
+ * @returns Deleted folder if found, null otherwise
+ * @throws {AppError} If folder ID is invalid or missing
+ * @throws {AppError} If folder is not found
+ * @throws {AppError} If current user ID does not match the folder's owner ID (401 Unauthorized) or if the current user is not an admin (403 Forbidden)
  */
 export const deleteFolderService = async (
   id: string,
   currentUserId: string,
   role: "user" | "admin",
 ) => {
-  if (!id || typeof id !== "string") {
-    throw new AppError("Folder ID is required and must be a string", 400);
-  }
+  const { folderId } = folderParamsSchema.parse({ folderId: id });
+  const authUser = userTokenSchema.parse({ userId: currentUserId, role });
 
-  const existingFolder = await getFolderById(id);
+  const existingFolder = await getFolderById(folderId);
 
   if (!existingFolder) {
     throw new AppError("Folder not found", 404);
@@ -234,11 +203,11 @@ export const deleteFolderService = async (
 
   const ownerId = existingFolder.user._id.toString();
 
-  if (ownerId !== currentUserId && role !== "admin") {
+  if (ownerId !== authUser.userId && authUser.role !== "admin") {
     throw new AppError("Forbidden", 403);
   }
 
-  const deletedFolder = await deleteFolder(id);
+  const deletedFolder = await deleteFolder(folderId);
 
   return deletedFolder;
 };

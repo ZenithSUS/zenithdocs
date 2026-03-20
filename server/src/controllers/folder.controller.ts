@@ -5,13 +5,12 @@ import {
   getAllFoldersAdminService,
   getFolderByIdService,
   getFolderByNameService,
+  getFolderByUserPaginatedService,
   getFoldersByUserService,
   updateFolderService,
 } from "../services/folder.service.js";
-import { IFolder } from "../models/Folder.js";
+import { IFolder, IFolderInput } from "../models/Folder.js";
 import { ParamsDictionary } from "express-serve-static-core";
-import { getFoldersByUserPaginated } from "../repositories/folder.repository.js";
-import AppError from "../utils/app-error.js";
 
 interface FolderParams extends ParamsDictionary {
   id: string;
@@ -27,12 +26,8 @@ export const createFolderController = async (
   next: NextFunction,
 ) => {
   try {
-    const data: Partial<IFolder> = req.body;
-    const currentUserId = req.user?.sub;
-
-    if (!currentUserId) {
-      throw new AppError("Unauthorized", 401);
-    }
+    const data: IFolderInput = req.body;
+    const currentUserId = req.user.sub;
 
     const folder = await createFolderService(data, currentUserId);
 
@@ -154,7 +149,7 @@ export const getFolderByUserPaginatedController = async (
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
 
-    const folder = await getFoldersByUserPaginated(id, page, limit);
+    const folder = await getFolderByUserPaginatedService(id, page, limit);
 
     return res.status(200).json({
       success: true,
@@ -177,14 +172,10 @@ export const updateFolderController = async (
 ) => {
   try {
     const { id } = req.params;
-    const currentUserId = req.user?.sub;
-    const role = req.user?.role;
+    const currentUserId = req.user.sub;
+    const role = req.user.role;
 
     const data: Partial<IFolder> = req.body;
-
-    if (!currentUserId || !role) {
-      throw new AppError("Unauthorized", 401);
-    }
 
     const folder = await updateFolderService(id, data, currentUserId, role);
 
@@ -208,12 +199,8 @@ export const deleteFolderController = async (
 ) => {
   try {
     const { id } = req.params;
-    const currentUserId = req.user?.sub;
-    const role = req.user?.role;
-
-    if (!currentUserId || !role) {
-      throw new AppError("Unauthorized", 401);
-    }
+    const currentUserId = req.user.sub;
+    const role = req.user.role;
 
     const folder = await deleteFolderService(id, currentUserId, role);
 

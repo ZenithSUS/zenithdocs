@@ -1,5 +1,4 @@
-import mongoose from "mongoose";
-import Folder, { IFolder } from "../models/Folder.js";
+import Folder, { IFolderInput } from "../models/Folder.js";
 
 /**
  * Creates a new folder with the given data
@@ -7,7 +6,7 @@ import Folder, { IFolder } from "../models/Folder.js";
  * @returns The created folder
  * @throws MongooseError if folder data is invalid
  */
-export const createFolder = async (data: Partial<IFolder>) => {
+export const createFolder = async (data: IFolderInput) => {
   const folder = new Folder(data);
   return await folder.save();
 };
@@ -27,10 +26,6 @@ export const getAllFoldersAdmin = async () => {
  * @throws {null} If the user ID is invalid
  */
 export const getFoldersByUser = async (userId: string) => {
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    return null;
-  }
-
   return await Folder.find({ user: userId }).sort({ createdAt: -1 }).lean();
 };
 
@@ -51,10 +46,6 @@ export const getFolderByName = async (name: string) => {
  * @throws {null} If the folder ID is invalid
  */
 export const getFolderById = async (id: string) => {
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return null;
-  }
-
   return await Folder.findById(id)
     .populate({
       path: "user",
@@ -77,10 +68,6 @@ export const getFoldersByUserPaginated = async (
   page: number,
   limit: number,
 ) => {
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    return null;
-  }
-
   const offset = (page - 1) * limit;
 
   const folders = await Folder.find({ user: userId })
@@ -108,10 +95,6 @@ export const getFoldersByUserPaginated = async (
  * @throws {null} If the user ID is invalid
  */
 export const getTotalFoldersByUser = async (userId: string) => {
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    return null;
-  }
-
   return await Folder.countDocuments({ user: userId });
 };
 
@@ -122,11 +105,7 @@ export const getTotalFoldersByUser = async (userId: string) => {
  * @returns The updated folder if found, null otherwise
  * @throws {null} If the folder ID is invalid
  */
-export const updateFolder = async (id: string, data: Partial<IFolder>) => {
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return null;
-  }
-
+export const updateFolder = async (id: string, data: Partial<IFolderInput>) => {
   return await Folder.findByIdAndUpdate(id, data, {
     returnDocument: "after",
   }).lean();
@@ -139,9 +118,5 @@ export const updateFolder = async (id: string, data: Partial<IFolder>) => {
  * @throws {null} If the folder ID is invalid
  */
 export const deleteFolder = async (id: string) => {
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return null;
-  }
-
   return await Folder.findByIdAndDelete(id).lean();
 };
