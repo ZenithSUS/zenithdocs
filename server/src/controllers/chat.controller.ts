@@ -23,12 +23,7 @@ export const initChatForDocumentController = async (
 ) => {
   try {
     const { id } = req.params;
-    const currentUserId = req.user?.sub;
-    const role = req.user?.role;
-
-    if (!currentUserId || (role !== "admin" && role !== "user")) {
-      throw new AppError("Unauthorized", 401);
-    }
+    const currentUserId = req.user.sub;
 
     const chat = await initChatForDocumentService(id, currentUserId);
 
@@ -55,10 +50,6 @@ export const chatController = async (
     const user = req.user;
 
     const { question, documentId } = req.body;
-
-    if (!user) {
-      throw new AppError("Unauthorized", 401);
-    }
 
     if (!question || !documentId) {
       throw new AppError("Missing question or documentId", 400);
@@ -93,12 +84,7 @@ export const getChatByDocumentController = async (
 ) => {
   try {
     const { id } = req.params;
-    const currentUserId = req.user?.sub;
-    const role = req.user?.role;
-
-    if (!currentUserId || !role) {
-      throw new AppError("Unauthorized", 401);
-    }
+    const currentUserId = req.user.sub;
 
     const chat = await getChatByDocumentService(id, currentUserId);
 
@@ -125,13 +111,6 @@ export const getChatByUserPaginatedController = async (
     const { id } = req.params;
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 10;
-
-    const currentUserId = req.user?.sub;
-    const role = req.user?.role;
-
-    if (!currentUserId || !role) {
-      throw new AppError("Unauthorized", 401);
-    }
 
     const chats = await getChatByUserPaginatedService(id, page, limit);
 

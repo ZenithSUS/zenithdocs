@@ -1,12 +1,12 @@
 import { Types } from "mongoose";
-import Chat, { IChat } from "../models/Chat.js";
+import Chat, { IChatInput, InitChatInput } from "../models/Chat.js";
 
 /**
  * Creates a new chat document with the given data.
- * @param {Partial<IChat>} data - The data to create the chat with.
+ * @param {InitChatInput} data - The data to create the chat document with.
  * @returns {Promise<IChat>} The created chat document.
  */
-export const createChat = async (data: Partial<IChat>) => {
+export const createChat = async (data: InitChatInput) => {
   const chat = await Chat.create(data);
   return chat;
 };

@@ -14,6 +14,8 @@ export interface IChatInput {
   userId: string;
 }
 
+export type InitChatInput = IChatInput & { summary: string };
+
 const chatSchema = new Schema<IChat>(
   {
     documentId: {
