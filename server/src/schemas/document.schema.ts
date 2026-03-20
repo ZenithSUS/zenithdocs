@@ -12,6 +12,7 @@ export const createDocumentSchema = z.object({
   fileSize: z.number().min(1, "File size is required."),
   user: objectId,
   folder: objectId.optional(),
+  rawText: z.string().min(1, "Raw text is required."),
   publicId: z.string().min(1, "Public ID is required."),
 });
 

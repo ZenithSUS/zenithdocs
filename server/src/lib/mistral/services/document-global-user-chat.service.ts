@@ -13,12 +13,38 @@ import summarizeOldMessages from "../utils/summarize-message.js";
 import { updateGlobalChatSummary } from "../../../repositories/global-chat.repository.js";
 import generateSearchQueries from "../utils/generate-search-queries.js";
 import calculateGlobalConfidenceScore from "../utils/global-confidence-score.js";
+import { IDocumentChunkOutput } from "../../../models/DocumentChunk.js";
 
 interface streamDocumentUserChatPayload {
   userId: string;
   question: string;
   res: Response;
 }
+
+const isZenithDocsQuestion = (question: string): boolean => {
+  const keywords = [
+    "zenithdocs",
+    "zenith docs",
+    "zenithsus",
+    "features",
+    "how to use",
+    "this app",
+    "this platform",
+    "this tool",
+    "what can you do",
+    "what is this",
+    "how does this work",
+    "document types",
+    "file types",
+    "max size",
+    "maximum size",
+    "summary types",
+    "upload",
+    "supported formats",
+    "supported file formats",
+  ];
+  return keywords.some((kw) => question.toLowerCase().includes(kw));
+};
 
 const getSystemPrompt = (context: string, summary: string) => {
   return `You are ZenithDocs AI, the assistant inside the ZenithDocs platform.
@@ -136,49 +162,60 @@ export const streamDocumentUserChat = async ({
   const docCount = new Map();
 
   const questionEmbedding = await generateEmbedding(question);
-  const queries = [
-    question,
-    ...(await generateSearchQueries(question)).slice(0, 2),
-  ];
+  const isAppQuestion = isZenithDocsQuestion(question);
 
-  const allChunks = (
-    await Promise.all(
-      queries.map(async (q) => {
-        const embedding = await generateEmbedding(q);
-        return getDocumentUserSimilarityScore(embedding, userId);
-      }),
-    )
-  ).flat();
+  let filteredChunks: IDocumentChunkOutput[] = [];
+  let context: string;
+  let confidenceScore: number;
 
-  const uniqueChunks = Array.from(
-    new Map(allChunks.map((c) => [c._id.toString(), c])).values(),
-  );
+  if (isAppQuestion) {
+    context = "NO_RELEVANT_DOCUMENT_CONTEXT";
+    confidenceScore = 1.0;
+  } else {
+    const queries = [
+      question,
+      ...(await generateSearchQueries(question)).slice(0, 2),
+    ];
 
-  const filteredChunks = uniqueChunks
-    .filter((c) => c.score >= 0.82)
-    .sort((a, b) => b.score - a.score)
-    .filter((chunk) => {
-      const count = docCount.get(chunk.documentId.toString()) || 0;
-      if (count >= MAX_PER_DOC) return false;
-      docCount.set(chunk.documentId.toString(), count + 1);
-      return true;
-    })
-    .slice(0, 5);
+    const allChunks = (
+      await Promise.all(
+        queries.map(async (q) => {
+          const embedding = await generateEmbedding(q);
+          return getDocumentUserSimilarityScore(embedding, userId);
+        }),
+      )
+    ).flat();
 
-  const confidenceScore = calculateGlobalConfidenceScore(filteredChunks);
+    const uniqueChunks = Array.from(
+      new Map(allChunks.map((c) => [c._id.toString(), c])).values(),
+    );
 
-  const context =
-    filteredChunks.length > 0
-      ? filteredChunks
-          .map(
-            (chunk, i) => `
-Document ${i + 1}
-Source: ${chunk.documentName}
+    const filteredChunks = uniqueChunks
+      .filter((c) => c.score >= 0.82)
+      .sort((a, b) => b.score - a.score)
+      .filter((chunk) => {
+        const count = docCount.get(chunk.documentId.toString()) || 0;
+        if (count >= MAX_PER_DOC) return false;
+        docCount.set(chunk.documentId.toString(), count + 1);
+        return true;
+      })
+      .slice(0, 5);
 
-${chunk.text}`,
-          )
-          .join("\n\n---\n\n")
-      : "NO_RELEVANT_DOCUMENT_CONTEXT";
+    confidenceScore = calculateGlobalConfidenceScore(filteredChunks);
+
+    context =
+      filteredChunks.length > 0
+        ? filteredChunks
+            .map(
+              (chunk, i) => `
+  Document ${i + 1}
+  Source: ${chunk.documentName}
+  
+  ${chunk.text}`,
+            )
+            .join("\n\n---\n\n")
+        : "NO_RELEVANT_DOCUMENT_CONTEXT";
+  }
 
   const systemPrompt = getSystemPrompt(context, globalSummary);
 

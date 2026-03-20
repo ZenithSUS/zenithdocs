@@ -25,6 +25,7 @@ export interface IDocumentInput {
   rawText: string;
   user: string;
   folder?: string;
+  status?: "uploaded" | "processing" | "completed" | "failed";
   publicId: string;
 }
 

@@ -1,4 +1,4 @@
-import mongoose, { Types } from "mongoose";
+import { Types } from "mongoose";
 import Document, { IDocumentInput } from "../models/Document.js";
 import Chat from "../models/Chat.js";
 
@@ -38,10 +38,6 @@ export const getAllDocuments = async () => {
  * @throws MongooseError if document ID is invalid
  */
 export const getDocumentById = async (id: string) => {
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return null;
-  }
-
   return await Document.findById(id)
     .populate({
       path: "user",
@@ -67,9 +63,6 @@ export const getDocumentsByUserPaginated = async (
   page: number,
   limit: number,
 ) => {
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    return null;
-  }
   const offset = (page - 1) * limit;
 
   const documents = await Document.find({ user: userId })
@@ -101,10 +94,6 @@ export const getDocumentsByUserPaginated = async (
  * @throws {null} If the user ID is invalid
  */
 export const getTotalDocumentsByUser = async (userId: string) => {
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    return null;
-  }
-
   return await Document.countDocuments({ user: userId });
 };
 
@@ -119,10 +108,6 @@ export const getTotalStatusDocumentsByUser = async (
   userId: string,
   status: "uploaded" | "processing" | "completed" | "failed",
 ) => {
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    return null;
-  }
-
   return await Document.countDocuments({ user: userId, status: status });
 };
 
@@ -242,10 +227,6 @@ export const updateDocument = async (
   id: string,
   data: Partial<IDocumentInput>,
 ) => {
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return null;
-  }
-
   return await Document.findByIdAndUpdate(id, data, { returnDocument: "after" })
     .populate({
       path: "user",
@@ -265,9 +246,5 @@ export const updateDocument = async (
  * @throws {null} If the document ID is invalid
  */
 export const deleteDocumentById = async (id: string) => {
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return null;
-  }
-
   return await Document.findByIdAndDelete(id);
 };
