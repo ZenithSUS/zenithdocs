@@ -47,6 +47,9 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
     fetchNextPage: fetchNextDocPage,
     hasNextPage: hasNextDocPage,
     isFetchingNextPage: isFetchingNextDocPage,
+    isError: documentError,
+    error: documentErrorData,
+    refetch: refetchDocumentChats,
   } = documentsByUserPage;
 
   const { foldersByUserPage } = useFolder();
@@ -154,9 +157,16 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
 
       await reprocessDoc(docId).catch((error) => {
         const err = error as AxiosError;
-        toast.error(
-          err.response?.data?.message || "Error reprocessing document",
-        );
+        const data = err.response?.data;
+
+        // When the server returns a validation error
+        if (data?.errors) {
+          const message = data.errors.map((err) => err.message).join(", ");
+          toast.error(message);
+        } else {
+          // When the server returns a generic error
+          toast.error(data?.message || "Error reprocessing document");
+        }
       });
     },
     [reprocessDoc, setActionsMenuOpen],
@@ -187,6 +197,7 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
     allFolders,
     allSummaries,
     filteredDocs,
+    documentErrorData,
 
     // State
     selectedDoc,
@@ -200,6 +211,7 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
     documentToMove,
     moveModalOpen,
     deleteModalOpen,
+    documentError,
 
     // Setters
     setFilterStatus,
@@ -216,6 +228,7 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
     handleMoveSuccess,
     handleReprocessClick,
     fetchNextDocPage,
+    refetchDocumentChats,
 
     // Refs
     actionsButtonRefs,

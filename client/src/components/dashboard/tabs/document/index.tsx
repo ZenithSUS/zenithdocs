@@ -15,6 +15,7 @@ import ActionsDropDown from "./components/ActionsDropDown";
 import DocumentRowCard from "./components/DocumentRowCard";
 import DocumentsLoadingSkeleton from "./components/DocumentsLoadingSkeleton";
 import SummaryContents from "./components/SummaryContents";
+import DocumentError from "./components/DocumentError";
 
 interface Props {
   userId: string;
@@ -44,6 +45,7 @@ function DocumentsTab({ userId, filterFolder, setFilterFolder }: Props) {
     allFolders,
     allSummaries,
     filteredDocs,
+    documentErrorData,
 
     // State
     selectedDoc,
@@ -57,6 +59,7 @@ function DocumentsTab({ userId, filterFolder, setFilterFolder }: Props) {
     documentToMove,
     moveModalOpen,
     deleteModalOpen,
+    documentError,
 
     // Setters
     setFilterStatus,
@@ -73,6 +76,7 @@ function DocumentsTab({ userId, filterFolder, setFilterFolder }: Props) {
     handleMoveSuccess,
     handleReprocessClick,
     fetchNextDocPage,
+    refetchDocumentChats,
 
     // Refs
     actionsButtonRefs,
@@ -102,6 +106,17 @@ function DocumentsTab({ userId, filterFolder, setFilterFolder }: Props) {
           UPLOAD DOCUMENT
         </button>
       </div>
+    );
+  }
+
+  if (documentError) {
+    return (
+      <DocumentError
+        errorMessage={
+          documentErrorData?.response?.data?.message ?? "Something went wrong"
+        }
+        refetchDocumentChats={refetchDocumentChats}
+      />
     );
   }
 
