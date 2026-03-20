@@ -1,4 +1,4 @@
-import { IDocument } from "../models/Document.js";
+import { IDocument, IDocumentInput } from "../models/Document.js";
 import {
   createDocument,
   deleteDocumentById,
@@ -10,7 +10,6 @@ import {
 } from "../repositories/document.repository.js";
 import { getFolderById } from "../repositories/folder.repository.js";
 import AppError from "../utils/app-error.js";
-import mongoose from "mongoose";
 import PLAN_LIMITS from "../config/plans.js";
 import {
   incrementUsage,
@@ -23,57 +22,39 @@ import {
   getDocumentChunksByDocumentId,
 } from "../repositories/document-chunk.repository.js";
 import { embeddingQueue } from "../queues/embedding.queue.js";
+import {
+  createDocumentSchema,
+  documentParamsSchema,
+  getDocumentsByUserPageSchema,
+  updateDocumentSchema,
+} from "../schemas/document.schema.js";
+import { userTokenSchema } from "../utils/zod.utils.js";
 
 /**
  * Creates a new document with the given data
- * @param {Partial<IDocument>} data - Data to create document
+ * @param {Partial<IDocumentInput>} data - Data to create document
  * @returns The created document
  * @throws {AppError} If data is invalid or missing
  * @throws {AppError} If title, file URL, file type, or file size is missing or invalid
  * @throws {AppError} If user ID is invalid or missing
  * @throws {AppError} If folder ID is invalid or missing, or if the folder does not exist or belongs to a different user
  */
-export const createDocumentService = async (data: Partial<IDocument>) => {
+export const createDocumentService = async (data: Partial<IDocumentInput>) => {
   const month = new Date().toISOString().slice(0, 7);
-
-  if (!data || typeof data !== "object") {
-    throw new AppError("Data is required", 400);
-  }
-
-  // Destructure fields from data
-  const { title, fileUrl, fileType, fileSize, user, folder } = data;
-
-  // Validate required fields
-  if (!title || typeof title !== "string")
-    throw new AppError("Title is required", 400);
-
-  if (!fileUrl || typeof fileUrl !== "string")
-    throw new AppError("File URL is required", 400);
-
-  if (!fileType || typeof fileType !== "string")
-    throw new AppError("File type is required", 400);
-
-  if (typeof fileSize !== "number")
-    throw new AppError("File size must be a number", 400);
-
-  if (!user || !mongoose.Types.ObjectId.isValid(user))
-    throw new AppError("Invalid User ID", 400);
+  const validData = createDocumentSchema.parse(data);
 
   // If folder is provided, validate it and check ownership
-  if (folder) {
-    if (!mongoose.Types.ObjectId.isValid(folder.toString()))
-      throw new AppError("Invalid Folder ID", 400);
-
-    const existingFolder = await getFolderById(folder.toString());
+  if (validData.folder) {
+    const existingFolder = await getFolderById(validData.folder);
 
     if (!existingFolder) throw new AppError("Folder not found", 404);
 
-    if (existingFolder.user._id.toString() !== user.toString())
+    if (existingFolder.user._id.toString() !== validData.user)
       throw new AppError("Forbidden", 403);
   }
 
   // Update usage or create a new one
-  let usageLimit = await updateUsageMonthByUser(user.toString(), month);
+  let usageLimit = await updateUsageMonthByUser(validData.user, month);
 
   if (!usageLimit.user || typeof usageLimit.user === "string") {
     throw new AppError("User not populated properly", 500);
@@ -90,9 +71,9 @@ export const createDocumentService = async (data: Partial<IDocument>) => {
     throw new AppError("Document limit reached for this month", 400);
   }
 
-  const document = await createDocument(data);
+  const document = await createDocument(validData);
 
-  await incrementUsage(user.toString(), 0);
+  await incrementUsage(validData.user, 0);
   return document;
 };
 
@@ -107,15 +88,8 @@ export const reprocessDocumentService = async (
   id: string,
   currentUserId: string,
 ) => {
-  if (!id || typeof id !== "string") {
-    throw new AppError("Document ID is required", 400);
-  }
-
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw new AppError("Invalid Document ID", 400);
-  }
-
-  const document = await getDocumentById(id);
+  const { docId } = documentParamsSchema.parse({ docId: id });
+  const document = await getDocumentById(docId);
 
   if (!document) {
     throw new AppError("Document not found", 404);
@@ -129,16 +103,16 @@ export const reprocessDocumentService = async (
     throw new AppError("Forbidden", 403);
   }
 
-  const documentChunks = await getDocumentChunksByDocumentId(id);
+  const documentChunks = await getDocumentChunksByDocumentId(docId);
 
   // Delete existing document chunks
   if (documentChunks.length > 0) {
-    await deleteDocumentChunksByDocumentId(id);
+    await deleteDocumentChunksByDocumentId(docId);
   }
 
   await embeddingQueue.add(
     "embedding",
-    { documentId: id, userId: currentUserId },
+    { documentId: docId, userId: currentUserId },
     {
       attempts: 1,
       backoff: {
@@ -176,17 +150,13 @@ export const getDocumentsByUserPaginatedService = async (
   page: number,
   limit: number,
 ) => {
-  if (!userId) throw new AppError("User ID is required", 400);
+  const validated = getDocumentsByUserPageSchema.parse({ userId, page, limit });
 
-  if (!mongoose.Types.ObjectId.isValid(userId))
-    throw new AppError("Invalid User ID", 400);
-
-  if (!page || !limit) throw new AppError("Page and limit are required", 400);
-
-  if (page < 1 || limit < 1)
-    throw new AppError("Page and limit must be positive integers", 400);
-
-  const documents = await getDocumentsByUserPaginated(userId, page, limit);
+  const documents = await getDocumentsByUserPaginated(
+    validated.userId,
+    validated.page,
+    validated.limit,
+  );
   return documents;
 };
 
@@ -205,20 +175,12 @@ export const getDocumentsByUserWithChatsPaginatedService = async (
   page: number,
   limit: number,
 ) => {
-  if (!userId) throw new AppError("User ID is required", 400);
-
-  if (!mongoose.Types.ObjectId.isValid(userId))
-    throw new AppError("Invalid User ID", 400);
-
-  if (!page || !limit) throw new AppError("Page and limit are required", 400);
-
-  if (page < 1 || limit < 1)
-    throw new AppError("Page and limit must be positive integers", 400);
+  const validated = getDocumentsByUserPageSchema.parse({ userId, page, limit });
 
   const documents = await getDocumentsByUserWithChatsPaginated(
-    userId,
-    page,
-    limit,
+    validated.userId,
+    validated.page,
+    validated.limit,
   );
 
   return documents;
@@ -239,15 +201,10 @@ export const getDocumentByIdService = async (
   currentUserId: string,
   role: "user" | "admin",
 ) => {
-  if (!id) {
-    throw new AppError("Document ID is required", 400);
-  }
+  const { docId } = documentParamsSchema.parse({ docId: id });
+  const authUser = userTokenSchema.parse({ userId: currentUserId, role });
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw new AppError("Invalid Document ID", 400);
-  }
-
-  const document = await getDocumentById(id);
+  const document = await getDocumentById(docId);
 
   if (!document) {
     throw new AppError("Document not found", 404);
@@ -255,7 +212,7 @@ export const getDocumentByIdService = async (
 
   const ownerId = document.user._id.toString();
 
-  if (ownerId !== currentUserId && role !== "admin") {
+  if (ownerId !== authUser.userId && authUser.role !== "admin") {
     throw new AppError("Forbidden", 403);
   }
 
@@ -275,19 +232,14 @@ export const getDocumentByIdService = async (
  */
 export const updateDocumentService = async (
   id: string,
-  data: Partial<IDocument>,
+  data: Partial<IDocumentInput>,
   currentUserId: string,
   role: "user" | "admin",
 ) => {
-  if (!id) {
-    throw new AppError("Document ID is required", 400);
-  }
+  const { docId } = documentParamsSchema.parse({ docId: id });
+  const authUser = userTokenSchema.parse({ userId: currentUserId, role });
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw new AppError("Invalid Document ID", 400);
-  }
-
-  const existingDocument = await getDocumentById(id);
+  const existingDocument = await getDocumentById(docId);
 
   if (!existingDocument) {
     throw new AppError("Document not found", 404);
@@ -295,18 +247,16 @@ export const updateDocumentService = async (
 
   const ownerId = existingDocument.user._id.toString();
 
-  if (ownerId !== currentUserId && role !== "admin") {
+  if (ownerId !== authUser.userId && authUser.role !== "admin") {
     throw new AppError("Unauthorized", 403);
   }
 
-  if (!data || typeof data !== "object") {
-    throw new AppError("Data is required", 400);
-  }
+  const documentData = updateDocumentSchema.parse(data);
 
   // Prevent changing the owner of the document
   delete data.user;
 
-  const document = await updateDocument(id, data);
+  const document = await updateDocument(docId, documentData);
   return document;
 };
 
@@ -325,17 +275,14 @@ export const deleteDocumentByIdService = async (
   currentUserId: string,
   role: "user" | "admin",
 ) => {
-  if (!id) throw new AppError("Document ID is required", 400);
+  const { docId } = documentParamsSchema.parse({ docId: id });
+  const authUser = userTokenSchema.parse({ userId: currentUserId, role });
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw new AppError("Invalid Document ID", 400);
-  }
-
-  const existingDocument = await getDocumentById(id);
+  const existingDocument = await getDocumentById(docId);
   if (!existingDocument) throw new AppError("Document not found", 404);
 
   const ownerId = existingDocument.user._id.toString();
-  if (ownerId !== currentUserId && role !== "admin") {
+  if (ownerId !== authUser.userId && authUser.role !== "admin") {
     throw new AppError("Unauthorized", 403);
   }
 
@@ -350,16 +297,15 @@ export const deleteDocumentByIdService = async (
         err,
       );
       console.log("=".repeat(50) + "\n");
-      // We ignore the error so the document can still be deleted in DB
     }
   }
 
   // Delete the document from database
-  const deletedDocument = await deleteDocumentById(id);
+  const deletedDocument = await deleteDocumentById(docId);
   if (!deletedDocument) throw new AppError("Document not found", 404);
 
   // Delete the document chunks associated with the document
-  await deleteDocumentChunksByDocumentId(id);
+  await deleteDocumentChunksByDocumentId(docId);
 
   return deletedDocument;
 };

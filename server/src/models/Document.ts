@@ -17,6 +17,17 @@ export interface IDocument extends Document {
   updatedAt: Date;
 }
 
+export interface IDocumentInput {
+  title: string;
+  fileUrl: string;
+  fileType: string;
+  fileSize: number;
+  rawText: string;
+  user: string;
+  folder?: string;
+  publicId: string;
+}
+
 const documentSchema = new Schema<IDocument>(
   {
     title: {

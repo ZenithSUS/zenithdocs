@@ -1,5 +1,5 @@
 import mongoose, { Types } from "mongoose";
-import Document, { IDocument } from "../models/Document.js";
+import Document, { IDocumentInput } from "../models/Document.js";
 import Chat from "../models/Chat.js";
 
 /**
@@ -8,11 +8,7 @@ import Chat from "../models/Chat.js";
  * @returns The created document
  * @throws MongooseError if document data is invalid
  */
-export const createDocument = async (data: Partial<IDocument>) => {
-  if (!data || Object.keys(data).length === 0) {
-    throw new Error("Document data is required");
-  }
-
+export const createDocument = async (data: Partial<IDocumentInput>) => {
   const document = new Document(data);
   return await document.save();
 };
@@ -239,10 +235,13 @@ export const getRecentDocumentsByUser = async (userId: string) => {
 /**
  * Update a document by ID
  * @param {string} id - Document ID
- * @param {Partial<IDocument>} data - Data to update
+ * @param {Partial<IDocumentInput>} data - Data to update
  * @returns Updated document if found, null otherwise
  */
-export const updateDocument = async (id: string, data: Partial<IDocument>) => {
+export const updateDocument = async (
+  id: string,
+  data: Partial<IDocumentInput>,
+) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return null;
   }

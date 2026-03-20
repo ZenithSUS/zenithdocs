@@ -1,7 +1,7 @@
 import fs from "fs";
 import { promisify } from "util";
 import { Request, Response } from "express";
-import { IDocument } from "../models/Document.js";
+import { IDocumentInput } from "../models/Document.js";
 import {
   createDocumentService,
   deleteDocumentByIdService,
@@ -16,7 +16,6 @@ import { NextFunction, ParamsDictionary } from "express-serve-static-core";
 import AppError from "../utils/app-error.js";
 import cloudinary, { uploadToCloudinary } from "../lib/cloudinary.service.js";
 import extractRawText from "../lib/extract-text.js";
-import mongoose from "mongoose";
 import { embeddingQueue } from "../queues/embedding.queue.js";
 
 const unlink = promisify(fs.unlink);
@@ -38,9 +37,8 @@ export const createDocumentController = async (
   const tempFilePath = req.file?.path;
 
   try {
-    const userId = req.user?.sub;
+    const userId = req.user.sub;
 
-    if (!userId) throw new AppError("Unauthorized", 401);
     if (!req.file || !tempFilePath) throw new AppError("File is required", 400);
 
     if (req.file.size > 10 * 1024 * 1024) {
@@ -48,7 +46,7 @@ export const createDocumentController = async (
       throw new AppError("File size must be less than 10MB", 400);
     }
 
-    const data: Partial<IDocument> = req.body;
+    const data: Partial<IDocumentInput> = req.body;
 
     const rawText = await extractRawText(tempFilePath, req.file.mimetype);
 
@@ -59,9 +57,9 @@ export const createDocumentController = async (
     );
     uploadedPublicId = publicId;
 
-    const finalData: Partial<IDocument> = {
+    const finalData: Partial<IDocumentInput> = {
       ...data,
-      user: new mongoose.Types.ObjectId(userId),
+      user: userId,
       title: data.title || req.file.originalname,
       fileUrl: url,
       fileType: req.file.mimetype.split("/")[1],
@@ -115,12 +113,7 @@ export const reprocessDocumentController = async (
 ) => {
   try {
     const { id: documentId } = req.params;
-    const currentUserId = req.user?.sub;
-    const role = req.user?.role;
-
-    if (!currentUserId || (role !== "admin" && role !== "user")) {
-      throw new AppError("Unauthorized", 401);
-    }
+    const currentUserId = req.user.sub;
 
     await reprocessDocumentService(documentId, currentUserId);
 
@@ -197,13 +190,8 @@ export const getDocumentByIdController = async (
 ) => {
   try {
     const { id } = req.params;
-    const currentUserId = req.user?.sub;
-    const role = req.user?.role;
-
-    // Check if user is authenticated
-    if (!currentUserId || !role) {
-      throw new AppError("Unauthorized", 401);
-    }
+    const currentUserId = req.user.sub;
+    const role = req.user.role;
 
     const document = await getDocumentByIdService(id, currentUserId, role);
 
@@ -228,15 +216,10 @@ export const updateDocumentController = async (
 ) => {
   try {
     const { id } = req.params;
-    const currentUserId = req.user?.sub;
-    const role = req.user?.role;
+    const currentUserId = req.user.sub;
+    const role = req.user.role;
 
-    // Check if user is authenticated
-    if (!currentUserId || !role) {
-      throw new AppError("Unauthorized", 401);
-    }
-
-    const data: Partial<IDocument> = {
+    const data: Partial<IDocumentInput> = {
       ...req.body,
       user: req.user.sub,
     };
@@ -264,13 +247,8 @@ export const deleteDocumentByIdController = async (
 ) => {
   try {
     const { id } = req.params;
-    const currentUserId = req.user?.sub;
-    const role = req.user?.role;
-
-    // Check if user is authenticated
-    if (!currentUserId || !role) {
-      throw new AppError("Unauthorized", 401);
-    }
+    const currentUserId = req.user.sub;
+    const role = req.user.role;
 
     const document = await deleteDocumentByIdService(id, currentUserId, role);
 
