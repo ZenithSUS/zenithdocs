@@ -32,7 +32,6 @@ export const getAllDocuments = async () => {
       path: "folder",
       select: "_id name",
     })
-
     .lean();
 };
 
