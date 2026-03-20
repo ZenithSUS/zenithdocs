@@ -66,6 +66,7 @@ export default function RegisterPage() {
     handleSubmit,
     control,
     formState: { errors, isSubmitting },
+    setError,
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     mode: "onTouched",
@@ -101,6 +102,13 @@ export default function RegisterPage() {
         axiosError?.response?.data?.message ||
           "Something went wrong. Please try again.",
       );
+
+      // When the server returns validation errors
+      if (axiosError.response?.data?.errors) {
+        for (const { field, message } of axiosError.response.data.errors) {
+          setError(field as keyof Partial<RegisterFormValues>, { message });
+        }
+      }
     }
   };
 

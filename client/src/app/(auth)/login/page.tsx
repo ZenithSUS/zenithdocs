@@ -57,6 +57,7 @@ export default function LoginPage() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
+    setError,
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     mode: "onTouched",
@@ -77,9 +78,15 @@ export default function LoginPage() {
       const axiosError = err as AxiosError;
 
       setServerError(
-        axiosError?.response?.data?.message ||
-          "Something went wrong try again.",
+        axiosError?.response?.data?.message || "Something went wrong.",
       );
+
+      // When the server returns validation errors
+      if (axiosError.response?.data?.errors) {
+        for (const { field, message } of axiosError.response.data.errors) {
+          setError(field as keyof Partial<LoginFormValues>, { message });
+        }
+      }
     }
   };
 
