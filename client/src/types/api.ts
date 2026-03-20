@@ -16,6 +16,10 @@ export type AxiosError = {
     data?: {
       success: boolean;
       message: string;
+      errors?: {
+        field: string;
+        message: string;
+      }[];
     };
   };
 };
