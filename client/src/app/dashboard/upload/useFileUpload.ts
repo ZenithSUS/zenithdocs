@@ -80,9 +80,22 @@ const useFileUpload = ({
         toast.success("File uploaded successfully!");
       } catch (err) {
         const apiError = err as AxiosError;
-        const message =
-          apiError.response?.data?.message ?? "Failed to upload file";
-        toast.error(message);
+        const data = apiError.response?.data;
+
+        let message = "Failed to upload file";
+
+        // When the server returns validation errors
+        if (data?.errors) {
+          message = data.errors.map((e) => e.message).join(", ");
+          // When the server returns a message
+        } else if (data?.message) {
+          message = data.message;
+        }
+
+        toast.error(message, {
+          description: uploadFile.file.name,
+        });
+
         setFiles((prev) =>
           prev.map((f) =>
             f.id === uploadFile.id
