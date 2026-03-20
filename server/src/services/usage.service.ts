@@ -1,5 +1,4 @@
-import mongoose from "mongoose";
-import { IUsage } from "../models/Usage.js";
+import { IUsageInput } from "../models/Usage.js";
 import {
   createUsage,
   getAllUsageAdmin,
@@ -13,6 +12,16 @@ import {
   getLastSixMonthsUsageByUser,
 } from "../repositories/usage.repository.js";
 import AppError from "../utils/app-error.js";
+import {
+  createUsageSchema,
+  deleteUsageByUserSchema,
+  getLastSixMonthsUsageByUserSchema,
+  getUsageByUserAndMonthSchema,
+  updateUsageByUserAndMonthSchema,
+  updateUsageSchema,
+  usageParamsSchema,
+} from "../schemas/usage.schema.js";
+import { userTokenSchema } from "../utils/zod.utils.js";
 
 /**
  * Creates a new usage document with the given data.
@@ -21,25 +30,18 @@ import AppError from "../utils/app-error.js";
  * @returns {Promise<IUsage>} Created usage document if found, null otherwise
  * @throws {AppError} If usage data is invalid or if user or month is missing
  */
-export const createUsageService = async (data: Partial<IUsage>) => {
-  if (!data || Object.keys(data).length === 0)
-    throw new AppError("Usage data is required", 400);
-
-  if (!data.user || !data.month)
-    throw new AppError("User and month are required", 400);
-
-  if (!mongoose.Types.ObjectId.isValid(data.user.toString()))
-    throw new AppError("Invalid User ID", 400);
+export const createUsageService = async (data: IUsageInput) => {
+  const validated = createUsageSchema.parse(data);
 
   const existingUsage = await getUsageByUserAndMonth(
-    data.user.toString(),
-    data.month,
+    validated.user,
+    validated.month,
   );
 
   // If usage document already exists, return it instead of creating a new one
   if (existingUsage) return existingUsage;
 
-  const usage = await createUsage(data);
+  const usage = await createUsage(validated);
   return usage;
 };
 
@@ -64,10 +66,9 @@ export const getUsageByUserAndMonthService = async (
   userId: string,
   month: string,
 ) => {
-  if (!userId || !month)
-    throw new AppError("User ID and month are required", 400);
+  const validated = getUsageByUserAndMonthSchema.parse({ userId, month });
 
-  const usage = await getUsageByUserAndMonth(userId, month);
+  const usage = await getUsageByUserAndMonth(validated.userId, validated.month);
 
   if (!usage) throw new AppError("Usage not found", 404);
 
@@ -94,9 +95,9 @@ export const getUsageByUserService = async (userId: string) => {
  * @throws {AppError} If user ID is invalid or missing
  */
 export const getLastSixMonthsUsageByUserService = async (userId: string) => {
-  if (!userId) throw new AppError("User ID is required", 400);
+  const validated = getLastSixMonthsUsageByUserSchema.parse({ userId });
 
-  const usage = await getLastSixMonthsUsageByUser(userId);
+  const usage = await getLastSixMonthsUsageByUser(validated.userId);
   return usage;
 };
 
@@ -110,28 +111,31 @@ export const getLastSixMonthsUsageByUserService = async (userId: string) => {
  */
 export const updateUsageService = async (
   id: string,
-  data: Partial<IUsage>,
+  data: Partial<IUsageInput>,
   currentUserId: string,
   role: "user" | "admin",
 ) => {
-  if (!id) throw new AppError("Usage ID is required", 400);
-  if (!data || Object.keys(data).length === 0)
-    throw new AppError("Usage data is required", 400);
+  const { usageId } = usageParamsSchema.parse({ usageId: id });
+  const validated = updateUsageSchema.parse(data);
+  const authUser = userTokenSchema.parse({ userId: currentUserId, role });
 
-  const existingUsage = await getUsageById(id);
+  const existingUsage = await getUsageById(usageId);
 
   if (!existingUsage) {
     throw new AppError("Usage document not found", 404);
   }
 
-  if (existingUsage.user.toString() !== currentUserId && role !== "admin") {
+  if (
+    existingUsage.user.toString() !== authUser.userId &&
+    authUser.role !== "admin"
+  ) {
     throw new AppError(
       "You are not authorized to update this usage document",
       403,
     );
   }
 
-  const usage = await updateUsage(id, data);
+  const usage = await updateUsage(usageId, validated);
   return usage;
 };
 
@@ -141,22 +145,23 @@ export const updateUsageByUserAndMonthService = async (
   currentUserId: string,
   role: "user" | "admin",
 ) => {
-  if (!userId) throw new AppError("User ID is required", 400);
+  const validated = updateUsageByUserAndMonthSchema.parse({
+    userId,
+    tokensUsed,
+  });
+  const authUser = userTokenSchema.parse({ userId: currentUserId, role });
 
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    throw new AppError("Invalid user ID", 400);
-  }
-
-  if (currentUserId !== userId && role !== "admin") {
+  if (validated.userId !== authUser.userId && authUser.role !== "admin") {
     throw new AppError(
       "You are not authorized to update this usage document",
       403,
     );
   }
 
-  if (tokensUsed < 0) throw new AppError("Tokens used cannot be negative", 400);
-
-  const usage = await incrementOnlyTokensUsed(userId, tokensUsed);
+  const usage = await incrementOnlyTokensUsed(
+    validated.userId,
+    validated.tokensUsed,
+  );
   return usage;
 };
 
@@ -172,26 +177,26 @@ export const deleteUsageByUserService = async (
   currentUserId: string,
   role: "user" | "admin",
 ) => {
-  if (!userId) throw new AppError("User ID is required", 400);
+  const validated = deleteUsageByUserSchema.parse({ userId });
+  const authUser = userTokenSchema.parse({ userId: currentUserId, role });
 
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    throw new AppError("Invalid user ID", 400);
-  }
-
-  const existingUsage = await getUsageByUser(userId);
+  const existingUsage = await getUsageByUser(validated.userId);
 
   if (!existingUsage) {
     throw new AppError("No usage documents found for the user", 404);
   }
 
-  if (existingUsage[0].user.toString() !== currentUserId && role !== "admin") {
+  if (
+    existingUsage[0].user.toString() !== authUser.userId &&
+    authUser.role !== "admin"
+  ) {
     throw new AppError(
       "You are not authorized to delete usage documents for this user",
       403,
     );
   }
 
-  const usage = await deleteUsageByUser(userId);
+  const usage = await deleteUsageByUser(validated.userId);
 
   if (usage.deletedCount === 0) {
     throw new AppError("No usage documents found for the user", 404);
@@ -212,19 +217,19 @@ export const deleteUsageById = async (
   currentUserId: string,
   role: "user" | "admin",
 ) => {
-  if (!id) throw new AppError("Usage ID is required", 400);
+  const { usageId } = usageParamsSchema.parse({ usageId: id });
+  const authUser = userTokenSchema.parse({ userId: currentUserId, role });
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw new AppError("Invalid usage ID", 400);
-  }
-
-  const existingUsage = await getUsageById(id);
+  const existingUsage = await getUsageById(usageId);
 
   if (!existingUsage) {
     throw new AppError("Usage document not found", 404);
   }
 
-  if (existingUsage.user._id.toString() !== currentUserId && role !== "admin") {
+  if (
+    existingUsage.user._id.toString() !== authUser.userId &&
+    authUser.role !== "admin"
+  ) {
     throw new AppError(
       "You are not authorized to delete this usage document",
       403,

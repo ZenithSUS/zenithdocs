@@ -16,3 +16,8 @@ export const userTokenSchema = z.object({
   userId: objectId,
   role: z.enum(["user", "admin"]),
 });
+
+export const yearMonth = z
+  .string()
+  .min(1, "Month is required.")
+  .regex(/^\d{4}-(0[1-9]|1[0-2])$/, "Invalid month format. Expected YYYY-MM.");

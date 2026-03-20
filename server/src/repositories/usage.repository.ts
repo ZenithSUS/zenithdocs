@@ -1,4 +1,8 @@
-import Usage, { IUsage, IUsagePopulated } from "../models/Usage.js";
+import Usage, {
+  IUsage,
+  IUsageInput,
+  IUsagePopulated,
+} from "../models/Usage.js";
 
 /**
  * Creates a new usage with the given data
@@ -6,7 +10,7 @@ import Usage, { IUsage, IUsagePopulated } from "../models/Usage.js";
  * @returns {Promise<IUsage>} Created usage
  * @throws {MongooseError} If usage data is invalid
  */
-export const createUsage = async (data: Partial<IUsage>) => {
+export const createUsage = async (data: IUsageInput) => {
   const usage = new Usage(data);
   return await usage.save();
 };
@@ -125,7 +129,7 @@ export const getAllUsageAdmin = async () => {
  * @returns {Promise<IUsage>} Updated usage document if found, null otherwise
  * @throws {MongooseError} If usage data is invalid
  */
-export const updateUsage = async (id: string, data: Partial<IUsage>) => {
+export const updateUsage = async (id: string, data: Partial<IUsageInput>) => {
   return await Usage.findByIdAndUpdate(id, data, { returnDocument: "after" })
     .populate({
       path: "user",

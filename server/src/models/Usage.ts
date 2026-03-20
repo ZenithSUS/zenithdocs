@@ -8,6 +8,11 @@ export interface IUsage extends Document {
   tokensUsed: number;
 }
 
+export interface IUsageInput {
+  user: string;
+  month: string;
+}
+
 export interface IUsagePopulated extends Omit<IUsage, "user"> {
   user: {
     _id: string;

@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { IUsage } from "../models/Usage.js";
+import { IUsageInput } from "../models/Usage.js";
 import {
   createUsageService,
   deleteUsageById,
@@ -11,7 +11,6 @@ import {
   updateUsageService,
 } from "../services/usage.service.js";
 import { ParamsDictionary } from "express-serve-static-core";
-import AppError from "../utils/app-error.js";
 
 interface UsageParams extends ParamsDictionary {
   id: string;
@@ -29,7 +28,7 @@ export const createUsageController = async (
   next: NextFunction,
 ) => {
   try {
-    const data: Partial<IUsage> = req.body;
+    const data: IUsageInput = req.body;
 
     const usage = await createUsageService(data);
 
@@ -141,13 +140,10 @@ export const updateUsageController = async (
 ) => {
   try {
     const { id } = req.params;
-    const currentUserId = req.user?.sub;
-    const role = req.user?.role;
+    const currentUserId = req.user.sub;
+    const role = req.user.role;
 
-    if (!currentUserId || (role !== "admin" && role !== "user")) {
-      throw new AppError("Unauthorized", 401);
-    }
-    const data: Partial<IUsage> = {
+    const data: Partial<IUsageInput> = {
       ...req.body,
       user: currentUserId,
     };
@@ -174,12 +170,8 @@ export const deleteUsageController = async (
 ) => {
   try {
     const { id } = req.params;
-    const currentUserId = req.user?.sub;
-    const role = req.user?.role;
-
-    if (!currentUserId || (role !== "admin" && role !== "user")) {
-      throw new AppError("Unauthorized", 401);
-    }
+    const currentUserId = req.user.sub;
+    const role = req.user.role;
 
     const usage = await deleteUsageById(id, currentUserId, role);
 
@@ -203,12 +195,8 @@ export const deleteUsageByUserController = async (
 ) => {
   try {
     const { id } = req.params;
-    const currentUserId = req.user?.sub;
-    const role = req.user?.role;
-
-    if (!currentUserId || (role !== "admin" && currentUserId !== id)) {
-      throw new AppError("Unauthorized", 401);
-    }
+    const currentUserId = req.user.sub;
+    const role = req.user.role;
 
     const usage = await deleteUsageByUserService(id, currentUserId, role);
 
