@@ -7,6 +7,7 @@ import {
   revokeUserTokens,
   updateUser,
 } from "../repositories/user.repository.js";
+import { authSchema, authUserIdSchema } from "../schemas/auth.schema.js";
 import AppError from "../utils/app-error.js";
 import { comparePassword, hashPassword } from "../utils/bcrypt-password.js";
 import jwt from "jsonwebtoken";
@@ -18,11 +19,10 @@ import jwt from "jsonwebtoken";
  * @returns User if found, null otherwise
  */
 export const loginService = async (email: string, password: string) => {
-  if (!email || !password)
-    throw new AppError("Email and password required", 400);
+  const validated = authSchema.parse({ email, password });
 
   // Check if user exists
-  const user = await getUserByEmail(email);
+  const user = await getUserByEmail(validated.email);
   if (!user) throw new AppError("User not found", 404);
 
   if (!user.password) {
@@ -30,7 +30,7 @@ export const loginService = async (email: string, password: string) => {
   }
 
   // Check if password is correct
-  const isMatch = await comparePassword(password, user.password);
+  const isMatch = await comparePassword(validated.password, user.password);
   if (!isMatch) throw new AppError("Invalid credentials", 401);
 
   // Generate access token and refresh token
@@ -96,17 +96,16 @@ export const oauthLoginService = async (user: IUser) => {
  * @returns Created user
  */
 export const registerService = async (data: Partial<IUser>) => {
-  if (!data.email || !data.password)
-    throw new AppError("Email and password are required", 400);
+  const validated = authSchema.parse(data);
 
   // Check if user already exists
-  const existingUser = await getUserByEmail(data.email);
+  const existingUser = await getUserByEmail(validated.email);
   if (existingUser) throw new AppError("User already exists", 400);
 
   // Encrypt password
-  data.password = await hashPassword(data.password);
+  validated.password = await hashPassword(validated.password);
 
-  const user = await createUser(data);
+  const user = await createUser(validated);
 
   // Remove password from response
   user.password = undefined;
@@ -121,7 +120,9 @@ export const registerService = async (data: Partial<IUser>) => {
 export const logoutService = async (userId: string) => {
   if (!userId) throw new AppError("User ID is required", 400);
 
-  await revokeUserTokens(userId);
+  const validated = authUserIdSchema.parse({ userId });
+
+  await revokeUserTokens(validated.userId);
 };
 
 /**
