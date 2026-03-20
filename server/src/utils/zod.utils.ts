@@ -21,3 +21,12 @@ export const yearMonth = z
   .string()
   .min(1, "Month is required.")
   .regex(/^\d{4}-(0[1-9]|1[0-2])$/, "Invalid month format. Expected YYYY-MM.");
+
+export const paginationFields = {
+  page: z.number().min(1, "Page must be a positive integer").default(1),
+  limit: z
+    .number()
+    .min(1, "Limit must be a positive integer")
+    .max(100, "Limit cannot exceed 100")
+    .default(10),
+};

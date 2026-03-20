@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import Summary, { ISummary } from "../models/Summary.js";
+import Summary, { ISummary, ISummaryInput } from "../models/Summary.js";
 
 /**
  * Creates a new summary with the given data
@@ -7,7 +7,7 @@ import Summary, { ISummary } from "../models/Summary.js";
  * @returns The created summary
  * @throws MongooseError if summary data is invalid
  */
-export const createSummary = async (data: Partial<ISummary>) => {
+export const createSummary = async (data: Partial<ISummaryInput>) => {
   const summary = new Summary(data);
   return await summary.save();
 };

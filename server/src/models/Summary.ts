@@ -18,6 +18,15 @@ export interface ISummary extends Document {
   updatedAt: Date;
 }
 
+export interface ISummaryInput {
+  user: string;
+  document: string;
+  type: "short" | "bullet" | "detailed" | "executive";
+  content: string;
+  additionalDetails: IAdditionalDetails;
+  tokensUsed: number;
+}
+
 const additionalDetailsSchema = new Schema<IAdditionalDetails>(
   {
     risk: {
