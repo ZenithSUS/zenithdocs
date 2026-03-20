@@ -119,4 +119,13 @@ export const rateLimiters = {
     "1 m",
     "deleteGlobalMessagesByChatAndUser",
   ),
+
+  // Document Share Read
+  getDocumentShareByToken: createLimiter(15, "1 m", "getDocumentShareByToken"),
+  getDocumentShareById: createLimiter(15, "1 m", "getDocumentShareById"),
+
+  // Document Share Write
+  createDocumentShare: createLimiter(10, "1 m", "createDocumentShare"),
+  updateDocumentShare: createLimiter(10, "1 m", "updateDocumentShare"),
+  deleteDocumentShare: createLimiter(5, "1 m", "deleteDocumentShare"),
 };
