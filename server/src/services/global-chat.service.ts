@@ -5,6 +5,10 @@ import {
   deleteGlobalChatByUserId,
   getGlobalChatByUserId,
 } from "../repositories/global-chat.repository.js";
+import {
+  globalChatAuthSchema,
+  globalChatParamsSchema,
+} from "../schemas/global-chat.schema.js";
 
 /**
  * Initializes a global chat document for a given user ID.
@@ -14,18 +18,12 @@ import {
  * @returns {Promise<IGlobalChat>} The initialized global chat document.
  */
 export const initGlobalChatService = async (userId: string) => {
-  if (!userId) {
-    throw new AppError("User ID is required", 400);
-  }
+  const { userId: validatedId } = globalChatParamsSchema.parse({ userId });
 
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    throw new AppError("Invalid user ID", 400);
-  }
-
-  let globalChat = await getGlobalChatByUserId(userId);
+  let globalChat = await getGlobalChatByUserId(validatedId);
   if (!globalChat) {
     globalChat = await createGlobalChat({
-      userId: new mongoose.Types.ObjectId(userId),
+      userId: new mongoose.Types.ObjectId(validatedId),
       summary: "",
     });
   }
@@ -44,15 +42,9 @@ export const getGlobalChatByUserService = async (
   userId: string,
   currentUserId: string,
 ) => {
-  if (!userId) {
-    throw new AppError("User ID is required", 400);
-  }
+  const validated = globalChatAuthSchema.parse({ userId, currentUserId });
 
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    throw new AppError("Invalid user ID", 400);
-  }
-
-  if (userId !== currentUserId) {
+  if (validated.userId !== validated.currentUserId) {
     throw new AppError("Forbidden", 403);
   }
 
@@ -72,15 +64,9 @@ export const deleteGlobalChatByUserService = async (
   userId: string,
   currentUserId: string,
 ) => {
-  if (!userId) {
-    throw new AppError("User ID is required", 400);
-  }
+  const validated = globalChatAuthSchema.parse({ userId, currentUserId });
 
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    throw new AppError("Invalid user ID", 400);
-  }
-
-  if (userId !== currentUserId) {
+  if (validated.userId !== validated.currentUserId) {
     throw new AppError("Forbidden", 403);
   }
 
