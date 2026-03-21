@@ -60,6 +60,7 @@ function DashboardHeader({
             {nav === "documents" && `${totalDocuments} total documents`}
             {nav === "summaries" && `${totalSummaries} AI-generated summaries`}
             {nav === "folders" && `${totalFolders} folders`}
+            {nav === "chats" && "Your chat history"}
             {nav === "usage" && "Token & document consumption"}
           </p>
         </div>
