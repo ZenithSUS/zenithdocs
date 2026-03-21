@@ -1,7 +1,6 @@
 "use client";
 
 import { createPortal } from "react-dom";
-import { useRouter } from "next/navigation";
 import { ThreeDot } from "react-loading-indicators";
 import { Folder } from "@/types/folder";
 import STATUS_META from "@/constants/status-meta";
@@ -10,12 +9,15 @@ import DeleteDocumentModal from "@/components/dashboard/modals/document/DeleteDo
 import MoveToFolderModal from "@/components/dashboard/modals/document/MoveToFolderModal";
 
 import useDocumentTab from "./useDocumentTab";
+
 import ActionButton from "./components/ActionButton";
 import ActionsDropDown from "./components/ActionsDropDown";
 import DocumentRowCard from "./components/DocumentRowCard";
 import DocumentsLoadingSkeleton from "./components/DocumentsLoadingSkeleton";
 import SummaryContents from "./components/SummaryContents";
 import DocumentError from "./components/DocumentError";
+import EmptyDocument from "./components/EmptyDocument";
+import { SearchIcon } from "lucide-react";
 
 interface Props {
   userId: string;
@@ -30,11 +32,9 @@ const STATUS_FILTERS = [
   "completed",
   "failed",
 ] as const;
-const TABLE_HEADERS = ["TYPE", "DOCUMENT", "SIZE", "STATUS", "DATE", ""];
+const TABLE_HEADERS = ["TYPE", "DOCUMENT", "SIZE", "STATUS", "DATE", "ACTIONS"];
 
 function DocumentsTab({ userId, filterFolder, setFilterFolder }: Props) {
-  const router = useRouter();
-
   const {
     // Loading
     documentsLoading,
@@ -75,6 +75,7 @@ function DocumentsTab({ userId, filterFolder, setFilterFolder }: Props) {
     handleDeleteSuccess,
     handleMoveSuccess,
     handleReprocessClick,
+    handleSearch,
     fetchNextDocPage,
     refetchDocumentChats,
 
@@ -88,25 +89,7 @@ function DocumentsTab({ userId, filterFolder, setFilterFolder }: Props) {
   if (documentsLoading || foldersLoading) return <DocumentsLoadingSkeleton />;
 
   if (allDocs.length === 0) {
-    return (
-      <div className="border border-white/8 rounded-sm px-8 py-16 text-center">
-        <div className="text-[48px] text-text/10 mb-4">▣</div>
-        <h3 className="text-[18px] font-serif text-text/60 mb-2">
-          No documents yet
-        </h3>
-        <p className="text-[13px] text-text/30 font-sans max-w-sm mx-auto mb-6">
-          Upload your first document to start generating AI-powered summaries
-          and insights.
-        </p>
-        <button
-          type="button"
-          onClick={() => router.replace("/dashboard/upload")}
-          className="px-6 py-3 bg-primary text-background text-[12px] font-bold tracking-[0.12em] font-sans rounded-sm transition-all duration-200 hover:bg-[#e0b530] hover:-translate-y-0.5 cursor-pointer"
-        >
-          UPLOAD DOCUMENT
-        </button>
-      </div>
-    );
+    return <EmptyDocument />;
   }
 
   if (documentError) {
@@ -126,7 +109,7 @@ function DocumentsTab({ userId, filterFolder, setFilterFolder }: Props) {
     <div className="space-y-5">
       {/* ── Filters ──────────────────────────────────────────────────────── */}
       <div className="flex flex-wrap gap-3 items-center">
-        <div className="flex gap-1 p-1 bg-white/4 border border-white/8 rounded-sm">
+        <div className="flex gap-1 p-1 bg-white/4 border border-white/8 rounded-sm flex-wrap">
           {STATUS_FILTERS.map((s) => (
             <button
               key={s}
@@ -161,6 +144,19 @@ function DocumentsTab({ userId, filterFolder, setFilterFolder }: Props) {
           ))}
           <option value="">No Folder</option>
         </select>
+
+        <div className="relative">
+          <SearchIcon
+            className="absolute top-1/2 left-3 -translate-y-1/2 text-text/40"
+            size={14}
+          />
+          <input
+            type="text"
+            placeholder="Search"
+            className="px-10 py-2 bg-white/4 border border-white/8 rounded-sm text-[11px] font-sans text-text/60 outline-none hover:border-primary/30 transition-colors duration-200 ease-in-out"
+            onChange={handleSearch}
+          />
+        </div>
 
         {(filterStatus !== "all" || filterFolder !== "all") && (
           <button

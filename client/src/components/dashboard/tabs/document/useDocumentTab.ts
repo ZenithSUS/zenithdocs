@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import useDocument from "@/features/documents/useDocument";
 import useFolder from "@/features/folder/useFolder";
@@ -16,6 +16,7 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [moveModalOpen, setMoveModalOpen] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<Doc["status"] | "all">(
     "all",
   );
@@ -68,13 +69,18 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
   const allSummaries = summariesData?.pages.flatMap((p) => p.summaries) ?? [];
 
   // ─── Client-side filtering ────────────────────────────────────────────────
-  const filteredDocs = allDocs.filter((doc) => {
+  let filteredDocs = allDocs.filter((doc) => {
     const docFolderId =
       typeof doc.folder === "object"
         ? doc.folder?._id
         : typeof doc.folder === "string"
           ? doc.folder
           : undefined;
+
+    if (searchQuery) {
+      if (!doc.title.toLowerCase().includes(searchQuery.toLowerCase()))
+        return false;
+    }
 
     if (filterFolder !== "all") {
       if (filterFolder === "") {
@@ -187,6 +193,15 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
     setTimeout(() => setIsNavigating(false), 1000);
   };
 
+  const handleSearch = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      if (isNavigating) return;
+
+      setSearchQuery(e.target.value);
+    },
+    [isNavigating],
+  );
+
   return {
     // Loading
     documentsLoading,
@@ -227,6 +242,7 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
     handleDeleteSuccess,
     handleMoveSuccess,
     handleReprocessClick,
+    handleSearch,
     fetchNextDocPage,
     refetchDocumentChats,
 

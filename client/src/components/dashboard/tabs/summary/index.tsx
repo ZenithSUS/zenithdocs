@@ -44,7 +44,7 @@ const SummaryTab = ({ userId }: Props) => {
     <div className="space-y-5">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {allSummaries.map((s) => (
-          <SummaryCard key={s._id} summary={s} />
+          <SummaryCard key={`${s._id}-${s.createdAt}`} summary={s} />
         ))}
       </div>
 
