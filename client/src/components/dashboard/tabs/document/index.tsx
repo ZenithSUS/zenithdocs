@@ -300,13 +300,11 @@ function DocumentsTab({ userId, filterFolder, setFilterFolder }: Props) {
           className="flex items-center justify-center py-8"
         >
           {isFetchingNextDocPage ? (
-            <div className="flex items-center gap-2 text-[12px] text-text/40 font-sans">
-              <ThreeDot
-                color="#c9a227"
-                size="small"
-                text="Loading more documents..."
-                textColor=""
-              />
+            <div className="flex-col flex items-center justify-center gap-2 text-[12px] text-text/40 font-sans">
+              <ThreeDot color="#c9a227" size="small" textColor="" />
+              <p className="font-sans font-semibold text-md text-primary">
+                Loading more documents…
+              </p>
             </div>
           ) : (
             <button
