@@ -14,6 +14,7 @@ import { updateGlobalChatSummary } from "../../../repositories/global-chat.repos
 import generateSearchQueries from "../utils/generate-search-queries.js";
 import calculateGlobalConfidenceScore from "../utils/global-confidence-score.js";
 import { IDocumentChunkOutput } from "../../../models/DocumentChunk.js";
+import { globalChatUserSchema } from "../../../schemas/global-chat.schema.js";
 
 interface streamDocumentUserChatPayload {
   userId: string;
@@ -121,13 +122,7 @@ export const streamDocumentUserChat = async ({
   question,
   res,
 }: streamDocumentUserChatPayload) => {
-  if (!userId) {
-    throw new AppError("User ID is required", 400);
-  }
-
-  if (!question) {
-    throw new AppError("Question is required", 400);
-  }
+  const validated = globalChatUserSchema.parse({ userId, question });
 
   // ─── Set response headers to enable SSE ────────────────────────────────────────────────────
   res.setHeader("Content-Type", "text/event-stream");
@@ -136,11 +131,11 @@ export const streamDocumentUserChat = async ({
   res.setHeader("X-Accel-Buffering", "no");
   res.flushHeaders();
 
-  let globalChat = await initGlobalChatService(userId);
+  let globalChat = await initGlobalChatService(validated.userId);
 
   const totalGlobalMessages = await getTotalGlobalMessagesByChatAndUserId(
     globalChat._id.toString(),
-    userId,
+    validated.userId,
   );
   const oldGlobalMessages = await getRecentGlobalMessagesByChatId(
     globalChat._id.toString(),
@@ -150,7 +145,7 @@ export const streamDocumentUserChat = async ({
 
   if (totalGlobalMessages > MAX_HISTORY_LENGTH) {
     globalSummary = (await summarizeOldMessages(oldGlobalMessages)).toString();
-    await updateGlobalChatSummary(userId, globalSummary);
+    await updateGlobalChatSummary(validated.userId, globalSummary);
   }
 
   const recentHistory = oldGlobalMessages.map((m) => ({
@@ -161,8 +156,8 @@ export const streamDocumentUserChat = async ({
   const MAX_PER_DOC = 3;
   const docCount = new Map();
 
-  const questionEmbedding = await generateEmbedding(question);
-  const isAppQuestion = isZenithDocsQuestion(question);
+  const questionEmbedding = await generateEmbedding(validated.question);
+  const isAppQuestion = isZenithDocsQuestion(validated.question);
 
   let filteredChunks: IDocumentChunkOutput[] = [];
   let context: string;
@@ -174,14 +169,14 @@ export const streamDocumentUserChat = async ({
   } else {
     const queries = [
       question,
-      ...(await generateSearchQueries(question)).slice(0, 2),
+      ...(await generateSearchQueries(validated.question)).slice(0, 2),
     ];
 
     const allChunks = (
       await Promise.all(
         queries.map(async (q) => {
           const embedding = await generateEmbedding(q);
-          return getDocumentUserSimilarityScore(embedding, userId);
+          return getDocumentUserSimilarityScore(embedding, validated.userId);
         }),
       )
     ).flat();
@@ -224,7 +219,7 @@ export const streamDocumentUserChat = async ({
     messages: [
       { role: "system", content: systemPrompt },
       ...recentHistory,
-      { role: "user", content: question },
+      { role: "user", content: validated.question },
     ],
     stream: true,
     temperature: 0.4,
@@ -238,8 +233,8 @@ export const streamDocumentUserChat = async ({
 
   await createGlobalMessage({
     role: "user",
-    content: question,
-    userId,
+    content: validated.question,
+    userId: validated.userId,
     chatId: globalChat._id.toString(),
     relatedDocumentIds: Array.from(relatedDocumentIds),
     embedding: questionEmbedding,
@@ -269,7 +264,7 @@ export const streamDocumentUserChat = async ({
   await createGlobalMessage({
     role: "assistant",
     content: fullResponse,
-    userId,
+    userId: validated.userId,
     chatId: globalChat._id.toString(),
     relatedDocumentIds: Array.from(relatedDocumentIds),
     confidenceScore: confidenceScore,

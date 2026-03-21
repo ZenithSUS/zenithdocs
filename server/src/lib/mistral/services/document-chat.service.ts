@@ -6,7 +6,6 @@ import {
   getChatByDocument,
   updateChatSummary,
 } from "../../../repositories/chat.repository.js";
-import { Types } from "mongoose";
 import { getDocumentByIdService } from "../../../services/document.service.js";
 import AppError from "../../../utils/app-error.js";
 import {
@@ -56,8 +55,8 @@ export const streamDocumentChatWithContextService = async ({
 
   if (!chat) {
     chat = await createChat({
-      documentId: new Types.ObjectId(documentId),
-      userId: new Types.ObjectId(userId),
+      documentId,
+      userId,
       summary: "",
     });
   }
