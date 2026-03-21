@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import useFolder from "@/features/folder/useFolder";
+import { handleApiError, handleFormError } from "@/helpers/api-error";
 import { AxiosError } from "@/types/api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useMemo, useState } from "react";
@@ -41,15 +42,15 @@ const NewFolderModal = ({
     mutateAsync: createFolder,
     isPending,
     isError,
-    error,
   } = createFolderMutation(userId);
 
   const [open, setOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const { register, handleSubmit, formState, reset } = useForm<FolderForm>({
-    resolver: zodResolver(folderSchema),
-  });
+  const { register, handleSubmit, formState, reset, setError } =
+    useForm<FolderForm>({
+      resolver: zodResolver(folderSchema),
+    });
 
   const createNewFolder = useCallback(async (data: FolderForm) => {
     try {
@@ -66,8 +67,12 @@ const NewFolderModal = ({
       setOpen(false);
     } catch (error) {
       const err = error as AxiosError;
-      setErrorMessage(err?.response?.data?.message || "");
-      toast.error(err?.response?.data?.message || "Something went wrong.");
+      const data = err.response?.data;
+      setErrorMessage(data?.message || "");
+
+      // Handle form errors
+      handleFormError(data?.errors, setError);
+      if (!data?.errors) handleApiError(err, "Something went wrong");
     }
   }, []);
 

@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { dashboardKeys } from "@/features/dashboard/dashboard.keys";
 import useSummary from "@/features/summary/useSummary";
+import { handleApiError } from "@/helpers/api-error";
 import { AxiosError } from "@/types/api";
 import { useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
@@ -43,7 +44,7 @@ function DeleteSummaryModal({
       toast.success("Summary deleted successfully!");
     } catch (error) {
       const err = error as AxiosError;
-      toast.error(err.response?.data?.message || "Error deleting summary");
+      handleApiError(err, "Error deleting summary");
     }
   }, [deleteSummary, summaryId]);
 

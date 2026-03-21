@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { dashboardKeys } from "@/features/dashboard/dashboard.keys";
 import useDocument from "@/features/documents/useDocument";
+import { handleApiError } from "@/helpers/api-error";
 import { AxiosError } from "@/types/api";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
@@ -45,7 +46,7 @@ const DeleteDocumentModal = ({
       });
     } catch (error) {
       const err = error as AxiosError;
-      toast.error(err.response?.data?.message || "Error deleting document");
+      handleApiError(err, "Error deleting document");
     }
   }, [documentId, deleteDoc, onOpenChange]);
 

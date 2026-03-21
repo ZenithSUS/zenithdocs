@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import useAuthStore from "@/features/auth/auth.store";
 import useAuth from "@/features/auth/useAuth";
+import { handleApiError } from "@/helpers/api-error";
 import { AxiosError } from "@/types/api";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
@@ -36,7 +37,7 @@ export function LogoutModal({ userId }: HeaderDropDownProps) {
       router.push("/login");
     } catch (error) {
       const err = error as AxiosError;
-      toast.error(err.response?.data?.message ?? "Failed to logout");
+      handleApiError(err, "Failed to log out");
     }
   }, [logout, userId, setUserId, setAccessToken, router]);
 

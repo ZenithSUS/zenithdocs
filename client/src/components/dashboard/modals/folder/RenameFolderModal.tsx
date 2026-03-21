@@ -10,6 +10,7 @@ import {
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import useFolder from "@/features/folder/useFolder";
+import { handleApiError, handleFormError } from "@/helpers/api-error";
 import { AxiosError } from "@/types/api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Pencil } from "lucide-react";
@@ -39,7 +40,7 @@ function RenameFolderModal({
   const { updateFolderMutation } = useFolder();
   const { mutateAsync: updateFolder } = updateFolderMutation(userId);
 
-  const { register, handleSubmit, formState, control } = useForm<FolderForm>({
+  const { register, handleSubmit, formState, setError } = useForm<FolderForm>({
     resolver: zodResolver(folderRenameSchema),
     defaultValues: { name: folderName },
   });
@@ -57,7 +58,11 @@ function RenameFolderModal({
       setIsOpen(false);
     } catch (error) {
       const err = error as AxiosError;
-      toast.error(err.response?.data?.message || "Something went wrong.");
+      const data = err.response?.data;
+
+      // Handle form errors
+      handleFormError(data?.errors, setError);
+      if (!data?.errors) handleApiError(err, "Something went wrong");
     }
   }, []);
 

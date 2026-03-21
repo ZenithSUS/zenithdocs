@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import useGlobalMessage from "@/features/global-message/useGlobalMessage";
 import useMessage from "@/features/message/useMessage";
+import { handleApiError } from "@/helpers/api-error";
 import { AxiosError } from "@/types/api";
 import { Trash2Icon } from "lucide-react";
 import { useCallback, useState } from "react";
@@ -40,7 +41,7 @@ function DeleteGlobalMessagesModal({
       setOpen(false);
     } catch (error) {
       const err = error as AxiosError;
-      toast.error(err.response?.data?.message || "Error deleting messages");
+      handleApiError(err, "Error deleting global messages");
     } finally {
       setIsDeleting(false);
     }

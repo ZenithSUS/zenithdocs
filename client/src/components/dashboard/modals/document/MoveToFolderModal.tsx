@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import useDocument from "@/features/documents/useDocument";
 import useFolder from "@/features/folder/useFolder";
+import { handleApiError } from "@/helpers/api-error";
 import { AxiosError } from "@/types/api";
 import { FolderIcon } from "lucide-react";
 import { useCallback, useState } from "react";
@@ -70,7 +71,9 @@ const MoveToFolderModal = ({
       onOpenChange(false);
     } catch (error) {
       const err = error as AxiosError;
-      toast.error(err?.response?.data?.message || "Error moving document");
+      handleApiError(err, "Error moving document");
+    } finally {
+      if (onSuccess) onSuccess();
     }
   }, [documentId, selectedFolder, updateDoc, onOpenChange, onSuccess]);
 

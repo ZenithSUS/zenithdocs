@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { dashboardKeys } from "@/features/dashboard/dashboard.keys";
 import useFolder from "@/features/folder/useFolder";
+import { handleApiError } from "@/helpers/api-error";
 import { AxiosError } from "@/types/api";
 import { useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
@@ -39,7 +40,7 @@ function DeleteFolderModal({ userId, folderId }: DeleteFolderModalProps) {
       toast.success("Folder deleted successfully!");
     } catch (error) {
       const err = error as AxiosError;
-      toast.error(err.response?.data?.message || "Error deleting folder");
+      handleApiError(err, "Error deleting folder");
     }
   }, [deleteFolder, folderId]);
 
