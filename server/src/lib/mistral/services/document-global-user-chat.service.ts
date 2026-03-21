@@ -15,37 +15,13 @@ import generateSearchQueries from "../utils/generate-search-queries.js";
 import calculateGlobalConfidenceScore from "../utils/global-confidence-score.js";
 import { IDocumentChunkOutput } from "../../../models/DocumentChunk.js";
 import { globalChatUserSchema } from "../../../schemas/global-chat.schema.js";
+import isZenithDocsQuestion from "../../../utils/zenithdocs-question.js";
 
 interface streamDocumentUserChatPayload {
   userId: string;
   question: string;
   res: Response;
 }
-
-const isZenithDocsQuestion = (question: string): boolean => {
-  const keywords = [
-    "zenithdocs",
-    "zenith docs",
-    "zenithsus",
-    "features",
-    "how to use",
-    "this app",
-    "this platform",
-    "this tool",
-    "what can you do",
-    "what is this",
-    "how does this work",
-    "document types",
-    "file types",
-    "max size",
-    "maximum size",
-    "summary types",
-    "upload",
-    "supported formats",
-    "supported file formats",
-  ];
-  return keywords.some((kw) => question.toLowerCase().includes(kw));
-};
 
 const getSystemPrompt = (context: string, summary: string) => {
   return `You are ZenithDocs AI, the assistant inside the ZenithDocs platform.
