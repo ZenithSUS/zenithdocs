@@ -5,6 +5,7 @@ import {
   deleteDocumentShareService,
   getDocumentShareByIdService,
   getDocumentShareByTokenService,
+  getDocumentSharesByUserPaginatedService,
   updateDocumentShareService,
 } from "../services/document-share.service.js";
 import { ParamsDictionary } from "express-serve-static-core";
@@ -81,6 +82,36 @@ export const getDocumentShareByIdController = async (
       success: true,
       message: "Document share fetched successfully",
       data: documentShare,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get all document shares by user id in a paginated manner
+ * @route GET /document-shares/user/:id
+ */
+export const getDocumentSharesByUserIdPaginatedController = async (
+  req: Request<DocumenShareParams>,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const { id: userId } = req.params;
+
+    const documentShares = await getDocumentSharesByUserPaginatedService(
+      userId,
+      page,
+      limit,
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Document shares fetched successfully",
+      data: documentShares,
     });
   } catch (error) {
     next(error);

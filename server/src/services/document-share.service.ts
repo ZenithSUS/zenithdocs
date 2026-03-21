@@ -5,6 +5,7 @@ import {
   existsDocumentShareByToken,
   getDocumentShareById,
   getDocumentShareByToken,
+  getDocumentSharesByUserIdPaginated,
   updateDocumentShare,
 } from "../repositories/document-share.repository.js";
 import { getDocumentById } from "../repositories/document.repository.js";
@@ -13,6 +14,7 @@ import {
   deleteDocumentShareSchema,
   getDocumentShareByIdSchema,
   getDocumentShareByTokenSchema,
+  getDocumentSharesByUserPage,
   updateDocumentShareSchema,
 } from "../schemas/document-share.schema.js";
 import { IDocumentShareInput } from "../models/DocumentShare.js";
@@ -149,6 +151,36 @@ export const getDocumentShareByIdService = async (id: string) => {
   }
 
   return documentShare;
+};
+
+/**
+ * Retrieves all document shares belonging to a user in a paginated manner
+ * @param {string} userId - User ID
+ * @param {number} page - Page number to retrieve
+ * @param {number} limit - Number of document shares to retrieve per page
+ * @returns {Promise<{documentShares: DocumentShare[], pagination: {page: number, limit: number, total: number, totalPages: number}>} An object containing the document shares and the pagination information
+ * @throws {AppError} If the user ID is invalid or missing
+ * @throws {AppError} If the page number or limit is invalid or missing
+ * @throws {AppError} If the page number or limit is not a positive integer
+ */
+export const getDocumentSharesByUserPaginatedService = async (
+  userId: string,
+  page: number,
+  limit: number,
+) => {
+  const validated = getDocumentSharesByUserPage.parse({
+    userId,
+    page,
+    limit,
+  });
+
+  const documentShares = await getDocumentSharesByUserIdPaginated(
+    validated.userId,
+    validated.page,
+    validated.limit,
+  );
+
+  return documentShares;
 };
 
 /**

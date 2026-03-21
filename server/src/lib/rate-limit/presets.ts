@@ -123,6 +123,11 @@ export const rateLimiters = {
   // Document Share Read
   getDocumentShareByToken: createLimiter(15, "1 m", "getDocumentShareByToken"),
   getDocumentShareById: createLimiter(15, "1 m", "getDocumentShareById"),
+  getDocumentSharesByUserIdPaginated: createLimiter(
+    15,
+    "1 m",
+    "getDocumentSharesByUserIdPaginated",
+  ),
 
   // Document Share Write
   createDocumentShare: createLimiter(10, "1 m", "createDocumentShare"),

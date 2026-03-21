@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import DocumentShare, { IDocumentShareInput } from "../models/DocumentShare.js";
 
 /**
@@ -38,6 +39,49 @@ export const getDocumentShareByToken = async (token: string) => {
       "allowedUsers._id": 0,
     })
     .lean();
+};
+
+/**
+ * Retrieves document shares belonging to a user in a paginated manner
+ * @param {string} userId - User ID
+ * @param {number} page - Page number to retrieve
+ * @param {number} limit - Number of document shares to retrieve per page
+ * @returns {Promise<{ documentShares: DocumentShare[], pagination: { page: number, limit: number, total: number, totalPages: number } >} An object containing the document shares and the pagination information
+ * @throws {null} If the user ID is invalid
+ */
+export const getDocumentSharesByUserIdPaginated = async (
+  userId: string,
+  page: number,
+  limit: number,
+) => {
+  const offest = (page - 1) * limit;
+
+  const documentShares = await DocumentShare.find({
+    ownerId: new Types.ObjectId(userId),
+  })
+    .skip(offest)
+    .limit(limit)
+    .populate({
+      path: "ownerId",
+      select: "_id email",
+    })
+    .populate({
+      path: "documentId",
+      select: "_id title fileType fileSize fileUrl",
+    })
+    .select({
+      isActive: 0,
+      "allowedUsers._id": 0,
+    })
+    .sort({ createdAt: -1 })
+    .lean();
+
+  const total = await DocumentShare.countDocuments({ ownerId: userId });
+
+  return {
+    documentShares,
+    pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+  };
 };
 
 /**

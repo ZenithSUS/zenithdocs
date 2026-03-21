@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { objectId } from "../utils/zod.utils.js";
+import { objectId, paginationFields } from "../utils/zod.utils.js";
 
 export const createDocumentShareSchema = z.object({
   documentId: objectId,
@@ -18,18 +18,23 @@ export const createDocumentShareSchema = z.object({
   expiresAt: z.date().optional(),
 });
 
+export const getDocumentShareByTokenSchema = z.object({
+  token: z.string().min(1, { message: "Invalid token" }),
+});
+
+export const getDocumentShareByIdSchema = z.object({ id: objectId });
+
+export const getDocumentSharesByUserPage = z.object({
+  userId: objectId,
+  ...paginationFields,
+});
+
 export const updateDocumentShareSchema = createDocumentShareSchema
   .partial()
   .extend({
     id: objectId,
     ownerId: objectId,
   });
-
-export const getDocumentShareByTokenSchema = z.object({
-  token: z.string().min(1, { message: "Invalid token" }),
-});
-
-export const getDocumentShareByIdSchema = z.object({ id: objectId });
 
 export const deleteDocumentShareSchema = z.object({
   id: objectId,

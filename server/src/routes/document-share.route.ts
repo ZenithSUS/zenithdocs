@@ -5,9 +5,11 @@ import {
   deleteDocumentShareController,
   getDocumentShareByIdController,
   getDocumentShareByTokenController,
+  getDocumentSharesByUserIdPaginatedController,
   updateDocumentShareController,
 } from "../controllers/document-share.controller.js";
 import limiter from "../middlewares/limiter.middleware.js";
+import authorizeSelfOrAdmin from "../middlewares/authorize-self-or-admin.middleware.js";
 
 const router = Router();
 
@@ -19,15 +21,22 @@ router.post(
 );
 
 router.get(
-  "/:token",
+  "/user/:id",
   protect,
-  limiter("getDocumentShareByToken"),
-  getDocumentShareByTokenController,
+  authorizeSelfOrAdmin,
+  limiter("getDocumentSharesByUserIdPaginated"),
+  getDocumentSharesByUserIdPaginatedController,
 );
 router.get(
   "/:id/public",
   limiter("getDocumentShareById"),
   getDocumentShareByIdController,
+);
+router.get(
+  "/:token",
+  protect,
+  limiter("getDocumentShareByToken"),
+  getDocumentShareByTokenController,
 );
 
 router.put(
