@@ -40,8 +40,8 @@ export const createDocumentShareController = async (
 };
 
 /**
- * Get a document share by token (Private share)
- * @route GET /document-shares/:token
+ * Get a document share by token (Public share)
+ * @route GET /document-shares/token/:token
  */
 export const getDocumentShareByTokenController = async (
   req: Request<DocumenShareParams>,
@@ -65,8 +65,8 @@ export const getDocumentShareByTokenController = async (
 };
 
 /**
- * Get a document share by id (Public share)
- * @route GET /document-shares/public/:id
+ * Get a document share by id (Private share)
+ * @route GET /document-shares/:id
  */
 export const getDocumentShareByIdController = async (
   req: Request<Pick<DocumenShareParams, "id">>,

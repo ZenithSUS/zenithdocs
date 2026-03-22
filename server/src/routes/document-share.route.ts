@@ -28,12 +28,12 @@ router.get(
   getDocumentSharesByUserIdPaginatedController,
 );
 router.get(
-  "/:id/public",
+  "/:id",
   limiter("getDocumentShareById"),
   getDocumentShareByIdController,
 );
 router.get(
-  "/:token",
+  "/token/:token",
   protect,
   limiter("getDocumentShareByToken"),
   getDocumentShareByTokenController,

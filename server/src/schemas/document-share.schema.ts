@@ -13,6 +13,7 @@ export const createDocumentShareSchema = z.object({
       }),
     )
     .optional(),
+  publicPermission: z.enum(["read", "write"]).optional(),
   allowDownload: z.boolean().optional(),
   allowEdit: z.boolean().optional(),
   expiresAt: z.date().optional(),

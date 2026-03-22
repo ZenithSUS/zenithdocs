@@ -110,7 +110,7 @@ const documentShareSchema = new Schema<IDocumentShare>({
 });
 
 documentShareSchema.index({ documentId: 1, ownerId: 1 }, { unique: true });
-documentShareSchema.index({ shareToken: 1 }, { unique: true });
+documentShareSchema.index({ shareToken: 1 }, { unique: true, sparse: true });
 
 export default mainDB.model<IDocumentShare>(
   "DocumentShare",

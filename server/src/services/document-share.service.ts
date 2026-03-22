@@ -3,6 +3,7 @@ import AppError from "../utils/app-error.js";
 import {
   createDocumentShare,
   existsDocumentShareByToken,
+  getDocumentShareByDocumentId,
   getDocumentShareById,
   getDocumentShareByToken,
   getDocumentSharesByUserIdPaginated,
@@ -32,6 +33,11 @@ import { IDocumentShareInput } from "../models/DocumentShare.js";
  * @returns {Promise<DocumentShare>} Document share
  */
 export const createDocumentShareService = async (data: IDocumentShareInput) => {
+  // Convert expiresAt to a Date object
+  if (data.expiresAt) {
+    data.expiresAt = new Date(data.expiresAt);
+  }
+
   const validated = createDocumentShareSchema.parse(data);
 
   const document = await getDocumentById(data.documentId);
@@ -39,8 +45,18 @@ export const createDocumentShareService = async (data: IDocumentShareInput) => {
     throw new AppError("Document not found", 404);
   }
 
-  if (document.user.toString() !== validated.ownerId) {
+  if (document.user._id.toString() !== validated.ownerId) {
     throw new AppError("You are not allowed to share this document", 403);
+  }
+
+  const existingShare = await getDocumentShareByDocumentId(
+    validated.documentId,
+  );
+
+  console.log(existingShare);
+
+  if (existingShare) {
+    throw new AppError("A share with this document already exists", 400);
   }
 
   if (validated.type === "private") {
@@ -69,10 +85,9 @@ export const createDocumentShareService = async (data: IDocumentShareInput) => {
 
   const payload = {
     ...validated,
-    shareToken,
     isActive: true,
+    ...(validated.type === "public" && { shareToken }),
     allowDownload: validated.allowDownload ?? true,
-    allowEdit: validated.allowEdit ?? false,
   };
 
   const documentShare = await createDocumentShare(payload);

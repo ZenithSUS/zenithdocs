@@ -41,6 +41,10 @@ export const getDocumentShareByToken = async (token: string) => {
     .lean();
 };
 
+export const getDocumentShareByDocumentId = async (documentId: string) => {
+  return await DocumentShare.findOne({ documentId });
+};
+
 /**
  * Retrieves document shares belonging to a user in a paginated manner
  * @param {string} userId - User ID
