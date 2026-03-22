@@ -74,7 +74,6 @@ export const getDocumentSharesByUserIdPaginated = async (
       select: "_id title fileType fileSize fileUrl",
     })
     .select({
-      isActive: 0,
       "allowedUsers._id": 0,
     })
     .sort({ createdAt: -1 })
