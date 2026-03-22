@@ -18,10 +18,11 @@ import { Zap } from "lucide-react";
 // Lazy-load dashboard tab components for code splitting
 const OverViewTab = lazy(() => import("@/components/dashboard/tabs/overview"));
 const DocumentsTab = lazy(() => import("@/components/dashboard/tabs/document"));
-const FolderTab = lazy(() => import("@/components/dashboard/tabs/folder"));
-const UsageTab = lazy(() => import("@/components/dashboard/tabs/usage"));
 const SummaryTab = lazy(() => import("@/components/dashboard/tabs/summary"));
 const ChatsTab = lazy(() => import("@/components/dashboard/tabs/chat"));
+const FolderTab = lazy(() => import("@/components/dashboard/tabs/folder"));
+const UsageTab = lazy(() => import("@/components/dashboard/tabs/usage"));
+const SharedTab = lazy(() => import("@/components/dashboard/tabs/shared"));
 
 const CURRENT_MONTH = new Date().toISOString().slice(0, 7); // YYYY-MM
 
@@ -210,6 +211,12 @@ export default function DashboardPage() {
                 currentTokensUsed={overview?.tokensUsed || 0}
                 maxUsage={user?.tokenLimit || 0}
               />
+            </Suspense>
+          )}
+
+          {nav === "shared" && (
+            <Suspense fallback={<DashboardTabLoading />}>
+              <SharedTab userId={user?._id ?? ""} setNav={setNav} />
             </Suspense>
           )}
         </main>
