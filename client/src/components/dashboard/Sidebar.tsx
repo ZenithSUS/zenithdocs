@@ -76,7 +76,7 @@ function DashBoardSidebar({
       </div>
 
       {/* Nav — takes remaining space, scrolls if needed */}
-      <nav className="flex-1 min-h-0 overflow-y-hidden hover:overflow-y-auto px-3 py-5 flex flex-col gap-1">
+      <nav className="flex-1 min-h-0 overflow-y-auto lg:overflow-y-hidden lg:hover:overflow-y-auto px-3 py-5 flex flex-col gap-1">
         {navItems.map((item) => (
           <button
             key={item.id}
