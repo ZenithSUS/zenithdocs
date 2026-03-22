@@ -9,6 +9,10 @@ export const getUserByEmailSchema = z.object({
   email,
 });
 
+export const searchUsersByEmailSchema = z.object({
+  searchQuery: z.string().min(1, "Search query is required."),
+});
+
 export const updateUserSchema = z.object({
   userId: objectId,
   data: z

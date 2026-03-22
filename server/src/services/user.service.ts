@@ -4,6 +4,7 @@ import {
   getAllUsers,
   getUserByEmail,
   getUserById,
+  searchUsersByEmail,
   updateUser,
 } from "../repositories/user.repository.js";
 import AppError from "../utils/app-error.js";
@@ -12,6 +13,7 @@ import PLAN_LIMITS from "../config/plans.js";
 import { updateUsageMonthByUser } from "../repositories/usage.repository.js";
 import {
   getUserByEmailSchema,
+  searchUsersByEmailSchema,
   updateUserSchema,
   userParamsSchema,
 } from "../schemas/user.schema.js";
@@ -66,6 +68,21 @@ export const getUserByEmailService = async (email: string) => {
 
   const user = await getUserByEmail(validated.email);
   return user;
+};
+
+/**
+ * Search for users by their email address.
+ * This function is case-insensitive.
+ * It will return up to 5 users that match the search query.
+ * The refresh token and password of each user will be excluded from the result.
+ * @param {string} searchQuery - The search query to search for users by their email address.
+ * @returns {Promise<Array<IUser>>} An array of users that match the search query.
+ */
+export const searchUsersByEmailService = async (searchQuery: string) => {
+  const validated = searchUsersByEmailSchema.parse({ searchQuery });
+
+  const users = await searchUsersByEmail(validated.searchQuery);
+  return users;
 };
 
 /**

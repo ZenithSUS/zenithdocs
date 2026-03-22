@@ -57,6 +57,21 @@ export const getUserByEmail = async (email: string): Promise<IUser | null> => {
 };
 
 /**
+ * Search for users by their email address.
+ * This function is case-insensitive.
+ * It will return up to 5 users that match the search query.
+ * The refresh token and password of each user will be excluded from the result.
+ * @param {string} searchQuery - The search query to search for users by their email address.
+ * @returns {Promise<Array<IUser>>} An array of users that match the search query.
+ */
+export const searchUsersByEmail = async (searchQuery: string) => {
+  return await User.find({ email: { $regex: searchQuery, $options: "i" } })
+    .select("-refreshToken -password")
+    .limit(5)
+    .lean();
+};
+
+/**
  * Get all users
  * @returns Array of users
  */

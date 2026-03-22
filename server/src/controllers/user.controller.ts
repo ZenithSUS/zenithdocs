@@ -4,6 +4,7 @@ import {
   getAllUsersService,
   getUserByEmailService,
   getUserByIdService,
+  searchUsersByEmailService,
   updateUserService,
 } from "../services/user.service.js";
 import { NextFunction, ParamsDictionary } from "express-serve-static-core";
@@ -29,7 +30,31 @@ export const getUserByIdController = async (
 
     return res.status(200).json({
       success: true,
+      message: "User found successfully",
       data: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Search users by email
+ * @route GET /api/users/search
+ */
+export const searchUsersByEmailController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const query = req.query.q as string;
+    const users = await searchUsersByEmailService(query);
+
+    return res.status(200).json({
+      success: true,
+      message: "Users found successfully",
+      data: users,
     });
   } catch (error) {
     next(error);
@@ -50,8 +75,8 @@ export const getAllUsersController = async (
 
     return res.status(200).json({
       success: true,
+      message: "Users fetched successfully",
       data: users,
-      count: users.length,
     });
   } catch (error) {
     next(error);

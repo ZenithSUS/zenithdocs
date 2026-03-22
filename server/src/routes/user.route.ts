@@ -3,6 +3,7 @@ import {
   deleteUserController,
   getAllUsersController,
   getUserByIdController,
+  searchUsersByEmailController,
   updateUserController,
 } from "../controllers/user.controller.js";
 import protect from "../middlewares/protect.middleware.js";
@@ -19,6 +20,13 @@ router.get(
   requireAdmin,
   limiter("fetchUsersAdmin"),
   getAllUsersController,
+);
+
+router.get(
+  "/search",
+  protect,
+  limiter("searchUsersByEmail"),
+  searchUsersByEmailController,
 );
 
 router.get(

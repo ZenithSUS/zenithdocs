@@ -12,6 +12,7 @@ export const rateLimiters = {
   // User read
   fetchUsersAdmin: createLimiter(10, "1 m", "fetchUsersAdmin"),
   fetchUser: createLimiter(30, "1 m", "fetchUser"),
+  searchUsersByEmail: createLimiter(30, "1 m", "searchUsersByEmail"),
 
   // User write
   updateUser: createLimiter(10, "1 m", "updateUser"),
