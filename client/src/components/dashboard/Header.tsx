@@ -62,6 +62,7 @@ function DashboardHeader({
             {nav === "folders" && `${totalFolders} folders`}
             {nav === "chats" && "Your chat history"}
             {nav === "usage" && "Token & document consumption"}
+            {nav === "shared" && "Your shared documents"}
           </p>
         </div>
       </div>

@@ -9,7 +9,8 @@ export type NavItem =
   | "summaries"
   | "folders"
   | "chats"
-  | "usage";
+  | "usage"
+  | "shared";
 
 interface DashboardSidebarProps {
   userLoading: boolean;
@@ -34,6 +35,7 @@ const navItems: { id: NavItem; icon: string; label: string }[] = [
   { id: "folders", icon: "⬡", label: "Folders" },
   { id: "chats", icon: "⊕", label: "Chats" },
   { id: "usage", icon: "◉", label: "Usage" },
+  { id: "shared", icon: "⇄", label: "Shared" },
 ];
 
 function DashBoardSidebar({
@@ -74,7 +76,7 @@ function DashBoardSidebar({
       </div>
 
       {/* Nav — takes remaining space, scrolls if needed */}
-      <nav className="flex-1 min-h-0 overflow-y-auto px-3 py-5 flex flex-col gap-1">
+      <nav className="flex-1 min-h-0 overflow-y-hidden hover:overflow-y-auto px-3 py-5 flex flex-col gap-1">
         {navItems.map((item) => (
           <button
             key={item.id}
