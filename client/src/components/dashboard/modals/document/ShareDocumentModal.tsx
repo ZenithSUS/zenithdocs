@@ -37,6 +37,7 @@ import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
 import { UserSearchCombobox } from "../../tabs/document/components/UserSearchComboBox";
+import { DocumentShareInfo } from "@/types/doc";
 
 const permissionEnum = z.enum(["read", "write"], {
   error: () => ({ message: "Select a permission" }),
@@ -91,7 +92,7 @@ export type ShareDocumentSchema = z.infer<typeof shareDocumentSchema>;
 
 interface ShareDocumentModalProps {
   userId: string;
-  document: { id: string; title: string };
+  document: DocumentShareInfo;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
@@ -181,7 +182,7 @@ function ShareDocumentModal({
 
   const onSubmit = async (data: ShareDocumentSchema) => {
     try {
-      await createDocShare({
+      const createDocData = {
         ...data,
         // datetime-local "YYYY-MM-DDTHH:mm" → full ISO "2026-03-19T12:56:18.211+00:00"
         expiresAt: data.expiresAt
@@ -190,6 +191,11 @@ function ShareDocumentModal({
         allowedUsers: data.type === "private" ? data.allowedUsers : undefined,
         publicPermission:
           data.type === "public" ? data.publicPermission : undefined,
+      };
+
+      await createDocShare({
+        data: createDocData,
+        document: document,
       });
       toast.success("Document shared successfully");
       reset();

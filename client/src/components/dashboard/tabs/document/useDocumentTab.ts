@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import useDocument from "@/features/documents/useDocument";
 import useFolder from "@/features/folder/useFolder";
 import useSummary from "@/features/summary/useSummary";
-import Doc from "@/types/doc";
+import Doc, { DocumentShareInfo } from "@/types/doc";
 import { toast } from "sonner";
 import { AxiosError } from "@/types/api";
 
@@ -37,6 +37,9 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
   const [documentToShare, setDocumentToShare] = useState<{
     id: string;
     title: string;
+    fileUrl: string;
+    fileType: string;
+    fileSize: number;
   } | null>(null);
 
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -196,8 +199,8 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
   );
 
   const handleShareClick = useCallback(
-    (docId: string, docTitle: string) => {
-      setDocumentToShare({ id: docId, title: docTitle });
+    ({ id, title, fileUrl, fileSize, fileType }: DocumentShareInfo) => {
+      setDocumentToShare({ id, title, fileUrl, fileSize, fileType });
       setActionsMenuOpen(null);
       setShareModalOpen(true);
     },

@@ -7,7 +7,7 @@ import {
   SparkleIcon,
   TrashIcon,
 } from "lucide-react";
-import Doc from "@/types/doc";
+import Doc, { DocumentShareInfo } from "@/types/doc";
 
 interface Props {
   actionsMenuOpen: string;
@@ -21,7 +21,7 @@ interface Props {
   ) => void;
   handleDeleteClick: (docId: string, docTitle: string) => void;
   handleReprocessClick: (docId: string) => Promise<void>;
-  handleShareClick: (docId: string, docTitle: string) => void;
+  handleShareClick: (data: DocumentShareInfo) => void;
   filteredDocs: Doc[];
 }
 
@@ -117,7 +117,14 @@ const ActionsDropDown = ({
       <DropdownButton
         onClick={(e) => {
           e.stopPropagation();
-          if (doc) handleShareClick(doc._id, doc.title);
+          if (doc)
+            handleShareClick({
+              id: doc._id,
+              title: doc.title,
+              fileSize: doc.fileSize,
+              fileType: doc.fileType,
+              fileUrl: doc.fileUrl,
+            });
         }}
         icon={<ShareIcon className="w-4 h-4" />}
         label="Share"
