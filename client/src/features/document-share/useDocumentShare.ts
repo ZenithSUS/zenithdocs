@@ -17,6 +17,8 @@ import {
   removeInfiniteDocumentShare,
   updateInfiniteDocumentShare,
 } from "./document-share.cache";
+import { DocumentShareInfo } from "@/types/doc";
+import useAuthStore from "../auth/auth.store";
 
 type DocumentSharePage = ResponseWithPagedData<
   DocumentShare,
@@ -33,18 +35,25 @@ type MutateContext = {
   previousDocumentShare: DocumentShareInfiniteData | undefined;
 };
 
+type CreateDocumentShareVariables = {
+  data: DocumentShareInput;
+  document: DocumentShareInfo;
+};
+
 const useDocumentShare = (userId: string) => {
   const queryClient = useQueryClient();
   const documentSharelimit = 10;
+  const { email } = useAuthStore();
 
   const createDocumentShareMutation = useMutation<
     DocumentShare,
     AxiosError,
-    DocumentShareInput
+    CreateDocumentShareVariables
   >({
     mutationKey: documentShareKeys.create(),
-    mutationFn: (data) => createDocumentShare(data),
-    onSuccess: (newDocumentShare) => {
+    mutationFn: ({ data }: CreateDocumentShareVariables) =>
+      createDocumentShare(data),
+    onSuccess: (newDocumentShare, { document }) => {
       queryClient.setQueryData<DocumentShareInfiniteData>(
         documentShareKeys.byUserPage(userId),
         (oldData) => {
@@ -52,13 +61,28 @@ const useDocumentShare = (userId: string) => {
 
           const firstPage = oldData.pages[0];
 
+          const finalDocumentShare: DocumentShare = {
+            ...newDocumentShare,
+            documentId: {
+              ...document,
+              _id: document.id,
+            },
+            ownerId: {
+              _id: userId,
+              email: email || "",
+            },
+          };
+
           // Add the new document share to the first page of the cache then append the rest of the pages
           return {
             ...oldData,
             pages: [
               {
                 ...firstPage,
-                documentShares: [newDocumentShare, ...firstPage.documentShares],
+                documentShares: [
+                  finalDocumentShare,
+                  ...firstPage.documentShares,
+                ],
               },
               ...oldData.pages.slice(1),
             ],

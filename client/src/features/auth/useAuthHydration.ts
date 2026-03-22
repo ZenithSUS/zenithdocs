@@ -8,20 +8,25 @@ import useAuth from "@/features/auth/useAuth";
  * - Syncs userId once the user query resolves
  */
 const useAuthHydration = () => {
-  const { setAccessToken, setUserId } = useAuthStore();
+  const { setAccessToken, setUserId, setEmail, email, userId, accessToken } =
+    useAuthStore();
   const { me } = useAuth();
   const { data: user } = me;
 
   // Restore token from localStorage on mount
   useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    if (token) setAccessToken(token);
-  }, [setAccessToken]);
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("accessToken")
+        : null;
+    setAccessToken(token ?? null);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Sync userId once user data resolves
+  // Sync userId and email
   useEffect(() => {
     if (user?._id) setUserId(user._id);
-  }, [user?._id, setUserId]);
+    if (user?.email) setEmail(user.email);
+  }, [user?._id, user?.email, setUserId, setEmail]);
 };
 
 export default useAuthHydration;

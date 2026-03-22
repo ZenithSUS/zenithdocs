@@ -7,7 +7,7 @@ export interface Doc {
   title: string;
   fileType: string;
   fileSize: number;
-  fileUrl?: string;
+  fileUrl: string;
   rawText: string;
   status: DocStatus;
   user: string;
@@ -37,5 +37,10 @@ export type DocWithChat = Doc & {
 export type CreateDoc = Omit<Doc, "_id" | "createdAt" | "updatedAt"> & {
   file?: File;
 };
+
+export type DocumentShareInfo = Pick<
+  Doc,
+  "title" | "fileUrl" | "fileSize" | "fileType"
+> & { id: string };
 
 export default Doc;

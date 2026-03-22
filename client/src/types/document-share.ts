@@ -1,7 +1,16 @@
 export interface DocumentShare {
   _id: string;
-  documentId: string;
-  ownerId: string;
+  documentId: {
+    _id: string;
+    title: string;
+    fileUrl: string;
+    fileType: string;
+    fileSize: number;
+  };
+  ownerId: {
+    _id: string;
+    email: string;
+  };
   type: "public" | "private";
   shareToken?: string;
   publicPermission?: "read" | "write";
@@ -9,7 +18,6 @@ export interface DocumentShare {
     userId: string;
     permission: "read" | "write";
   }[];
-  permission: "read" | "write";
   isActive: boolean;
   expiresAt?: Date;
   allowDownload: boolean;
