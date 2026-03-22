@@ -53,8 +53,6 @@ export const createDocumentShareService = async (data: IDocumentShareInput) => {
     validated.documentId,
   );
 
-  console.log(existingShare);
-
   if (existingShare) {
     throw new AppError("A share with this document already exists", 400);
   }
@@ -72,6 +70,15 @@ export const createDocumentShareService = async (data: IDocumentShareInput) => {
 
     if (hasOwner) {
       throw new AppError("Owner cannot be included in allowed users", 400);
+    }
+
+    const seen = new Map<string, string>();
+
+    for (const user of validated.allowedUsers) {
+      if (seen.has(user.userId)) {
+        throw new AppError(`Duplicate user: ${user.userId}`, 400);
+      }
+      seen.set(user.userId, user.permission);
     }
   }
 
