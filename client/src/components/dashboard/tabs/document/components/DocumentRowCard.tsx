@@ -21,7 +21,7 @@ const DocumentRowCard = ({
 
   return (
     <div
-      className="flex items-center gap-3 sm:contents cursor-pointer"
+      className="flex items-center gap-3 sm:contents cursor-pointer hover:bg-white/3 transition-colors duration-150"
       onClick={() => setSelectedDoc(isSelected ? null : doc)}
     >
       <FileIcon type={doc.fileType} />

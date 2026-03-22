@@ -15,6 +15,7 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
   const [actionsMenuOpen, setActionsMenuOpen] = useState<string | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [moveModalOpen, setMoveModalOpen] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<Doc["status"] | "all">(
@@ -32,6 +33,10 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
     id: string;
     title: string;
     folderId?: string | null;
+  } | null>(null);
+  const [documentToShare, setDocumentToShare] = useState<{
+    id: string;
+    title: string;
   } | null>(null);
 
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -115,10 +120,22 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
       const button = actionsButtonRefs.current.get(actionsMenuOpen);
       if (button) {
         const rect = button.getBoundingClientRect();
-        setDropdownPosition({
-          top: rect.bottom + window.scrollY + 4,
-          left: rect.right + window.scrollX - 192,
-        });
+        const DROPDOWN_HEIGHT = 280;
+        const DROPDOWN_WIDTH = 192;
+        const MARGIN = 8;
+
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const top =
+          spaceBelow < DROPDOWN_HEIGHT
+            ? rect.top + window.scrollY - DROPDOWN_HEIGHT - MARGIN // flip up
+            : rect.bottom + window.scrollY + MARGIN; // default down
+
+        const left = Math.min(
+          rect.right + window.scrollX - DROPDOWN_WIDTH,
+          window.innerWidth + window.scrollX - DROPDOWN_WIDTH - MARGIN,
+        );
+
+        setDropdownPosition({ top, left });
       }
     } else {
       setDropdownPosition(null);
@@ -178,12 +195,23 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
     [reprocessDoc, setActionsMenuOpen],
   );
 
+  const handleShareClick = useCallback(
+    (docId: string, docTitle: string) => {
+      setDocumentToShare({ id: docId, title: docTitle });
+      setActionsMenuOpen(null);
+      setShareModalOpen(true);
+    },
+    [setActionsMenuOpen],
+  );
+
   const handleDeleteSuccess = () => {
     if (selectedDoc?._id === documentToDelete?.id) setSelectedDoc(null);
     setDocumentToDelete(null);
   };
 
   const handleMoveSuccess = () => setDocumentToMove(null);
+
+  const handleShareSuccess = () => setDocumentToShare(null);
 
   const handleNavigate = (path: string) => {
     if (isNavigating) return;
@@ -224,7 +252,9 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
     dropdownPosition,
     documentToDelete,
     documentToMove,
+    documentToShare,
     moveModalOpen,
+    shareModalOpen,
     deleteModalOpen,
     documentError,
 
@@ -233,6 +263,7 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
     setSelectedDoc,
     setActionsMenuOpen,
     setMoveModalOpen,
+    setShareModalOpen,
     setDeleteModalOpen,
 
     // Handlers
@@ -241,7 +272,9 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
     handleDeleteClick,
     handleDeleteSuccess,
     handleMoveSuccess,
+    handleShareSuccess,
     handleReprocessClick,
+    handleShareClick,
     handleSearch,
     fetchNextDocPage,
     refetchDocumentChats,

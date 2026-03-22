@@ -17,7 +17,7 @@ const ActionButton = ({
   isNavigating,
   isActionsOpen,
 }: Props) => (
-  <div className="sm:col-start-6 flex justify-end">
+  <div className="sm:col-start-6 flex justify-end relative overflow-hidden">
     <button
       ref={(el) => {
         if (el) {

@@ -3,6 +3,7 @@ import {
   EyeIcon,
   FolderPlus,
   MessageCircle,
+  ShareIcon,
   SparkleIcon,
   TrashIcon,
 } from "lucide-react";
@@ -20,6 +21,7 @@ interface Props {
   ) => void;
   handleDeleteClick: (docId: string, docTitle: string) => void;
   handleReprocessClick: (docId: string) => Promise<void>;
+  handleShareClick: (docId: string, docTitle: string) => void;
   filteredDocs: Doc[];
 }
 
@@ -58,6 +60,7 @@ const ActionsDropDown = ({
   handleMoveClick,
   handleDeleteClick,
   handleReprocessClick,
+  handleShareClick,
   filteredDocs,
 }: Props) => {
   const doc = filteredDocs.find((d) => d._id === actionsMenuOpen);
@@ -110,6 +113,14 @@ const ActionsDropDown = ({
         }}
         icon={<MessageCircle className="w-4 h-4" />}
         label="Chat"
+      />
+      <DropdownButton
+        onClick={(e) => {
+          e.stopPropagation();
+          if (doc) handleShareClick(doc._id, doc.title);
+        }}
+        icon={<ShareIcon className="w-4 h-4" />}
+        label="Share"
       />
 
       <div className="border-t border-white/8" />

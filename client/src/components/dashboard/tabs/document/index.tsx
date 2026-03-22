@@ -18,6 +18,7 @@ import SummaryContents from "./components/SummaryContents";
 import DocumentError from "./components/DocumentError";
 import EmptyDocument from "./components/EmptyDocument";
 import { SearchIcon } from "lucide-react";
+import ShareDocumentModal from "../../modals/document/ShareDocumentModal";
 
 interface Props {
   userId: string;
@@ -57,7 +58,9 @@ function DocumentsTab({ userId, filterFolder, setFilterFolder }: Props) {
     dropdownPosition,
     documentToDelete,
     documentToMove,
+    documentToShare,
     moveModalOpen,
+    shareModalOpen,
     deleteModalOpen,
     documentError,
 
@@ -67,6 +70,7 @@ function DocumentsTab({ userId, filterFolder, setFilterFolder }: Props) {
     setActionsMenuOpen,
     setMoveModalOpen,
     setDeleteModalOpen,
+    setShareModalOpen,
 
     // Handlers
     handleNavigate,
@@ -74,8 +78,10 @@ function DocumentsTab({ userId, filterFolder, setFilterFolder }: Props) {
     handleDeleteClick,
     handleDeleteSuccess,
     handleMoveSuccess,
+    handleShareSuccess,
     handleReprocessClick,
     handleSearch,
+    handleShareClick,
     fetchNextDocPage,
     refetchDocumentChats,
 
@@ -288,6 +294,7 @@ function DocumentsTab({ userId, filterFolder, setFilterFolder }: Props) {
             handleMoveClick={handleMoveClick}
             handleDeleteClick={handleDeleteClick}
             handleReprocessClick={handleReprocessClick}
+            handleShareClick={handleShareClick}
             filteredDocs={filteredDocs}
           />,
           document.body,
@@ -344,6 +351,16 @@ function DocumentsTab({ userId, filterFolder, setFilterFolder }: Props) {
           open={moveModalOpen}
           onOpenChange={setMoveModalOpen}
           onSuccess={handleMoveSuccess}
+        />
+      )}
+
+      {documentToShare && (
+        <ShareDocumentModal
+          userId={userId}
+          document={documentToShare}
+          open={shareModalOpen}
+          onOpenChange={setShareModalOpen}
+          onSuccess={handleShareSuccess}
         />
       )}
     </div>
