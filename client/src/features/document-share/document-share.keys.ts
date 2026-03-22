@@ -1,7 +1,7 @@
 const documentShareKeys = {
   all: ["document-share"] as const,
-  byUserPage: (userId: string) =>
-    [...documentShareKeys.all, userId, "page"] as const,
+  byUserPage: (userId: string, page: number) =>
+    [...documentShareKeys.all, userId, "page", page] as const,
   byId: (id: string) => [...documentShareKeys.all, id, "id"] as const,
   byToken: (token: string) =>
     [...documentShareKeys.all, token, "token"] as const,

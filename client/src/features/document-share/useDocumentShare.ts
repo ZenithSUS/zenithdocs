@@ -1,9 +1,4 @@
-import {
-  InfiniteData,
-  useInfiniteQuery,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import documentShareKeys from "./document-share.keys";
 import {
   createDocumentShare,
@@ -14,8 +9,8 @@ import {
 import { DocumentShare, DocumentShareInput } from "@/types/document-share";
 import { AxiosError, ResponseWithPagedData } from "@/types/api";
 import {
-  removeInfiniteDocumentShare,
-  updateInfiniteDocumentShare,
+  updateDocumentShareCache,
+  removeDocumentShareCache,
 } from "./document-share.cache";
 import { DocumentShareInfo } from "@/types/doc";
 import useAuthStore from "../auth/auth.store";
@@ -24,7 +19,6 @@ type DocumentSharePage = ResponseWithPagedData<
   DocumentShare,
   "documentShares"
 >["data"];
-type DocumentShareInfiniteData = InfiniteData<DocumentSharePage>;
 
 type UpdateVariables = {
   id: string;
@@ -32,7 +26,7 @@ type UpdateVariables = {
 };
 
 type MutateContext = {
-  previousDocumentShare: DocumentShareInfiniteData | undefined;
+  previousDocumentShares: DocumentSharePage | undefined;
 };
 
 type CreateDocumentShareVariables = {
@@ -40,10 +34,28 @@ type CreateDocumentShareVariables = {
   document: DocumentShareInfo;
 };
 
-const useDocumentShare = (userId: string) => {
+const useDocumentShare = (userId: string, page: number = 1) => {
   const queryClient = useQueryClient();
-  const documentSharelimit = 10;
+  const documentShareLimit = 10;
   const { email } = useAuthStore();
+
+  // ─── Helpers ──────────────────────────────────────────────────────────────
+
+  const pageQueryKey = documentShareKeys.byUserPage(userId, page);
+
+  const getCurrentPageData = () =>
+    queryClient.getQueryData<DocumentSharePage>(pageQueryKey);
+
+  // ─── Query ────────────────────────────────────────────────────────────────
+
+  const getDocumentSharesByUserQuery = useQuery<DocumentSharePage, AxiosError>({
+    queryKey: pageQueryKey,
+    queryFn: () =>
+      fetchDocumentSharesByUserPaginated(userId, page, documentShareLimit),
+    enabled: !!userId,
+  });
+
+  // ─── Create ───────────────────────────────────────────────────────────────
 
   const createDocumentShareMutation = useMutation<
     DocumentShare,
@@ -51,64 +63,32 @@ const useDocumentShare = (userId: string) => {
     CreateDocumentShareVariables
   >({
     mutationKey: documentShareKeys.create(),
-    mutationFn: ({ data }: CreateDocumentShareVariables) =>
-      createDocumentShare(data),
+    mutationFn: ({ data }) => createDocumentShare(data),
     onSuccess: (newDocumentShare, { document }) => {
-      queryClient.setQueryData<DocumentShareInfiniteData>(
-        documentShareKeys.byUserPage(userId),
-        (oldData) => {
-          if (!oldData) return oldData;
-
-          const firstPage = oldData.pages[0];
-
-          const finalDocumentShare: DocumentShare = {
-            ...newDocumentShare,
-            documentId: {
-              ...document,
-              _id: document.id,
-            },
-            ownerId: {
-              _id: userId,
-              email: email || "",
-            },
-          };
-
-          // Add the new document share to the first page of the cache then append the rest of the pages
-          return {
-            ...oldData,
-            pages: [
-              {
-                ...firstPage,
-                documentShares: [
-                  finalDocumentShare,
-                  ...firstPage.documentShares,
-                ],
-              },
-              ...oldData.pages.slice(1),
-            ],
-          };
+      const finalDocumentShare: DocumentShare = {
+        ...newDocumentShare,
+        documentId: {
+          ...document,
+          _id: document.id,
         },
-      );
+        ownerId: {
+          _id: userId,
+          email: email || "",
+        },
+      };
+
+      // Optimistically prepend new share to current page cache
+      queryClient.setQueryData<DocumentSharePage>(pageQueryKey, (oldData) => {
+        if (!oldData) return oldData;
+        return {
+          ...oldData,
+          documentShares: [finalDocumentShare, ...oldData.documentShares],
+        };
+      });
     },
   });
 
-  const getDocumentSharesByUserPageMutation = useInfiniteQuery<
-    DocumentSharePage,
-    AxiosError,
-    DocumentShareInfiniteData,
-    ReturnType<typeof documentShareKeys.byUserPage>,
-    number
-  >({
-    queryKey: documentShareKeys.byUserPage(userId),
-    queryFn: ({ pageParam = 1 }) =>
-      fetchDocumentSharesByUserPaginated(userId, pageParam, documentSharelimit),
-    initialPageParam: 1,
-    getNextPageParam: (lastPage) => {
-      const { page, totalPages } = lastPage.pagination;
-      return page < totalPages ? page + 1 : undefined;
-    },
-    enabled: !!userId,
-  });
+  // ─── Update ───────────────────────────────────────────────────────────────
 
   const updateDocumentShareMutation = useMutation<
     DocumentShare,
@@ -119,59 +99,40 @@ const useDocumentShare = (userId: string) => {
     mutationKey: documentShareKeys.update(),
     mutationFn: ({ id, data }) => updateDocumentShare(id, data),
     onMutate: async ({ id, data }) => {
-      await queryClient.cancelQueries({
-        queryKey: documentShareKeys.byId(id),
-      });
+      await queryClient.cancelQueries({ queryKey: pageQueryKey });
 
-      const previousDocumentShare =
-        queryClient.getQueryData<DocumentShareInfiniteData>(
-          documentShareKeys.byId(id),
-        );
+      // Snapshot for rollback
+      const previousDocumentShares = getCurrentPageData();
 
-      if (previousDocumentShare) {
-        queryClient.setQueryData<DocumentShareInfiniteData>(
-          documentShareKeys.byUserPage(userId),
-          (oldData) => {
-            if (!oldData) return oldData;
+      // Optimistically apply partial update
+      updateDocumentShareCache(queryClient, pageQueryKey, {
+        ...previousDocumentShares?.documentShares.find((d) => d._id === id),
+        ...data,
+      } as DocumentShare);
 
-            return {
-              ...oldData,
-              pages: oldData.pages.map((page) => ({
-                ...page,
-                documentShares: page.documentShares.map((documentShare) =>
-                  documentShare._id === id
-                    ? { ...documentShare, ...data }
-                    : documentShare,
-                ),
-              })),
-            };
-          },
-        );
-      }
-
-      return { previousDocumentShare };
+      return { previousDocumentShares };
     },
     onError: (_, __, context) => {
-      if (context?.previousDocumentShare) {
-        queryClient.setQueryData<DocumentShareInfiniteData>(
-          documentShareKeys.byUserPage(userId),
-          context.previousDocumentShare,
+      if (context?.previousDocumentShares) {
+        queryClient.setQueryData<DocumentSharePage>(
+          pageQueryKey,
+          context.previousDocumentShares,
         );
       }
     },
     onSuccess: (updatedDocumentShare) => {
-      updateInfiniteDocumentShare(
-        queryClient,
-        documentShareKeys.byUserPage(userId),
-        updatedDocumentShare,
-      );
+      // Sync confirmed server data into cache
+      updateDocumentShareCache(queryClient, pageQueryKey, updatedDocumentShare);
 
+      // Also update the individual document share cache
       queryClient.setQueryData(
         documentShareKeys.byId(updatedDocumentShare._id),
         updatedDocumentShare,
       );
     },
   });
+
+  // ─── Delete ───────────────────────────────────────────────────────────────
 
   const deleteDocumentShareMutation = useMutation<
     DocumentShare,
@@ -182,33 +143,29 @@ const useDocumentShare = (userId: string) => {
     mutationKey: documentShareKeys.delete(),
     mutationFn: (id) => deleteDocumentShare(id),
     onMutate: async (deletedId) => {
-      await queryClient.cancelQueries({
-        queryKey: documentShareKeys.byId(deletedId),
-      });
+      await queryClient.cancelQueries({ queryKey: pageQueryKey });
 
-      removeInfiniteDocumentShare(
-        queryClient,
-        documentShareKeys.byUserPage(userId),
-        deletedId,
-      );
+      // Snapshot BEFORE removal for rollback
+      const previousDocumentShares = getCurrentPageData();
 
-      const previousDocumentShare =
-        queryClient.getQueryData<DocumentShareInfiniteData>(
-          documentShareKeys.byUserPage(userId),
-        );
+      // Optimistically remove from cache
+      removeDocumentShareCache(queryClient, pageQueryKey, deletedId);
 
-      return { previousDocumentShare };
+      return { previousDocumentShares };
     },
     onError: (_, __, context) => {
-      if (context?.previousDocumentShare) {
-        queryClient.setQueryData<DocumentShareInfiniteData>(
-          documentShareKeys.byUserPage(userId),
-          context.previousDocumentShare,
+      if (context?.previousDocumentShares) {
+        queryClient.setQueryData<DocumentSharePage>(
+          pageQueryKey,
+          context.previousDocumentShares,
         );
       }
     },
-
     onSuccess: (deletedDocumentShare) => {
+      // Refetch to correct pagination counts after deletion
+      queryClient.invalidateQueries({ queryKey: pageQueryKey });
+
+      // Remove individual cache entry
       queryClient.removeQueries({
         queryKey: documentShareKeys.byId(deletedDocumentShare._id),
       });
@@ -217,7 +174,7 @@ const useDocumentShare = (userId: string) => {
 
   return {
     createDocumentShareMutation,
-    getDocumentSharesByUserPageMutation,
+    getDocumentSharesByUserQuery,
     updateDocumentShareMutation,
     deleteDocumentShareMutation,
   };

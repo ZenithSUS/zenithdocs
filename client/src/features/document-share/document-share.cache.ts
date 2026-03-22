@@ -1,51 +1,44 @@
 import { ResponseWithPagedData } from "@/types/api";
 import { DocumentShare } from "@/types/document-share";
-import { InfiniteData, QueryClient } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
 
 type DocumentSharePage = ResponseWithPagedData<
   DocumentShare,
   "documentShares"
 >["data"];
-type DocumentShareInfiniteData = InfiniteData<DocumentSharePage>;
 
-export const updateInfiniteDocumentShare = (
+export const updateDocumentShareCache = (
   queryClient: QueryClient,
-  querkey: readonly unknown[],
+  queryKey: readonly unknown[],
   updatedDocumentShare: DocumentShare,
 ) => {
-  queryClient.setQueryData<DocumentShareInfiniteData>(querkey, (oldData) => {
+  queryClient.setQueryData<DocumentSharePage>(queryKey, (oldData) => {
     if (!oldData) return oldData;
 
     return {
       ...oldData,
-      pages: oldData.pages.map((page) => ({
-        ...page,
-        documentShares: page.documentShares.map((documentShare) =>
-          documentShare._id === updatedDocumentShare._id
-            ? updatedDocumentShare
-            : documentShare,
-        ),
-      })),
+      documentShares: oldData.documentShares.map((documentShare) =>
+        documentShare._id === updatedDocumentShare._id
+          ? updatedDocumentShare
+          : documentShare,
+      ),
     };
   });
 };
 
-export const removeInfiniteDocumentShare = (
+export const removeDocumentShareCache = (
   queryClient: QueryClient,
-  querkey: readonly unknown[],
+  queryKey: readonly unknown[],
   deletedId: string,
 ) => {
-  queryClient.setQueryData<DocumentShareInfiniteData>(querkey, (oldData) => {
+  queryClient.setQueryData<DocumentSharePage>(queryKey, (oldData) => {
     if (!oldData) return oldData;
 
     return {
       ...oldData,
-      pages: oldData.pages.map((page) => ({
-        ...page,
-        documentShares: page.documentShares.filter(
-          (documentShare) => documentShare._id !== deletedId,
-        ),
-      })),
+      documentShares: oldData.documentShares.filter(
+        (documentShare) => documentShare._id !== deletedId,
+      ),
     };
   });
 };
