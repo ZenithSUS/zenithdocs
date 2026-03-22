@@ -23,15 +23,11 @@ export interface DocumentShareInput {
   documentId: string;
   ownerId: string;
   type: "public" | "private";
-  shareToken?: string;
   publicPermission?: "read" | "write";
   allowedUsers?: {
     userId: string;
     permission: "read" | "write";
   }[];
-  userId: string;
-  permission: "read" | "write";
-  isActive: boolean;
-  expiresAt?: Date;
-  allowDownload: boolean;
+  allowDownload?: boolean;
+  expiresAt?: string;
 }

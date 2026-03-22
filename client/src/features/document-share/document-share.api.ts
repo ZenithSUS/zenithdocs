@@ -4,7 +4,7 @@ import { DocumentShare, DocumentShareInput } from "@/types/document-share";
 
 export const createDocumentShare = async (data: DocumentShareInput) => {
   const { data: res } = await api.post<ResponseWithData<DocumentShare>>(
-    "/api/document-share",
+    "/api/document-shares",
     data,
   );
   return res.data;
@@ -12,14 +12,14 @@ export const createDocumentShare = async (data: DocumentShareInput) => {
 
 export const fetchDocumentShareById = async (id: string) => {
   const { data: res } = await api.get<ResponseWithData<DocumentShare>>(
-    `/api/document-shares/${id}/public`,
+    `/api/document-shares/${id}`,
   );
   return res.data;
 };
 
 export const fetchDocumentShareByToken = async (token: string) => {
   const { data: res } = await api.get<ResponseWithData<DocumentShare>>(
-    `/api/document-shares/${token}`,
+    `/api/document-shares/token/${token}`,
   );
   return res.data;
 };
