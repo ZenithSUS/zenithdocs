@@ -23,7 +23,10 @@ export const getDocumentShareByTokenSchema = z.object({
   token: z.string().min(1, { message: "Invalid token" }),
 });
 
-export const getDocumentShareByIdSchema = z.object({ id: objectId });
+export const getDocumentShareByIdSchema = z.object({
+  id: objectId,
+  ownerId: objectId,
+});
 
 export const getDocumentSharesByUserPage = z.object({
   userId: objectId,

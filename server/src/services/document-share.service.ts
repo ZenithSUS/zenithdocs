@@ -103,7 +103,7 @@ export const createDocumentShareService = async (data: IDocumentShareInput) => {
 };
 
 /**
- * Gets a document share by token (Private share)
+ * Gets a document share by token (Public share)
  *
  * @param {string} token - Document share token
  * @param {string} currentUserId - Current user ID
@@ -114,10 +114,7 @@ export const createDocumentShareService = async (data: IDocumentShareInput) => {
  *
  * @returns {Promise<DocumentShare>} Document share
  */
-export const getDocumentShareByTokenService = async (
-  token: string,
-  currentUserId: string,
-) => {
+export const getDocumentShareByTokenService = async (token: string) => {
   const validated = getDocumentShareByTokenSchema.parse({ token });
 
   const documentShare = await getDocumentShareByToken(validated.token);
@@ -130,36 +127,28 @@ export const getDocumentShareByTokenService = async (
     throw new AppError("Invalid token", 400);
   }
 
-  // Check if the user is allowed to access the document
-  if (documentShare.type === "private" && documentShare.allowedUsers) {
-    const allowedUser = documentShare.allowedUsers.find(
-      (user) => user.userId.toString() === currentUserId,
-    );
-
-    const isOwner = documentShare.ownerId.toString() === currentUserId;
-
-    if (!allowedUser && !isOwner) {
-      throw new AppError("You are not allowed to access this document", 403);
-    }
-  }
-
   return documentShare;
 };
 
 /**
- * Gets a document share by its ID (Public share)
+ * Gets a document share by its ID (Private share)
  *
  * @param {string} id - Document share ID
- *
+ * @param {string} currentUserId - Current user ID
  * @throws {AppError} If the document share is not found
  *
  * @returns {Promise<DocumentShare>} Document share if found, null otherwise
  */
-export const getDocumentShareByIdService = async (id: string) => {
-  const validated = getDocumentShareByIdSchema.parse({ id });
+export const getDocumentShareByIdService = async (
+  id: string,
+  currentUserId: string,
+) => {
+  const validated = getDocumentShareByIdSchema.parse({
+    id,
+    ownerId: currentUserId,
+  });
 
   const documentShare = await getDocumentShareById(validated.id);
-  console.log(documentShare);
 
   if (!documentShare) {
     throw new AppError("Document share not found", 404);
@@ -169,8 +158,17 @@ export const getDocumentShareByIdService = async (id: string) => {
     throw new AppError("Document share is not active", 404);
   }
 
+  // Check if the user is allowed to access the document
   if (documentShare.type === "private" && documentShare.allowedUsers) {
-    throw new AppError("You are not allowed to access this document", 403);
+    const allowedUser = documentShare.allowedUsers.find(
+      (user) => user.userId.toString() === currentUserId,
+    );
+
+    const isOwner = documentShare.ownerId._id.toString() === validated.ownerId;
+
+    if (!allowedUser && !isOwner) {
+      throw new AppError("You are not allowed to access this document", 403);
+    }
   }
 
   return documentShare;

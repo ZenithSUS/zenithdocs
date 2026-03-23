@@ -29,12 +29,12 @@ router.get(
 );
 router.get(
   "/:id",
+  protect,
   limiter("getDocumentShareById"),
   getDocumentShareByIdController,
 );
 router.get(
   "/token/:token",
-  protect,
   limiter("getDocumentShareByToken"),
   getDocumentShareByTokenController,
 );
