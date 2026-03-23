@@ -5,6 +5,27 @@ import { InfiniteData, QueryClient } from "@tanstack/react-query";
 type SummaryPage = ResponseWithPagedData<Summary, "summaries">["data"];
 type SummaryByUserInfiniteData = InfiniteData<SummaryPage>;
 
+export const addInfiniteSummary = (
+  queryClient: QueryClient,
+  queryKey: readonly unknown[],
+  newSummary: Summary,
+) => {
+  queryClient.setQueryData<SummaryByUserInfiniteData>(queryKey, (oldData) => {
+    if (!oldData) return oldData;
+
+    return {
+      ...oldData,
+      pages: [
+        {
+          ...oldData.pages[0],
+          summaries: [newSummary, ...oldData.pages[0].summaries],
+        },
+        ...oldData.pages.slice(1),
+      ],
+    };
+  });
+};
+
 export const updateInfiniteSummary = (
   queryClient: QueryClient,
   queryKey: readonly unknown[],

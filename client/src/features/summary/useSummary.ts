@@ -16,7 +16,11 @@ import {
 } from "./summary.api";
 import { Summary } from "@/types/summary";
 import { AxiosError, ResponseWithPagedData } from "@/types/api";
-import { removeInfiniteSummary, updateInfiniteSummary } from "./summary.cache";
+import {
+  addInfiniteSummary,
+  removeInfiniteSummary,
+  updateInfiniteSummary,
+} from "./summary.cache";
 
 type SummaryPage = ResponseWithPagedData<Summary, "summaries">["data"];
 type SummaryByUserInfiniteData = InfiniteData<SummaryPage>;
@@ -59,45 +63,19 @@ const useSummary = (
     mutationKey: summaryKeys.create(),
     mutationFn: (data: Partial<Summary>) => createSummary(data),
     onSuccess: (newSummary: Summary) => {
-      queryClient.setQueryData<SummaryByUserInfiniteData>(
+      addInfiniteSummary(
+        queryClient,
         summaryKeys.byUserPage(userId, summaryLimit),
-        (oldData) => {
-          if (!oldData) return oldData;
-
-          const firstPage = oldData.pages[0];
-
-          return {
-            ...oldData,
-            pages: [
-              {
-                ...firstPage,
-                summaries: [newSummary, ...firstPage.summaries],
-              },
-              ...oldData.pages.slice(1),
-            ],
-          };
-        },
+        newSummary,
       );
 
-      queryClient.setQueryData<SummaryByUserInfiniteData>(
-        summaryKeys.byDocumentPage(documentId, summaryLimit),
-        (oldData) => {
-          if (!oldData) return oldData;
-
-          const firstPage = oldData.pages[0];
-
-          return {
-            ...oldData,
-            pages: [
-              {
-                ...firstPage,
-                summaries: [newSummary, ...firstPage.summaries],
-              },
-              ...oldData.pages.slice(1),
-            ],
-          };
-        },
-      );
+      if (documentId) {
+        addInfiniteSummary(
+          queryClient,
+          summaryKeys.byDocumentPage(documentId, summaryLimit),
+          newSummary,
+        );
+      }
     },
   });
 
