@@ -76,7 +76,7 @@ export function UserSearchCombobox({
         className="bg-white/4 border-white/12 text-text/80 font-sans text-[12px]"
       />
 
-      {!isLoading && (
+      {isLoading && (
         <div className="absolute top-full mt-1 px-2 py-1 bg-background rounded-md">
           <div className="flex items-center gap-2">
             <p className="text-primary font-semibold text-sm">Loading</p>
