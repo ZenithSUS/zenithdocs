@@ -3,6 +3,8 @@ import documentShareKeys from "./document-share.keys";
 import {
   createDocumentShare,
   deleteDocumentShare,
+  fetchDocumentShareById,
+  fetchDocumentShareByToken,
   fetchDocumentSharesByUserPaginated,
   updateDocumentShare,
 } from "./document-share.api";
@@ -56,6 +58,20 @@ const useDocumentShare = (userId: string, page: number = 1) => {
       fetchDocumentSharesByUserPaginated(userId, page, documentShareLimit),
     enabled: !!userId,
   });
+
+  const getDocumentShareById = (id: string) =>
+    useQuery<DocumentShare, AxiosError>({
+      queryKey: documentShareKeys.byUser(id),
+      queryFn: () => fetchDocumentShareById(id),
+      enabled: !!id,
+    });
+
+  const getDocumentSharedByToken = (token: string) =>
+    useQuery<DocumentShare, AxiosError>({
+      queryKey: documentShareKeys.byToken(token),
+      queryFn: () => fetchDocumentShareByToken(token),
+      enabled: !!token,
+    });
 
   // ─── Create ───────────────────────────────────────────────────────────────
 
@@ -166,6 +182,8 @@ const useDocumentShare = (userId: string, page: number = 1) => {
 
   return {
     createDocumentShareMutation,
+    getDocumentShareById,
+    getDocumentSharedByToken,
     getDocumentSharesByUserQuery,
     updateDocumentShareMutation,
     deleteDocumentShareMutation,
