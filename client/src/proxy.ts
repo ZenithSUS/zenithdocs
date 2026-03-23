@@ -16,19 +16,28 @@ export default function proxy(req: NextRequest) {
 
   const { pathname } = req.nextUrl;
 
+  const isPublicDoc =
+    pathname.startsWith("/document/") && pathname.includes("/share/");
+  const isPrivateDoc =
+    pathname.startsWith("/document/") && !pathname.includes("/share/");
+
   const isRootRoute = pathname === "/";
   const isProtectedRoute = pathname.startsWith("/dashboard");
   const isAuthRoute =
     pathname.startsWith("/login") || pathname.startsWith("/register");
 
   // If not logged in and trying to access protected route
-  if (!token && isProtectedRoute) {
+  if (!token && (isProtectedRoute || isPrivateDoc)) {
     return safeRedirect(req, "/login");
   }
 
   // If logged in and trying to access auth pages or root route
   if (token && (isAuthRoute || isRootRoute)) {
     return safeRedirect(req, "/dashboard");
+  }
+
+  if (isPublicDoc) {
+    return NextResponse.next();
   }
 
   const response = NextResponse.next();
@@ -44,5 +53,12 @@ export default function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/dashboard/:path*", "/login", "/register"],
+  matcher: [
+    "/",
+    "/dashboard/:path*",
+    "/login",
+    "/register",
+    "/document/:id*",
+    "/document/shared/:id*",
+  ],
 };
