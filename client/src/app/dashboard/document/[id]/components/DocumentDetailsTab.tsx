@@ -63,7 +63,7 @@ const DocumentDetailsTab = ({ document, folder, statusMeta }: Props) => (
           <div className="flex items-center gap-1.5 text-[10px] tracking-widest text-text/30 font-sans mb-1">
             <FileType size={10} /> FILE TYPE
           </div>
-          <div className="text-[14px] text-text/70 font-sans">
+          <div className="text-[14px] text-text/70 font-sans truncate">
             {document.fileType}
           </div>
         </div>

@@ -88,7 +88,7 @@ export default function DocumentViewPage() {
   // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-[#111111] text-[#F5F5F5] font-serif">
+    <div className="h-screen bg-[#111111] text-[#F5F5F5] font-serif overflow-y-auto">
       <CursorGlow mousePos={mousePos} />
 
       {/* Chatbot button */}

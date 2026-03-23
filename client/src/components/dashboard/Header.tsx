@@ -72,7 +72,7 @@ function DashboardHeader({
         <button
           type="button"
           className="hidden sm:flex items-center gap-2 px-4 py-2 bg-primary text-black rounded-sm
-            text-[11px] font-bold tracking-widest font-sans hover:bg-[#e0b530] transition-colors duration-200"
+            text-[11px] font-bold tracking-widest font-sans hover:bg-[#e0b530] transition-colors duration-200 hover:text-white cursor-pointer"
           onClick={() => router.push("/dashboard/upload")}
         >
           <Upload className="w-4 h-4" />
@@ -81,7 +81,7 @@ function DashboardHeader({
 
         {/* Upload — mobile icon only */}
         <button
-          className="sm:hidden p-2 bg-primary text-black rounded-sm hover:bg-[#e0b530] transition-colors"
+          className="sm:hidden p-2 bg-primary text-black rounded-sm hover:bg-[#e0b530] transition-colors active:scale-95 cursor-pointer"
           onClick={() => router.push("/dashboard/upload")}
           aria-label="Upload"
         >
@@ -107,7 +107,7 @@ function DashboardHeader({
           <div
             className="w-8 h-8 rounded-full cursor-pointer bg-primary/20 border border-primary/30
               flex items-center justify-center text-[11px] text-primary font-bold font-sans
-              hover:bg-primary/30 transition-colors duration-150 select-none"
+              hover:bg-primary/30 transition-colors duration-150 select-none hover:bg-white/4 hover:border-2"
             onClick={() => options.setIsOpen((prev) => !prev)}
           >
             {email.slice(0, 1).toUpperCase()}
