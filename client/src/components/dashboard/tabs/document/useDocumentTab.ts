@@ -40,6 +40,7 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
     fileUrl: string;
     fileType: string;
     fileSize: number;
+    rawText: string;
   } | null>(null);
 
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -199,8 +200,15 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
   );
 
   const handleShareClick = useCallback(
-    ({ id, title, fileUrl, fileSize, fileType }: DocumentShareInfo) => {
-      setDocumentToShare({ id, title, fileUrl, fileSize, fileType });
+    ({
+      id,
+      title,
+      fileUrl,
+      fileSize,
+      fileType,
+      rawText,
+    }: DocumentShareInfo) => {
+      setDocumentToShare({ id, title, fileUrl, fileSize, fileType, rawText });
       setActionsMenuOpen(null);
       setShareModalOpen(true);
     },

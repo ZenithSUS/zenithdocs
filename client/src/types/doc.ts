@@ -40,7 +40,7 @@ export type CreateDoc = Omit<Doc, "_id" | "createdAt" | "updatedAt"> & {
 
 export type DocumentShareInfo = Pick<
   Doc,
-  "title" | "fileUrl" | "fileSize" | "fileType"
+  "title" | "fileUrl" | "fileSize" | "fileType" | "rawText"
 > & { id: string };
 
 export default Doc;
