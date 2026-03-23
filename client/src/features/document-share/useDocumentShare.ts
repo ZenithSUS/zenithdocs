@@ -11,6 +11,7 @@ import { AxiosError, ResponseWithPagedData } from "@/types/api";
 import {
   updateDocumentShareCache,
   removeDocumentShareCache,
+  addDocumentShareCache,
 } from "./document-share.cache";
 import { DocumentShareInfo } from "@/types/doc";
 import useAuthStore from "../auth/auth.store";
@@ -42,6 +43,7 @@ const useDocumentShare = (userId: string, page: number = 1) => {
   // ─── Helpers ──────────────────────────────────────────────────────────────
 
   const pageQueryKey = documentShareKeys.byUserPage(userId, page);
+  const userKey = documentShareKeys.byUser(userId);
 
   const getCurrentPageData = () =>
     queryClient.getQueryData<DocumentSharePage>(pageQueryKey);
@@ -78,13 +80,7 @@ const useDocumentShare = (userId: string, page: number = 1) => {
       };
 
       // Optimistically prepend new share to current page cache
-      queryClient.setQueryData<DocumentSharePage>(pageQueryKey, (oldData) => {
-        if (!oldData) return oldData;
-        return {
-          ...oldData,
-          documentShares: [finalDocumentShare, ...oldData.documentShares],
-        };
-      });
+      addDocumentShareCache(queryClient, userKey, finalDocumentShare);
     },
   });
 
@@ -143,27 +139,23 @@ const useDocumentShare = (userId: string, page: number = 1) => {
     mutationKey: documentShareKeys.delete(),
     mutationFn: (id) => deleteDocumentShare(id),
     onMutate: async (deletedId) => {
-      await queryClient.cancelQueries({ queryKey: pageQueryKey });
+      await queryClient.cancelQueries({ queryKey: userKey });
 
       // Snapshot BEFORE removal for rollback
       const previousDocumentShares = getCurrentPageData();
-
-      // Optimistically remove from cache
-      removeDocumentShareCache(queryClient, pageQueryKey, deletedId);
+      removeDocumentShareCache(queryClient, userKey, deletedId);
 
       return { previousDocumentShares };
     },
     onError: (_, __, context) => {
       if (context?.previousDocumentShares) {
-        queryClient.setQueryData<DocumentSharePage>(
-          pageQueryKey,
-          context.previousDocumentShares,
-        );
+        // Invalidate all pages so they refetch clean data
+        queryClient.invalidateQueries({ queryKey: userKey });
       }
     },
     onSuccess: (deletedDocumentShare) => {
-      // Refetch to correct pagination counts after deletion
-      queryClient.invalidateQueries({ queryKey: pageQueryKey });
+      // Invalidate all pages to correct any pagination gaps (e.g. page 2 losing an item)
+      queryClient.invalidateQueries({ queryKey: userKey });
 
       // Remove individual cache entry
       queryClient.removeQueries({

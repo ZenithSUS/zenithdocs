@@ -1,3 +1,4 @@
+import queryClient from "@/lib/tanstack";
 import { ResponseWithPagedData } from "@/types/api";
 import { DocumentShare } from "@/types/document-share";
 import { QueryClient } from "@tanstack/react-query";
@@ -6,6 +7,35 @@ type DocumentSharePage = ResponseWithPagedData<
   DocumentShare,
   "documentShares"
 >["data"];
+
+export const addDocumentShareCache = (
+  queryClient: QueryClient,
+  queryKey: readonly unknown[],
+  newDocumentShare: DocumentShare,
+) => {
+  queryClient.setQueriesData<DocumentSharePage>({ queryKey }, (oldData) => {
+    if (!oldData) return oldData;
+
+    const isPageOne = oldData.pagination.page === 1;
+    const newTotal = isPageOne ? 1 : oldData.pagination.total + 1;
+    const newTotalPages = isPageOne
+      ? 1
+      : Math.ceil(newTotal / oldData.pagination.limit);
+
+    return {
+      ...oldData,
+      // Add pagination if the current page or documentShares is empty
+      pagination: {
+        ...oldData.pagination,
+        total: newTotal,
+        totalPages: newTotalPages,
+      },
+      documentShares: isPageOne
+        ? [newDocumentShare, ...oldData.documentShares]
+        : oldData.documentShares,
+    };
+  });
+};
 
 export const updateDocumentShareCache = (
   queryClient: QueryClient,
@@ -31,14 +61,22 @@ export const removeDocumentShareCache = (
   queryKey: readonly unknown[],
   deletedId: string,
 ) => {
-  queryClient.setQueryData<DocumentSharePage>(queryKey, (oldData) => {
+  queryClient.setQueriesData<DocumentSharePage>({ queryKey }, (oldData) => {
     if (!oldData) return oldData;
+
+    const hasItem = oldData.documentShares.some((d) => d._id === deletedId);
+    const newTotal = oldData.pagination.total - 1;
 
     return {
       ...oldData,
-      documentShares: oldData.documentShares.filter(
-        (documentShare) => documentShare._id !== deletedId,
-      ),
+      pagination: {
+        ...oldData.pagination,
+        total: newTotal,
+        totalPages: Math.ceil(newTotal / oldData.pagination.limit),
+      },
+      documentShares: hasItem
+        ? oldData.documentShares.filter((d) => d._id !== deletedId)
+        : oldData.documentShares,
     };
   });
 };
