@@ -159,6 +159,7 @@ export const getDocumentShareByIdService = async (id: string) => {
   const validated = getDocumentShareByIdSchema.parse({ id });
 
   const documentShare = await getDocumentShareById(validated.id);
+  console.log(documentShare);
 
   if (!documentShare) {
     throw new AppError("Document share not found", 404);

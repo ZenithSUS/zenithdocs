@@ -35,7 +35,6 @@ export const getDocumentShareByToken = async (token: string) => {
       select: "_id title fileType fileSize fileUrl",
     })
     .select({
-      isActive: 0,
       "allowedUsers._id": 0,
     })
     .lean();
@@ -120,7 +119,6 @@ export const getDocumentShareById = async (id: string) => {
       select: "_id title fileType fileSize fileUrl",
     })
     .select({
-      isActive: 0,
       "allowedUsers._id": 0,
     })
     .lean();
@@ -152,7 +150,6 @@ export const updateDocumentShare = async (
       select: "_id title fileType fileSize fileUrl",
     })
     .select({
-      isActive: 0,
       "allowedUsers._id": 0,
     })
     .lean();
