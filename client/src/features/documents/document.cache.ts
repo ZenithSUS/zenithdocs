@@ -5,10 +5,34 @@ import { InfiniteData, QueryClient } from "@tanstack/react-query";
 type DocumentPage = ResponseWithPagedData<Doc, "documents">["data"];
 type DocumentsInfiniteData = InfiniteData<DocumentPage>;
 
+export const addInfiniteDocument = (
+  queryClient: QueryClient,
+  querykey: readonly unknown[],
+  newDoc: Doc,
+) => {
+  queryClient.setQueryData<DocumentsInfiniteData>(querykey, (oldData) => {
+    if (!oldData) return oldData;
+
+    const firstPage = oldData.pages[0];
+
+    // Add the new document to the first page of the cache then append the rest of the pages
+    return {
+      ...oldData,
+      pages: [
+        {
+          ...firstPage,
+          documents: [newDoc, ...firstPage.documents],
+        },
+        ...oldData.pages.slice(1),
+      ],
+    };
+  });
+};
+
 export const updateInfiniteDocument = (
   queryClient: QueryClient,
   querykey: readonly unknown[],
-  updatedDoc: Doc,
+  updatedDoc: Partial<Doc> & { _id: string },
 ) => {
   queryClient.setQueryData<DocumentsInfiniteData>(querykey, (oldData) => {
     if (!oldData) return oldData;
@@ -18,7 +42,7 @@ export const updateInfiniteDocument = (
       pages: oldData.pages.map((page) => ({
         ...page,
         documents: page.documents.map((doc) =>
-          doc._id === updatedDoc._id ? updatedDoc : doc,
+          doc._id === updatedDoc._id ? { ...doc, ...updatedDoc } : doc,
         ),
       })),
     };

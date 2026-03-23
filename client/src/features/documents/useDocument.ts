@@ -18,6 +18,7 @@ import {
 import { ResponseWithPagedData, AxiosError } from "@/types/api";
 import Doc, { DocWithChat } from "@/types/doc";
 import {
+  addInfiniteDocument,
   removeInfiniteDocument,
   updateInfiniteDocument,
 } from "./document.cache";
@@ -66,25 +67,10 @@ const useDocument = (
     mutationKey: documentKeys.create(),
     mutationFn: (data) => createDocument(data),
     onSuccess: (newDocs) => {
-      queryClient.setQueryData<DocumentsInfiniteData>(
+      addInfiniteDocument(
+        queryClient,
         documentKeys.byUserPage(userId, documentLimit),
-        (oldData) => {
-          if (!oldData) return oldData;
-
-          const firstPage = oldData.pages[0];
-
-          // Add the new document to the first page of the cache then append the rest of the pages
-          return {
-            ...oldData,
-            pages: [
-              {
-                ...firstPage,
-                documents: [newDocs, ...firstPage.documents],
-              },
-              ...oldData.pages.slice(1),
-            ],
-          };
-        },
+        newDocs,
       );
     },
     onError: (err) => {
@@ -169,25 +155,11 @@ const useDocument = (
         documentKeys.byUserPage(userId, documentLimit),
       );
 
-      if (previousDoc) {
-        queryClient.setQueryData<DocumentsInfiniteData>(
-          documentKeys.byUserPage(userId, documentLimit),
-          (oldData) => {
-            if (!oldData) return oldData;
-
-            // Update the document in the cache then append the rest of the pages
-            return {
-              ...oldData,
-              pages: oldData.pages.map((page) => ({
-                ...page,
-                documents: page.documents.map((doc) =>
-                  doc._id === id ? { ...doc, ...data } : doc,
-                ),
-              })),
-            };
-          },
-        );
-      }
+      updateInfiniteDocument(
+        queryClient,
+        documentKeys.byUserPage(userId, documentLimit),
+        { _id: id, ...data },
+      );
 
       return { previousDoc };
     },
@@ -235,6 +207,14 @@ const useDocument = (
       );
 
       return { previousDoc };
+    },
+    onError: (_, __, context) => {
+      if (context?.previousDoc) {
+        queryClient.setQueryData(
+          documentKeys.byUserPage(userId, documentLimit),
+          context.previousDoc,
+        );
+      }
     },
     onSuccess: (_, deletedId: string) => {
       queryClient.removeQueries({
