@@ -11,7 +11,7 @@ import {
 
 import CursorGlow from "@/components/CursorGlow";
 import LoadingScreen from "@/components/LoadingScreen";
-import ErrorScreen from "@/components/dashboard/ErrorScreen";
+import ErrorScreen from "@/components/ErrorScreen";
 
 import useDocumentPage from "./useDocumentPage";
 import DocumentHeader from "./components/DocumentHeader";

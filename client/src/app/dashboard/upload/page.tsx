@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import CursorGlow from "@/components/CursorGlow";
 import LoadingScreen from "@/components/LoadingScreen";
-import ErrorScreen from "@/components/dashboard/ErrorScreen";
+import ErrorScreen from "@/components/ErrorScreen";
 
 import useUploadPage from "./useUploadPage";
 import FolderSelect from "./components/FolderSelect";

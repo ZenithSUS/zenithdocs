@@ -7,7 +7,7 @@ import { Lightbulb, Sparkles, XCircle, Zap } from "lucide-react";
 import CursorGlow from "@/components/CursorGlow";
 import FileIcon from "@/components/FileIcon";
 import LoadingScreen from "@/components/LoadingScreen";
-import ErrorScreen from "@/components/dashboard/ErrorScreen";
+import ErrorScreen from "@/components/ErrorScreen";
 import sizefmt from "@/helpers/size-format";
 
 import useSummarizePage from "./useSummarizePage";

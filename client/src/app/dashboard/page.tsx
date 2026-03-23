@@ -7,7 +7,7 @@ import DashBoardSidebar from "@/components/dashboard/Sidebar";
 
 import { lazy, Suspense, useState } from "react";
 import DashboardLoading from "@/components/LoadingScreen";
-import ErrorScreen from "@/components/dashboard/ErrorScreen";
+import ErrorScreen from "@/components/ErrorScreen";
 import useDashboardPage from "./useDashboard";
 import DocumentsLoadingSkeleton from "@/components/dashboard/tabs/document/components/DocumentsLoadingSkeleton";
 import FolderLoadingSkeletion from "@/components/dashboard/tabs/folder/components/FolderLoadingSkeletion";

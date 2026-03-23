@@ -4,7 +4,7 @@ import { Suspense, useState } from "react";
 import { ChevronLeft, Sparkles, Zap } from "lucide-react";
 
 import CursorGlow from "@/components/CursorGlow";
-import ErrorScreen from "@/components/dashboard/ErrorScreen";
+import ErrorScreen from "@/components/ErrorScreen";
 import useChatPage from "./useChatPage";
 import GlobalChat from "@/components/dashboard/globalchat";
 import ChatHeader from "./components/ChatHeader";
