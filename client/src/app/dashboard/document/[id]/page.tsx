@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 import CursorGlow from "@/components/CursorGlow";
-import LoadingScreen from "@/components/dashboard/LoadingScreen";
+import LoadingScreen from "@/components/LoadingScreen";
 import ErrorScreen from "@/components/dashboard/ErrorScreen";
 
 import useDocumentPage from "./useDocumentPage";
