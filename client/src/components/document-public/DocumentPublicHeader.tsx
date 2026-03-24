@@ -1,51 +1,24 @@
 import sizefmt from "@/helpers/size-format";
-import FileIcon from "../FileIcon";
+import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Download } from "lucide-react";
+import FileIcon from "../FileIcon";
 
-interface DocumentPrivateHeaderProps {
+interface DocumentPublicHeaderProps {
   title: string | null;
   fileSize: number | null;
   fileType: string | null;
-  fileUrl: string | null;
-  isDownloadable: boolean;
 }
 
-function DocumentPrivateHeader({
+function DocumentPublicHeader({
   title,
   fileSize,
   fileType,
-  fileUrl,
-  isDownloadable,
-}: DocumentPrivateHeaderProps) {
+}: DocumentPublicHeaderProps) {
   const router = useRouter();
 
-  const handleDownload = () => {
-    if (!fileUrl) return;
-    const a = document.createElement("a");
-    a.href = fileUrl;
-    a.download = title ?? "download";
-    a.target = "_blank";
-    a.rel = "noopener noreferrer";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  };
-
   return (
-    <div className="sticky z-10 border-b border-white/6 top-0 px-8 sm:px-12 py-3 sm:py-4 backdrop-blur-sm flex items-center justify-between gap-3 bg-background/90 min-w-0">
+    <div className="px-8 py-3 sm:py-4 sm:px-12 flex justify-between items-center gap-3 bg-background/90 min-w-0 border-b border-white/8 sticky top-0 z-10">
       <div className="flex items-center gap-3">
-        {/* Download button */}
-        {isDownloadable && (
-          <button
-            onClick={handleDownload}
-            className="shrink-0 flex items-center gap-2 text-text/50 hover:text-text/90 transition-colors"
-            title="Download"
-          >
-            <Download className="w-5 h-5 hover:text-primary cursor-pointer" />
-          </button>
-        )}
-
         {/* Back button */}
         <button
           onClick={() => router.back()}
@@ -60,7 +33,7 @@ function DocumentPrivateHeader({
         {/* Divider */}
         <div className="h-8 border-l border-primary" />
 
-        {/* Logo */}
+        {/* Logo — always visible, never shrinks */}
         <div className="flex items-center gap-2 shrink-0">
           <span className="text-[18px] sm:text-[20px] text-primary">◈</span>
           <span className="text-[13px] sm:text-[15px] font-bold tracking-[0.08em] font-serif">
@@ -69,7 +42,7 @@ function DocumentPrivateHeader({
         </div>
       </div>
 
-      {/* Document info + download */}
+      {/* Document info */}
       <div className="flex items-center gap-2.5 min-w-0 overflow-hidden">
         {/* Icon */}
         <div className="shrink-0 hidden sm:block">
@@ -92,4 +65,4 @@ function DocumentPrivateHeader({
   );
 }
 
-export default DocumentPrivateHeader;
+export default DocumentPublicHeader;

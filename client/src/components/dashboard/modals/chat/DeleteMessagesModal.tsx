@@ -53,7 +53,7 @@ function DeleteMessagesModal({
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
         <AlertDialogTrigger asChild>
-          <button className="w-full flex items-center gap-3 px-3 py-2.5 text-left text-red-400/80 hover:text-red-400 hover:bg-red-500/8 transition-all duration-150 group z-1000">
+          <button className="w-full flex items-center gap-3 cursor-pointer text-left text-red-400/80 hover:text-red-400  group z-1000">
             <Trash2Icon size={14} className="shrink-0" />
             <span className="text-[13px] font-sans">Clear Messages</span>
           </button>

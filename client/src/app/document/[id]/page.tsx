@@ -9,13 +9,16 @@ import { useParams } from "next/navigation";
 import useDocumentPrivatePage from "./useDocumentPrivatePage";
 import { useState } from "react";
 import GlobalChat from "@/components/dashboard/globalchat";
-import { Zap } from "lucide-react";
+import { Zap, FileText, MessageSquare } from "lucide-react";
 import ErrorScreen from "@/components/ErrorScreen";
+
+type ActiveTab = "viewer" | "chat";
 
 export default function DocumentPrivatePage() {
   const params = useParams();
   const shareId = params?.id as string;
   const [chatBotOpen, setChatBotOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<ActiveTab>("viewer");
 
   const {
     mousePos,
@@ -28,6 +31,7 @@ export default function DocumentPrivatePage() {
     refetchUser,
     chatId,
     documentId,
+    isDownloadable,
   } = useDocumentPrivatePage(shareId);
 
   if (userError) {
@@ -41,22 +45,6 @@ export default function DocumentPrivatePage() {
   return (
     <div className="h-screen bg-background text-text font-serif flex flex-col overflow-hidden relative">
       <CursorGlow mousePos={mousePos} />
-
-      {/* ChatBot */}
-      {chatBotOpen ? (
-        <div className="fixed bottom-5 right-5 z-50">
-          <GlobalChat user={user ?? null} setIsOpen={setChatBotOpen} />
-        </div>
-      ) : (
-        <div className="bg-background rounded-full p-2 border border-primary fixed bottom-5 left-5 z-50 hover:bg-primary/10 hover:scale-105 transition-transform">
-          <Zap
-            onClick={() => setChatBotOpen(true)}
-            className="cursor-pointer hover:scale-105 transition-transform"
-            size={20}
-            strokeWidth={2}
-          />
-        </div>
-      )}
 
       {/* Subtle grid background */}
       <div
@@ -74,17 +62,68 @@ export default function DocumentPrivatePage() {
         title={documentInfo?.title ?? "Untitled"}
         fileType={documentInfo?.fileType ?? "N/A"}
         fileSize={documentInfo?.fileSize ?? 0}
+        fileUrl={documentInfo?.fileUrl ?? ""}
+        isDownloadable={isDownloadable}
       />
 
-      {/* Split screen: 50% viewer, 50% chat */}
-      <div className="relative flex-1 min-h-0 z-10 flex">
+      {/* Mobile/Tablet tab switcher — hidden on desktop */}
+      <div className="lg:hidden relative z-10 flex border-b border-white/6 shrink-0">
+        <button
+          onClick={() => setActiveTab("viewer")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-[12px] font-sans tracking-wider transition-colors ${
+            activeTab === "viewer"
+              ? "text-primary border-b-2 border-primary"
+              : "text-text/40 hover:text-text/70"
+          }`}
+        >
+          <FileText className="w-3.5 h-3.5" />
+          DOCUMENT
+        </button>
+        <button
+          onClick={() => setActiveTab("chat")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-[12px] font-sans tracking-wider transition-colors ${
+            activeTab === "chat"
+              ? "text-primary border-b-2 border-primary"
+              : "text-text/40 hover:text-text/70"
+          }`}
+        >
+          <MessageSquare className="w-3.5 h-3.5" />
+          CHAT
+        </button>
+      </div>
+
+      {/* Split screen: side-by-side on desktop, tabbed on mobile/tablet */}
+      <div className="relative flex-1 min-h-0 z-10 flex flex-col lg:flex-row">
         {/* Left: Document Viewer */}
-        <div className="w-1/2 border-r border-white/8">
+        <div
+          className={`lg:w-1/2 lg:border-r border-white/8 flex-1 min-h-0 ${
+            activeTab === "viewer" ? "flex flex-col" : "hidden"
+          } lg:flex lg:flex-col`}
+        >
           <DocumentSharedViewer document={documentInfo ?? null} />
         </div>
 
-        {/* Right: Chat */}
-        <div className="w-1/2">
+        {/* Right: Chat panel */}
+        <div
+          className={`lg:w-1/2 flex-1 min-h-0 relative ${
+            activeTab === "chat" ? "flex flex-col" : "hidden"
+          } lg:flex lg:flex-col`}
+        >
+          {/* GlobalChat FAB — top-right corner of the chat panel */}
+          <div className="absolute top-3 right-3 z-50">
+            {chatBotOpen ? (
+              <GlobalChat user={user ?? null} setIsOpen={setChatBotOpen} />
+            ) : (
+              <button
+                onClick={() => setChatBotOpen(true)}
+                className="bg-background rounded-full p-2 border border-primary hover:bg-primary/10 hover:scale-105 transition-transform"
+                title="Open AI Assistant"
+              >
+                <Zap size={18} strokeWidth={2} />
+              </button>
+            )}
+          </div>
+
           <DocumentPrivateChat
             documentId={documentId}
             userId={user?._id || ""}

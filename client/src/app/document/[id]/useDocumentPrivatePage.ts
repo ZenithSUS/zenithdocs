@@ -36,6 +36,8 @@ const useDocumentPrivatePage = (shareId: string) => {
     [documentShare],
   );
 
+  const isDownloadable = documentShare?.allowDownload ?? false;
+
   const mousePos = useMousePosition();
 
   return {
@@ -63,6 +65,7 @@ const useDocumentPrivatePage = (shareId: string) => {
 
     // Document
     documentId,
+    isDownloadable,
   };
 };
 

@@ -60,11 +60,13 @@ function ChatHeader({ docId, chatId, documentData, options }: ChatHeaderProps) {
                 </span>
               </div>
               <div className="h-px bg-white/8 mb-1" />
-              <DeleteMessagesModal
-                chatId={chatId}
-                documentId={docId}
-                onAction={() => options.setIsOpen(false)}
-              />
+              <div className="px-3 py-1.5 hover:bg-red-500/8 transition-all duration-150">
+                <DeleteMessagesModal
+                  chatId={chatId}
+                  documentId={docId}
+                  onAction={() => options.setIsOpen(false)}
+                />
+              </div>
             </div>
           )}
         </div>
