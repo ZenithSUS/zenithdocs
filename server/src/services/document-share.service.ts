@@ -127,6 +127,12 @@ export const getDocumentShareByTokenService = async (token: string) => {
     throw new AppError("Invalid token", 400);
   }
 
+  if (documentShare.expiresAt) {
+    if (documentShare.expiresAt < new Date()) {
+      throw new AppError("Document share has expired", 404);
+    }
+  }
+
   return documentShare;
 };
 
@@ -156,6 +162,12 @@ export const getDocumentShareByIdService = async (
 
   if (!documentShare.isActive) {
     throw new AppError("Document share is not active", 404);
+  }
+
+  if (documentShare.expiresAt) {
+    if (documentShare.expiresAt < new Date()) {
+      throw new AppError("Document share has expired", 404);
+    }
   }
 
   // Check if the user is allowed to access the document
