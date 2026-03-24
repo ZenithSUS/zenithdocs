@@ -42,9 +42,9 @@ function DocumentPrivateHeader({
         </div>
       </div>
 
-      {/* Document info — truncates gracefully on small screens */}
+      {/* Document info */}
       <div className="flex items-center gap-2.5 min-w-0 overflow-hidden">
-        {/* Icon hidden on very small screens to save space */}
+        {/* Icon */}
         <div className="shrink-0 hidden sm:block">
           <FileIcon type={fileType ?? "N/A"} />
         </div>
