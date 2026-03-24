@@ -36,6 +36,6 @@ const chatSchema = new Schema<IChat>(
   { timestamps: true },
 );
 
-chatSchema.index({ documentId: 1, userId: 1 }, { unique: true });
+chatSchema.index({ documentId: 1, userId: 1 });
 
 export default mainDB.model<IChat>("Chat", chatSchema);
