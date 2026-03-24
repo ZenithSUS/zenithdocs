@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import { Document, Page, pdfjs } from "react-pdf";
+import { pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
 import type Doc from "@/types/doc";
+import DocumentControls from "./DocumentControls";
+import DocumentCanvas from "./DocumentCanvas";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
@@ -62,147 +63,27 @@ export default function DocumentViewer({ document }: DocumentViewerProps) {
   return (
     <div className="flex flex-col h-full min-h-0">
       {/* Controls */}
-      <div className="flex items-center justify-center px-3 py-2 border-b border-white/6 shrink-0 gap-3 overflow-x-auto scrollbar-none">
-        {/* Page navigation */}
-        <div className="flex items-center gap-1 shrink-0">
-          <button
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={currentPage <= 1}
-            className="p-1.5 rounded hover:bg-white/10 disabled:opacity-30 transition-colors"
-          >
-            <ChevronLeft size={14} />
-          </button>
-          <span className="text-xs text-[#F5F5F5]/50 font-sans tabular-nums px-1">
-            {currentPage} / {numPages || "—"}
-          </span>
-          <button
-            onClick={() => setCurrentPage((p) => Math.min(numPages, p + 1))}
-            disabled={currentPage >= numPages}
-            className="p-1.5 rounded hover:bg-white/10 disabled:opacity-30 transition-colors"
-          >
-            <ChevronRight size={14} />
-          </button>
-        </div>
-
-        {/* Divider */}
-        <div className="w-px h-4 bg-white/10 shrink-0" />
-
-        {/* Page Selector */}
-        <div className="flex items-center gap-1.5 shrink-0">
-          <span className="text-xs text-[#F5F5F5]/40 font-sans shrink-0">
-            Go to
-          </span>
-          <select
-            value={currentPage}
-            onChange={(e) => setCurrentPage(parseInt(e.target.value))}
-            className="w-14 px-1.5 py-1 bg-[rgba(31,41,55,0.4)] border border-[#C9A227]/18 rounded text-[#F5F5F5] text-xs font-sans focus:outline-none focus:border-[#C9A227]/40 transition-colors"
-          >
-            {Array.from({ length: numPages || 1 }, (_, i) => i + 1).map(
-              (page) => (
-                <option key={page} value={page} className="bg-background">
-                  {page}
-                </option>
-              ),
-            )}
-          </select>
-        </div>
-
-        {/* Divider */}
-        <div className="w-px h-4 bg-white/10 shrink-0" />
-
-        {/* Zoom controls */}
-        <div className="flex items-center gap-1 shrink-0">
-          <button
-            onClick={() =>
-              setScale((s) => Math.max(0.5, +(s - 0.25).toFixed(2)))
-            }
-            disabled={scale <= 0.5}
-            className="p-1.5 rounded hover:bg-white/10 disabled:opacity-30 transition-colors"
-          >
-            <ZoomOut size={14} />
-          </button>
-          <button
-            onClick={() => setScale(1.0)}
-            className="text-xs text-[#F5F5F5]/50 font-sans tabular-nums w-10 text-center hover:text-[#F5F5F5] transition-colors"
-          >
-            {Math.round(scale * 100)}%
-          </button>
-          <button
-            onClick={() => setScale((s) => Math.min(3, +(s + 0.25).toFixed(2)))}
-            disabled={scale >= 3}
-            className="p-1.5 rounded hover:bg-white/10 disabled:opacity-30 transition-colors"
-          >
-            <ZoomIn size={14} />
-          </button>
-        </div>
-      </div>
+      <DocumentControls
+        numPages={numPages}
+        currentPage={currentPage}
+        scale={scale}
+        setCurrentPage={setCurrentPage}
+        setScale={setScale}
+      />
 
       {/* PDF Render Area */}
-      <div
-        ref={containerRef}
-        className="flex-1 overflow-auto select-none"
-        style={{
-          backgroundColor: "#1a1a1a",
-          cursor: isDragging ? "grabbing" : scale > 1 ? "grab" : "default",
-          WebkitOverflowScrolling: "touch",
-        }}
-        onMouseDown={(e) => {
-          if (scale <= 1) return;
-          setIsDragging(true);
-          dragStart.current = { x: e.clientX, y: e.clientY };
-        }}
-        onMouseMove={(e) => {
-          if (!isDragging) return;
-          const dx = e.clientX - dragStart.current.x;
-          const dy = e.clientY - dragStart.current.y;
-          e.currentTarget.scrollLeft -= dx;
-          e.currentTarget.scrollTop -= dy;
-          dragStart.current = { x: e.clientX, y: e.clientY };
-        }}
-        onMouseUp={() => setIsDragging(false)}
-        onMouseLeave={() => setIsDragging(false)}
-        onTouchStart={(e) => {
-          const t = e.touches[0];
-          dragStart.current = { x: t.clientX, y: t.clientY };
-        }}
-        onTouchMove={(e) => {
-          const t = e.touches[0];
-          const dx = t.clientX - dragStart.current.x;
-          const dy = t.clientY - dragStart.current.y;
-          e.currentTarget.scrollLeft -= dx;
-          e.currentTarget.scrollTop -= dy;
-          dragStart.current = { x: t.clientX, y: t.clientY };
-        }}
-      >
-        <div
-          className={`flex py-4 min-h-full ${pageWidth > containerWidth ? "justify-start px-4" : "justify-center"}`}
-        >
-          {containerWidth > 0 && (
-            <Document
-              key={document._id}
-              file={document.fileUrl}
-              onLoadSuccess={({ numPages }) => setNumPages(numPages)}
-              loading={
-                <div className="flex items-center justify-center h-full text-[#F5F5F5]/40 text-sm animate-pulse">
-                  Loading document…
-                </div>
-              }
-              error={
-                <div className="flex items-center justify-center h-full text-red-400/70 text-sm">
-                  Failed to load PDF. Check CORS settings.
-                </div>
-              }
-            >
-              <Page
-                pageNumber={currentPage}
-                width={pageWidth}
-                renderTextLayer={true}
-                renderAnnotationLayer={true}
-              />
-            </Document>
-          )}
-        </div>
-      </div>
+      <DocumentCanvas
+        containerRef={containerRef}
+        draggingStart={dragStart}
+        document={document}
+        currentPage={currentPage}
+        scale={scale}
+        pageWidth={pageWidth}
+        containerWidth={containerWidth}
+        isDragging={isDragging}
+        setIsDragging={setIsDragging}
+        setNumPages={setNumPages}
+      />
     </div>
   );
 }
