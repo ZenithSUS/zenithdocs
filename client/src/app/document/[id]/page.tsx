@@ -2,6 +2,7 @@
 
 import DocumentPrivateHeader from "@/components/document-private/DocumentPrivateHeader";
 import DocumentSharedViewer from "@/components/document-private/DocumentSharedViewerWrapper";
+import DocumentPrivateChat from "@/components/document-private/private-chat";
 import LoadingScreen from "@/components/LoadingScreen";
 import CursorGlow from "@/components/CursorGlow";
 import { useParams } from "next/navigation";
@@ -13,7 +14,7 @@ import ErrorScreen from "@/components/ErrorScreen";
 
 export default function DocumentPrivatePage() {
   const params = useParams();
-  const documentId = params?.id as string;
+  const shareId = params?.id as string;
   const [chatBotOpen, setChatBotOpen] = useState(false);
 
   const {
@@ -25,7 +26,9 @@ export default function DocumentPrivatePage() {
     userError,
     userErrorData,
     refetchUser,
-  } = useDocumentPrivatePage(documentId);
+    chatId,
+    documentId,
+  } = useDocumentPrivatePage(shareId);
 
   if (userError) {
     return <ErrorScreen error={userErrorData} onRetry={refetchUser} />;
@@ -45,7 +48,7 @@ export default function DocumentPrivatePage() {
           <GlobalChat user={user ?? null} setIsOpen={setChatBotOpen} />
         </div>
       ) : (
-        <div className="bg-background rounded-full p-2 border border-primary fixed bottom-5 right-5 z-50 hover:bg-primary/10 hover:scale-105 transition-transform">
+        <div className="bg-background rounded-full p-2 border border-primary fixed bottom-5 left-5 z-50 hover:bg-primary/10 hover:scale-105 transition-transform">
           <Zap
             onClick={() => setChatBotOpen(true)}
             className="cursor-pointer hover:scale-105 transition-transform"
@@ -73,9 +76,22 @@ export default function DocumentPrivatePage() {
         fileSize={documentInfo?.fileSize ?? 0}
       />
 
-      {/* Viewer fills remaining space */}
-      <div className="relative flex-1 min-h-0 z-10">
-        <DocumentSharedViewer document={documentInfo ?? null} />
+      {/* Split screen: 50% viewer, 50% chat */}
+      <div className="relative flex-1 min-h-0 z-10 flex">
+        {/* Left: Document Viewer */}
+        <div className="w-1/2 border-r border-white/8">
+          <DocumentSharedViewer document={documentInfo ?? null} />
+        </div>
+
+        {/* Right: Chat */}
+        <div className="w-1/2">
+          <DocumentPrivateChat
+            documentId={documentId}
+            userId={user?._id || ""}
+            chatId={chatId}
+            documentTitle={documentInfo?.title ?? "Untitled"}
+          />
+        </div>
       </div>
     </div>
   );
