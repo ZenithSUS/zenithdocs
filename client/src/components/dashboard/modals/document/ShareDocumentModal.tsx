@@ -1,7 +1,10 @@
 "use client";
 
+import { useState } from "react";
+import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Dialog,
   DialogClose,
@@ -15,6 +18,11 @@ import { Field, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -27,11 +35,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AxiosError } from "@/types/api";
 import {
   BookA,
+  CalendarIcon,
   Globe2,
   Lock,
   PenIcon,
   PlusIcon,
   TrashIcon,
+  X,
 } from "lucide-react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
@@ -86,10 +96,6 @@ const shareDocumentSchema = z
 
 export type ShareDocumentSchema = z.infer<typeof shareDocumentSchema>;
 
-// ---------------------------------------------------------------------------
-// Props
-// ---------------------------------------------------------------------------
-
 interface ShareDocumentModalProps {
   userId: string;
   document: DocumentShareInfo;
@@ -97,10 +103,6 @@ interface ShareDocumentModalProps {
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
 }
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
 
 function FieldError({ message }: { message?: string }) {
   if (!message) return null;
@@ -136,10 +138,6 @@ function PermissionSelect({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
-
 function ShareDocumentModal({
   userId,
   document,
@@ -147,6 +145,8 @@ function ShareDocumentModal({
   onOpenChange,
   onSuccess,
 }: ShareDocumentModalProps) {
+  const [calendarOpen, setCalendarOpen] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -184,7 +184,6 @@ function ShareDocumentModal({
     try {
       const createDocData = {
         ...data,
-        // datetime-local "YYYY-MM-DDTHH:mm" → full ISO "2026-03-19T12:56:18.211+00:00"
         expiresAt: data.expiresAt
           ? new Date(data.expiresAt).toISOString()
           : undefined,
@@ -222,11 +221,9 @@ function ShareDocumentModal({
           onSubmit={handleSubmit(onSubmit)}
           className="flex flex-col flex-1 min-h-0"
         >
-          {/* Hidden identity fields */}
           <input type="hidden" {...register("documentId")} />
           <input type="hidden" {...register("ownerId")} />
 
-          {/* ── Header ─────────────────────────────────────────────────── */}
           <DialogHeader className="px-6 pt-6 pb-4 shrink-0">
             <DialogTitle className="text-text">Share document</DialogTitle>
             <DialogDescription className="text-text/50">
@@ -237,10 +234,9 @@ function ShareDocumentModal({
             </DialogDescription>
           </DialogHeader>
 
-          {/* ── Scrollable body ────────────────────────────────────────── */}
           <div className="flex-1 overflow-y-auto px-6 pb-2">
             <FieldGroup className="space-y-5">
-              {/* ─── Visibility ───────────────────────────────────────── */}
+              {/* ─── Visibility + Expires at ───────────────────────────── */}
               <div className="grid grid-cols-2 gap-4">
                 <Field>
                   <Label htmlFor="type" className="text-text/70 text-[12px]">
@@ -284,6 +280,7 @@ function ShareDocumentModal({
                   <FieldError message={errors.type?.message} />
                 </Field>
 
+                {/* ─── Expires at — Calendar + Popover ──────────────── */}
                 <Field>
                   <Label
                     htmlFor="expiresAt"
@@ -291,17 +288,153 @@ function ShareDocumentModal({
                   >
                     Expires at <span className="text-text/30">(optional)</span>
                   </Label>
-                  <Input
-                    id="expiresAt"
-                    type="datetime-local"
-                    {...register("expiresAt")}
-                    className="bg-white/4 border-white/12 text-text/70 font-sans text-[12px]"
+                  <Controller
+                    control={control}
+                    name="expiresAt"
+                    render={({ field }) => {
+                      const dateValue = field.value
+                        ? new Date(field.value)
+                        : undefined;
+
+                      const handleDaySelect = (day: Date | undefined) => {
+                        if (!day) {
+                          field.onChange(undefined);
+                          return;
+                        }
+                        const existing = field.value
+                          ? new Date(field.value)
+                          : null;
+                        const merged = new Date(day);
+                        if (existing) {
+                          merged.setHours(
+                            existing.getHours(),
+                            existing.getMinutes(),
+                          );
+                        }
+                        field.onChange(merged.toISOString());
+                      };
+
+                      const handleTimeChange = (
+                        e: React.ChangeEvent<HTMLInputElement>,
+                      ) => {
+                        const [hours, minutes] = e.target.value
+                          .split(":")
+                          .map(Number);
+                        const base = dateValue
+                          ? new Date(dateValue)
+                          : new Date();
+                        base.setHours(hours ?? 0, minutes ?? 0, 0, 0);
+                        field.onChange(base.toISOString());
+                      };
+
+                      const handleClear = (e: React.MouseEvent) => {
+                        e.stopPropagation();
+                        field.onChange(undefined);
+                      };
+
+                      return (
+                        <Popover
+                          open={calendarOpen}
+                          onOpenChange={setCalendarOpen}
+                        >
+                          <PopoverTrigger asChild>
+                            <button
+                              id="expiresAt"
+                              type="button"
+                              className={[
+                                "flex h-9 w-full items-center justify-between rounded-md border px-3",
+                                "bg-white/4 border-white/12 font-sans text-[12px]",
+                                "transition-colors hover:bg-white/6",
+                                "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/20",
+                                dateValue ? "text-text/80" : "text-text/30",
+                              ].join(" ")}
+                            >
+                              <span className="flex items-center gap-2">
+                                <CalendarIcon size={13} color="#c9a227" />
+                                {dateValue
+                                  ? format(dateValue, "MMM d, yyyy 'at' HH:mm")
+                                  : "Pick a date & time"}
+                              </span>
+                              {dateValue && (
+                                <span
+                                  role="button"
+                                  tabIndex={0}
+                                  onMouseDown={handleClear}
+                                  className="text-text/30 hover:text-text/70 transition-colors"
+                                >
+                                  <X size={12} />
+                                </span>
+                              )}
+                            </button>
+                          </PopoverTrigger>
+
+                          <PopoverContent
+                            className="w-auto p-0 border border-white/12 bg-[#1a1a1a] shadow-xl"
+                            align="start"
+                          >
+                            <Calendar
+                              mode="single"
+                              selected={dateValue}
+                              onSelect={handleDaySelect}
+                              disabled={{ before: new Date() }}
+                              autoFocus
+                              classNames={{
+                                months: "p-3",
+                                head_cell:
+                                  "text-text/30 text-[11px] font-normal w-9",
+                                cell: "w-9 h-9 text-[12px]",
+                                day: [
+                                  "h-9 w-9 rounded-md text-text/70 text-[12px] font-sans",
+                                  "hover:bg-white/8 hover:text-text/90 transition-colors",
+                                ].join(" "),
+                                day_selected:
+                                  "bg-primary text-black hover:bg-primary hover:text-black font-medium",
+                                day_today:
+                                  "border border-white/20 text-text/90",
+                                day_outside: "text-text/20",
+                                day_disabled: "text-text/15 cursor-not-allowed",
+                                nav_button:
+                                  "h-7 w-7 rounded-md text-text/40 hover:bg-white/8 hover:text-text/80 transition-colors",
+                                caption:
+                                  "text-text/70 text-[12px] font-medium font-sans",
+                              }}
+                            />
+
+                            {/* Time picker */}
+                            <div className="border-t border-white/8 px-3 py-2.5 flex items-center gap-2">
+                              <span className="text-text/30 text-[11px] font-sans shrink-0">
+                                Time
+                              </span>
+                              <Input
+                                type="time"
+                                value={
+                                  dateValue
+                                    ? `${String(dateValue.getHours()).padStart(2, "0")}:${String(dateValue.getMinutes()).padStart(2, "0")}`
+                                    : ""
+                                }
+                                onChange={handleTimeChange}
+                                className="h-7 bg-white/4 border-white/12 text-text/70 font-sans text-[12px] px-2"
+                              />
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 px-3 text-[11px] font-sans text-text/50 hover:text-text/80 hover:bg-white/8 ml-auto"
+                                onClick={() => setCalendarOpen(false)}
+                              >
+                                Done
+                              </Button>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      );
+                    }}
                   />
                   <FieldError message={errors.expiresAt?.message} />
                 </Field>
               </div>
 
-              {/* Public permission — only shown when public */}
+              {/* Public permission */}
               {shareType === "public" && (
                 <div className="grid grid-cols-2 gap-4">
                   <Field>
@@ -322,7 +455,8 @@ function ShareDocumentModal({
                   </Field>
                 </div>
               )}
-              {/* Options (allow download + allow edit) */}
+
+              {/* Options */}
               <div className="grid grid-cols-2 gap-4">
                 <Field>
                   <Label className="text-text/70 text-[12px]">Options</Label>
@@ -344,7 +478,7 @@ function ShareDocumentModal({
                 </Field>
               </div>
 
-              {/* Allowed users — private only (full width) */}
+              {/* Allowed users — private only */}
               {shareType === "private" && (
                 <Field>
                   <Label className="text-text/70 text-[12px]">
@@ -357,7 +491,6 @@ function ShareDocumentModal({
                         key={field.id}
                         className="grid grid-cols-[1fr_120px_32px] gap-2 items-start"
                       >
-                        {/* User ID */}
                         <div>
                           <Controller
                             control={control}
@@ -381,7 +514,6 @@ function ShareDocumentModal({
                           />
                         </div>
 
-                        {/* Permission */}
                         <div>
                           <Controller
                             control={control}
@@ -400,7 +532,6 @@ function ShareDocumentModal({
                           />
                         </div>
 
-                        {/* Remove */}
                         <button
                           type="button"
                           onClick={() => remove(index)}
@@ -432,7 +563,6 @@ function ShareDocumentModal({
             </FieldGroup>
           </div>
 
-          {/* ── Footer ─────────────────────────────────────────────────── */}
           <DialogFooter className="px-6 py-4 border-t border-white/8 shrink-0">
             <DialogClose asChild>
               <Button

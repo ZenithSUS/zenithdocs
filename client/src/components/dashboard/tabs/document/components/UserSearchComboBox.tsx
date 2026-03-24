@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import useUser from "@/features/user/useUser";
 import { ThreeDot } from "react-loading-indicators";
+import { X } from "lucide-react";
 
 interface User {
   _id: string;
@@ -24,8 +25,10 @@ export function UserSearchCombobox({
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [debouncedQuery, setDebouncedQuery] = useState("");
-  const [displayEmail, setDisplayEmail] = useState("");
+  const [isSelected, setIsSelected] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const skipDebounceRef = useRef(false);
 
   const { searchUsersByEmailQuery } = useUser(debouncedQuery);
   const { data: users = [], isLoading } = searchUsersByEmailQuery;
@@ -35,10 +38,14 @@ export function UserSearchCombobox({
   }, [users, excludeIds]);
 
   useEffect(() => {
-    if (users.length > 0) setOpen(true);
-  }, [users]);
+    if (users.length > 0 && !isSelected) setOpen(true);
+  }, [users, isSelected]);
 
   useEffect(() => {
+    if (skipDebounceRef.current) {
+      skipDebounceRef.current = false;
+      return;
+    }
     const t = setTimeout(() => setDebouncedQuery(query), 300);
     return () => clearTimeout(t);
   }, [query]);
@@ -58,25 +65,55 @@ export function UserSearchCombobox({
   }, []);
 
   const handleSelect = (user: User) => {
+    // Skip the debounce effect so setting query to email
+    // doesn't re-trigger a search
+    skipDebounceRef.current = true;
     onChange(user._id);
-    setDisplayEmail(user.email);
     setQuery(user.email);
+    setIsSelected(true);
+    setOpen(false);
+  };
+
+  const handleClear = () => {
+    skipDebounceRef.current = true;
+    onChange("");
+    setQuery("");
+    setDebouncedQuery("");
+    setIsSelected(false);
     setOpen(false);
   };
 
   return (
     <div ref={containerRef} className="relative">
-      <Input
-        value={query}
-        onChange={(e) => {
-          setQuery(e.target.value);
-          if (value && e.target.value !== displayEmail) onChange("");
-        }}
-        placeholder={placeholder}
-        className="bg-white/4 border-white/12 text-text/80 font-sans text-[12px]"
-      />
+      <div className="relative">
+        <Input
+          value={query}
+          onChange={(e) => {
+            if (isSelected) return;
+            setQuery(e.target.value);
+            if (value && e.target.value === "") onChange("");
+          }}
+          readOnly={isSelected}
+          placeholder={placeholder}
+          className={`bg-white/4 border-white/12 text-text/80 font-sans text-[12px] pr-7 ${
+            isSelected ? "cursor-default select-none" : ""
+          }`}
+        />
+        {isSelected && (
+          <button
+            type="button"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              handleClear();
+            }}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-text/40 hover:text-text/80 transition-colors"
+          >
+            <X size={13} />
+          </button>
+        )}
+      </div>
 
-      {isLoading && (
+      {isLoading && !isSelected && (
         <div className="absolute top-full mt-1 px-2 py-1 bg-background rounded-md">
           <div className="flex items-center gap-2">
             <p className="text-primary font-semibold text-sm">Loading</p>
@@ -90,7 +127,7 @@ export function UserSearchCombobox({
           {filteredUsers.map((user) => (
             <li
               key={user._id}
-              onMouseDown={() => handleSelect(user)} // mousedown fires before blur
+              onMouseDown={() => handleSelect(user)}
               className="px-3 py-2 text-[12px] text-text/70 hover:bg-white/8 cursor-pointer font-sans"
             >
               {user.email}
