@@ -156,3 +156,7 @@
   scrollbar-width: thin;
   scrollbar-color: rgba(201, 162, 39, 0.2) transparent;
 }
+
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(78%) sepia(55%) saturate(500%) hue-rotate(5deg) brightness(95%);
+}
