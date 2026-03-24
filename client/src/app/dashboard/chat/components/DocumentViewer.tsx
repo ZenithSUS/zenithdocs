@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useMemo } from "react";
 import { pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
@@ -17,26 +17,70 @@ interface DocumentViewerProps {
   document: Doc;
 }
 
+const CANVAS_PADDING = 32;
+const MAX_BASE_WIDTH = 900;
+
+function computeBase(width: number) {
+  return Math.max(Math.min(width - CANVAS_PADDING * 2, MAX_BASE_WIDTH), 200);
+}
+
+const FALLBACK_WIDTH = MAX_BASE_WIDTH + CANVAS_PADDING * 2;
+
 export default function DocumentViewer({ document }: DocumentViewerProps) {
   const [numPages, setNumPages] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [scale, setScale] = useState(1.0);
-  const [containerWidth, setContainerWidth] = useState<number>(0);
+  const [isPageLoading, setIsPageLoading] = useState(false);
+
+  const [containerWidth, setContainerWidth] = useState<number>(() =>
+    typeof window !== "undefined" ? window.innerWidth : FALLBACK_WIDTH,
+  );
+  const [basePageWidth, setBasePageWidth] = useState<number>(() =>
+    computeBase(
+      typeof window !== "undefined" ? window.innerWidth : FALLBACK_WIDTH,
+    ),
+  );
 
   const [isDragging, setIsDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
 
+  const lastWidth = useRef(0);
+  const rafId = useRef<number | null>(null);
+
+  const pageWidth = useMemo(
+    () => basePageWidth * scale,
+    [basePageWidth, scale],
+  );
+
   const containerRef = useCallback((node: HTMLDivElement | null) => {
     if (!node) return;
 
-    setContainerWidth(node.getBoundingClientRect().width);
+    const initialWidth = node.getBoundingClientRect().width;
+    if (initialWidth > 0) {
+      lastWidth.current = initialWidth;
+      setContainerWidth(initialWidth);
+      setBasePageWidth(computeBase(initialWidth));
+    }
+
+    const commit = (width: number) => {
+      if (Math.abs(width - lastWidth.current) < 5) return;
+      lastWidth.current = width;
+      if (rafId.current !== null) cancelAnimationFrame(rafId.current);
+      rafId.current = requestAnimationFrame(() => {
+        setContainerWidth(width);
+        setBasePageWidth(computeBase(width));
+      });
+    };
 
     const observer = new ResizeObserver(([entry]) => {
-      setContainerWidth(entry.contentRect.width);
+      commit(entry.contentRect.width);
     });
     observer.observe(node);
 
-    return () => observer.disconnect();
+    return () => {
+      if (rafId.current !== null) cancelAnimationFrame(rafId.current);
+      observer.disconnect();
+    };
   }, []);
 
   const isPdf =
@@ -58,20 +102,18 @@ export default function DocumentViewer({ document }: DocumentViewerProps) {
     );
   }
 
-  const pageWidth = (containerWidth || 600) * scale;
-
   return (
     <div className="flex flex-col h-full min-h-0">
-      {/* Controls */}
       <DocumentControls
         numPages={numPages}
         currentPage={currentPage}
         scale={scale}
-        setCurrentPage={setCurrentPage}
+        setCurrentPage={(page) => {
+          setIsPageLoading(true);
+          setCurrentPage(page);
+        }}
         setScale={setScale}
       />
-
-      {/* PDF Render Area */}
       <DocumentCanvas
         containerRef={containerRef}
         draggingStart={dragStart}
@@ -81,8 +123,10 @@ export default function DocumentViewer({ document }: DocumentViewerProps) {
         pageWidth={pageWidth}
         containerWidth={containerWidth}
         isDragging={isDragging}
+        isPageLoading={isPageLoading}
         setIsDragging={setIsDragging}
         setNumPages={setNumPages}
+        setIsPageLoading={setIsPageLoading}
       />
     </div>
   );
