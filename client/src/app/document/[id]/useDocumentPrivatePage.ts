@@ -1,9 +1,10 @@
 import useAuth from "@/features/auth/useAuth";
+import useChat from "@/features/chat/useChat";
 import useDocumentShare from "@/features/document-share/useDocumentShare";
 import useMousePosition from "@/features/ui/useMousePostion";
 import { useMemo } from "react";
 
-const useDocumentPrivatePage = (documentId: string) => {
+const useDocumentPrivatePage = (shareId: string) => {
   const { getDocumentShareById } = useDocumentShare("");
   const {
     data: documentShare,
@@ -11,7 +12,9 @@ const useDocumentPrivatePage = (documentId: string) => {
     refetch: refetchDocumentShare,
     isError: isDocumentShareError,
     error: documentShareError,
-  } = getDocumentShareById(documentId);
+  } = getDocumentShareById(shareId);
+
+  const documentId = documentShare?.documentId._id ?? "";
 
   const { me } = useAuth();
   const {
@@ -21,6 +24,12 @@ const useDocumentPrivatePage = (documentId: string) => {
     error: userErrorData,
     refetch: refetchUser,
   } = me;
+
+  const { initChatDocument } = useChat(user?._id ?? "");
+  const { data: initChat, isLoading: initChatLoading } =
+    initChatDocument(documentId);
+
+  const chatId = initChat?._id ?? "";
 
   const documentInfo = useMemo(
     () => documentShare?.documentId || null,
@@ -47,6 +56,13 @@ const useDocumentPrivatePage = (documentId: string) => {
     userError,
     userErrorData,
     refetchUser,
+
+    // Chat
+    chatId,
+    initChatLoading,
+
+    // Document
+    documentId,
   };
 };
 
