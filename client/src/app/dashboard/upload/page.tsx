@@ -63,7 +63,7 @@ export default function UploadPage() {
   // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="h-screen bg-background text-text font-serif">
+    <div className="h-screen bg-background overflow-hidden text-text font-serif">
       <CursorGlow mousePos={mousePos} />
 
       {/* Chatbot button */}
@@ -99,7 +99,7 @@ export default function UploadPage() {
       </header>
 
       {/* Main */}
-      <main className="h-[calc(100vh-73px)] mt-18.25 flex-1 max-w-5xl overflow-y-auto pt-6 pb-12 px-5 sm:px-8 md:px-12 mx-auto">
+      <main className="h-[calc(100vh-73px)] mt-18.25 flex-1 overflow-y-auto pt-6 pb-12 px-5 sm:px-8 md:px-12 mx-auto">
         <FolderSelect
           folders={allFolders}
           value={selectedFolder}
