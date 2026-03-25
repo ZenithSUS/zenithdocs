@@ -10,6 +10,7 @@ import StreamingBubbleCard from "./StreamingBubbleCard";
 import { FourSquare } from "react-loading-indicators";
 import MessageCard from "./MessageCard";
 import LoadMoreMessageButton from "./LoadMoreMessageButton";
+import MessageSkeleton from "@/components/skeleton/MessageSkeleton";
 
 interface DocumentPrivateChatProps {
   documentId: string;
@@ -50,7 +51,7 @@ export default function DocumentPrivateChat({
     handleLoadMore,
   } = usePrivateChatScreen({ documentId, chatId, userId });
 
-  if (messagesLoading) {
+  if (!chatId) {
     return (
       <div className="h-full flex items-center justify-center flex-col">
         <FourSquare color="#c9a227" size="medium" />
@@ -68,7 +69,9 @@ export default function DocumentPrivateChat({
 
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto px-4 py-6">
-        {allMessages.length === 0 && !isTyping ? (
+        {messagesLoading ? (
+          <MessageSkeleton />
+        ) : allMessages.length === 0 && !isTyping ? (
           <StartingChatScreen
             setValue={setValue}
             documentTitle={documentTitle}

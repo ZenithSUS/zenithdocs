@@ -8,7 +8,7 @@ import ErrorScreen from "@/components/ErrorScreen";
 import useChatPage from "./useChatPage";
 import GlobalChat from "@/components/dashboard/globalchat";
 import ChatHeader from "./components/ChatHeader";
-import MessageSkeleton from "./components/MessageSkeleton";
+import MessageSkeleton from "../../../components/skeleton/MessageSkeleton";
 import EmptyStateMessage from "./components/EmptyStateMessage";
 import MessageCard from "./components/MessageCard";
 import StreamingBubbleCard from "./components/StreamBubbleCard";
