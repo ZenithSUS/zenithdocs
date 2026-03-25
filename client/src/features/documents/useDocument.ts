@@ -126,6 +126,17 @@ const useDocument = (
       const { page, totalPages } = lastPage.pagination;
       return page < totalPages ? page + 1 : undefined;
     },
+    select: (data) => ({
+      ...data,
+      pages: data.pages.map((page) => ({
+        ...page,
+        documents: page.documents.sort((a, b) => {
+          const dateA = new Date(a.chat?.lastMessage?.createdAt || a.createdAt);
+          const dateB = new Date(b.chat?.lastMessage?.createdAt || b.createdAt);
+          return dateB.getTime() - dateA.getTime();
+        }),
+      })),
+    }),
     enabled: !!userId,
   });
 

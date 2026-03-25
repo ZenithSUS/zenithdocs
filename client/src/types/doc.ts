@@ -29,6 +29,7 @@ export type DocWithChat = Doc & {
         lastMessage: {
           content: string;
           role: "user" | "assistant";
+          createdAt: string;
         } | null;
       })
     | null;

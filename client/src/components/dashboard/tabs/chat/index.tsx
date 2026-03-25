@@ -35,6 +35,7 @@ function ChatsTab({ userId }: ChatsTabProps) {
 
     const observer = new IntersectionObserver(
       (entries) => {
+        // If the first entry is intersecting, fetch the next page
         if (entries[0].isIntersecting) {
           fetchNextDocumentPage();
         }
@@ -42,6 +43,7 @@ function ChatsTab({ userId }: ChatsTabProps) {
       { threshold: 0.1 },
     );
 
+    // Observe the load more element
     observer.observe(loadMoreRef.current);
 
     return () => {

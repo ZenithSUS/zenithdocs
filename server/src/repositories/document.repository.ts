@@ -145,6 +145,7 @@ export const getDocumentsByUserWithChatsPaginated = async (
         documentId: { $in: documentIds },
       },
     },
+    // Get the last message for each chat
     {
       $lookup: {
         from: "messages", // collection name
@@ -153,7 +154,7 @@ export const getDocumentsByUserWithChatsPaginated = async (
           { $match: { $expr: { $eq: ["$chatId", "$$chatId"] } } },
           { $sort: { createdAt: -1 } },
           { $limit: 1 },
-          { $project: { _id: 0, content: 1, role: 1 } },
+          { $project: { _id: 0, content: 1, role: 1, createdAt: 1 } },
         ],
         as: "lastMessage",
       },
@@ -179,6 +180,7 @@ export const getDocumentsByUserWithChatsPaginated = async (
             then: {
               content: { $first: "$lastMessage.content" },
               role: { $first: "$lastMessage.role" },
+              createdAt: { $first: "$lastMessage.createdAt" },
             },
             else: null,
           },
