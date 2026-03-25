@@ -11,6 +11,7 @@ import { FourSquare } from "react-loading-indicators";
 import MessageCard from "./MessageCard";
 import LoadMoreMessageButton from "./LoadMoreMessageButton";
 import MessageSkeleton from "@/components/skeleton/MessageSkeleton";
+import { useMemo } from "react";
 
 interface DocumentPrivateChatProps {
   documentId: string;
@@ -53,6 +54,14 @@ export default function DocumentPrivateChat({
     handleLoadMore,
   } = usePrivateChatScreen({ documentId, chatId, userId });
 
+  const messagesNodes = useMemo(
+    () =>
+      allMessages.map((msg: Message) => (
+        <MessageCard key={msg._id} message={msg} email={email} />
+      )),
+    [allMessages, email],
+  );
+
   if (!chatId) {
     return (
       <div className="h-full flex items-center justify-center flex-col">
@@ -88,9 +97,7 @@ export default function DocumentPrivateChat({
               />
             )}
 
-            {allMessages.map((msg: Message) => (
-              <MessageCard key={msg._id} message={msg} email={email} />
-            ))}
+            {messagesNodes}
 
             {/* Streaming bubble */}
             {streamingBubble && (

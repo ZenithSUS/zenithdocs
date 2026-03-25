@@ -1,10 +1,10 @@
 import { markdownComponents } from "@/components/ui/markdownComponents";
 import { Message } from "@/types/chat";
-import { Sparkles } from "lucide-react";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import ReactMarkdown from "react-markdown";
 import ConfidenceMessage from "./ConfidenceMessage";
+import { memo } from "react";
 
 interface MessageCardProps {
   message: Message;
@@ -48,4 +48,4 @@ function MessageCard({ message: msg }: MessageCardProps) {
   );
 }
 
-export default MessageCard;
+export default memo(MessageCard);

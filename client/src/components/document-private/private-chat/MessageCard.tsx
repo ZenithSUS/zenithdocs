@@ -4,6 +4,7 @@ import { Sparkles, TrendingUp } from "lucide-react";
 
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
+import { memo } from "react";
 
 interface MessageCardProps {
   message: Message;
@@ -77,4 +78,4 @@ function MessageCard({ message: msg, email }: MessageCardProps) {
   );
 }
 
-export default MessageCard;
+export default memo(MessageCard);

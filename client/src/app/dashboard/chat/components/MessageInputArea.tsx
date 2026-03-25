@@ -5,6 +5,7 @@ import {
   UseFormRegister,
 } from "react-hook-form";
 import { MessageFormValues } from "../hooks/useMessageStream";
+import { memo } from "react";
 
 interface MessageInputAreaProps {
   register: UseFormRegister<MessageFormValues>;
@@ -67,4 +68,4 @@ function MessageInputArea({
   );
 }
 
-export default MessageInputArea;
+export default memo(MessageInputArea);
