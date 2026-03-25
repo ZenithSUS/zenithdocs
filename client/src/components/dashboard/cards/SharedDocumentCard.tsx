@@ -9,6 +9,7 @@ import {
   Eye,
   EyeClosed,
   EyeIcon,
+  Share,
   ShieldCheck,
   ShieldOff,
   User,
@@ -16,6 +17,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { memo, useCallback, useMemo } from "react";
+import { toast } from "sonner";
 
 interface SharedDocumentCardProps {
   sharedDocument: DocumentShare;
@@ -58,6 +60,22 @@ function SharedDocumentCard({ sharedDocument }: SharedDocumentCardProps) {
     }
   }, [sharedDocument, isPublic, router]);
 
+  const handleShareLinkCopy = useCallback(() => {
+    try {
+      if (isPublic) {
+        navigator.clipboard.writeText(
+          window.location.origin +
+            `/document/share/${sharedDocument.shareToken}`,
+        );
+      } else {
+        navigator.clipboard.writeText(
+          window.location.origin + `/document/${sharedDocument._id}`,
+        );
+      }
+      toast.success("Link copied to clipboard");
+    } catch {}
+  }, [sharedDocument.shareToken]);
+
   const permission = isPublic
     ? sharedDocument.publicPermission
     : sharedDocument.allowedUsers?.[0]?.permission;
@@ -95,16 +113,29 @@ function SharedDocumentCard({ sharedDocument }: SharedDocumentCardProps) {
             </div>
           </div>
 
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleNavigate();
-            }}
-            className="shrink-0 p-1.5 rounded-lg text-white/30 hover:text-white/80 hover:bg-white/10 transition-all duration-200 opacity-0 group-hover:opacity-100 -translate-y-0.5 group-hover:translate-y-0"
-            aria-label="Open document"
-          >
-            <ArrowUpRight size={15} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleShareLinkCopy();
+              }}
+              className="shrink-0 p-1.5 rounded-lg text-white/30 hover:text-white/80 hover:bg-white/10 transition-all duration-200 opacity-0 group-hover:opacity-100 -translate-y-0.5 group-hover:translate-y-0"
+              aria-label="Share document"
+            >
+              <Share size={15} />
+            </button>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleNavigate();
+              }}
+              className="shrink-0 p-1.5 rounded-lg text-white/30 hover:text-white/80 hover:bg-white/10 transition-all duration-200 opacity-0 group-hover:opacity-100 -translate-y-0.5 group-hover:translate-y-0"
+              aria-label="Open document"
+            >
+              <ArrowUpRight size={15} />
+            </button>
+          </div>
         </div>
 
         {/* Badges row */}
@@ -155,13 +186,26 @@ function SharedDocumentCard({ sharedDocument }: SharedDocumentCardProps) {
 
         {/* Footer */}
         <div className="flex items-center justify-between pt-1 border-t border-white/[0.07]">
-          <div className="flex items-center gap-1.5 text-white/35">
-            <Clock size={12} />
-            <span
-              className={`text-xs ${isExpired ? "text-red-400/70" : "text-white/35"}`}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 text-white/35">
+              <Clock size={12} />
+              <span
+                className={`text-xs ${isExpired ? "text-red-400/70" : "text-white/35"}`}
+              >
+                {expirationLabel}
+              </span>
+            </div>
+
+            <button
+              className="flex items-center gap-1.5 text-white/35 lg:hidden"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleShareLinkCopy();
+              }}
             >
-              {expirationLabel}
-            </span>
+              <Share size={12} />
+              <span className="text-xs">Share Link</span>
+            </button>
           </div>
 
           <div className="flex items-center gap-2">
