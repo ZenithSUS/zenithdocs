@@ -1,8 +1,11 @@
 services:
   api:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
     ports:
       - "8000:8000"
+    image: zenithdocs-server:development
     env_file:
       - .env
     command: npm run dev
@@ -13,7 +16,7 @@ services:
       - NODE_ENV=development
 
   worker:
-    build: .
+    image: zenithdocs-server:development
     env_file:
       - .env
     command: npm run dev:worker
