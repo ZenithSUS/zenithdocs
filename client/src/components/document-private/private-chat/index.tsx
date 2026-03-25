@@ -76,7 +76,11 @@ export default function DocumentPrivateChat({
   return (
     <div className="h-full flex flex-col bg-background">
       {/* Chat Header */}
-      <DocumentPrivateChatHeader documentId={documentId} chatId={chatId} />
+      <DocumentPrivateChatHeader
+        documentId={documentId}
+        chatId={chatId}
+        isTyping={isTyping}
+      />
 
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto px-4 py-6">

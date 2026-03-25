@@ -2,6 +2,7 @@ import DeleteMessagesModal from "@/components/dashboard/modals/chat/DeleteMessag
 import Doc from "@/types/doc";
 import { ArrowLeft, FileText, MoreHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 interface ChatHeaderProps {
   docId: string;
@@ -12,10 +13,23 @@ interface ChatHeaderProps {
     isOpen: boolean;
     setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   };
+  isTyping: boolean;
 }
 
-function ChatHeader({ docId, chatId, documentData, options }: ChatHeaderProps) {
+function ChatHeader({
+  docId,
+  chatId,
+  documentData,
+  options,
+  isTyping,
+}: ChatHeaderProps) {
   const router = useRouter();
+
+  useEffect(() => {
+    if (isTyping) {
+      options.setIsOpen(false);
+    }
+  }, [isTyping]);
 
   return (
     <header className="relative z-40 border-b border-white/8 bg-background/80 backdrop-blur-sm">
@@ -47,9 +61,13 @@ function ChatHeader({ docId, chatId, documentData, options }: ChatHeaderProps) {
         <div className="relative" ref={options.ref}>
           <button
             onClick={() => options.setIsOpen(!options.isOpen)}
-            className="p-2 rounded-lg text-text/50 hover:text-text/90 hover:bg-white/8 transition-all"
+            disabled={isTyping}
+            className="p-2 rounded-lg text-text/50 hover:text-text/90 hover:bg-white/8 transition-all disabled:cursor-not-allowed"
           >
-            <MoreHorizontal className="w-5 h-5" />
+            <MoreHorizontal
+              className="w-5 h-5"
+              color={!isTyping ? "white" : "gray"}
+            />
           </button>
 
           {options.isOpen && (

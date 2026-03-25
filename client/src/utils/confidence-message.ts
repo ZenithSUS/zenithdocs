@@ -17,7 +17,7 @@ const getConfidenceMessage = (
       bg: "rgba(74,222,128,0.08)",
       border: "rgba(74,222,128,0.2)",
     };
-  if (score >= 0.87)
+  if (score >= 0.85)
     return {
       label: "Moderate confidence",
       color: "#facc15",

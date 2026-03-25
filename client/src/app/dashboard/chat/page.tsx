@@ -199,6 +199,7 @@ function DocumentChatContent() {
           chatId={initChat?._id ?? ""}
           documentData={documentData}
           options={options}
+          isTyping={isTyping}
         />
 
         {/* ── Messages ───────────────────────────────────────────────────────── */}

@@ -7,11 +7,13 @@ import { toast } from "sonner";
 interface DocumentPrivateChatHeaderProps {
   documentId: string;
   chatId: string;
+  isTyping: boolean;
 }
 
 function DocumentPrivateChatHeader({
   documentId,
   chatId,
+  isTyping,
 }: DocumentPrivateChatHeaderProps) {
   const options = useDropdown();
   const { ref: optionsRef, isOpen, setIsOpen } = options;
@@ -41,16 +43,22 @@ function DocumentPrivateChatHeader({
         </div>
 
         <div className="relative">
-          <MoreHorizontal
+          <button
             onClick={() => setIsOpen(!isOpen)}
-            size={20}
-            className="text-text/40 mr-10"
-          />
+            disabled={isTyping}
+            className="p-2 hover:bg-white/4 mr-10 rounded-md cursor-pointer disabled:cursor-not-allowed"
+          >
+            <MoreHorizontal
+              size={20}
+              strokeWidth={1.5}
+              color={!isTyping ? "white" : "gray"}
+            />
+          </button>
 
           {isOpen && (
             <div
               ref={optionsRef}
-              className="absolute top-3 right-0  mt-2 w-50 rounded-sm bg-background border border-white/6 flex flex-col gap-3 px-3 py-2 shadow-md"
+              className="absolute top-3 right-0 mt-2 w-50 rounded-sm bg-background border border-white/6 flex flex-col gap-3 px-3 py-2 shadow-md"
             >
               <button
                 className="flex items-center gap-3 cursor-pointer hover:bg-white/20 py-2 px-3 rounded-sm"
