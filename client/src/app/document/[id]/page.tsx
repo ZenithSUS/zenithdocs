@@ -127,6 +127,7 @@ export default function DocumentPrivatePage() {
           <DocumentPrivateChat
             documentId={documentId}
             userId={user?._id || ""}
+            email={user?.email || ""}
             chatId={chatId}
             documentTitle={documentInfo?.title ?? "Untitled"}
           />

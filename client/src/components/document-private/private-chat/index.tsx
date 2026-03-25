@@ -15,6 +15,7 @@ import MessageSkeleton from "@/components/skeleton/MessageSkeleton";
 interface DocumentPrivateChatProps {
   documentId: string;
   userId: string;
+  email: string;
   chatId: string;
   documentTitle: string;
 }
@@ -22,6 +23,7 @@ interface DocumentPrivateChatProps {
 export default function DocumentPrivateChat({
   documentId,
   userId,
+  email,
   chatId,
   documentTitle,
 }: DocumentPrivateChatProps) {
@@ -87,7 +89,7 @@ export default function DocumentPrivateChat({
             )}
 
             {allMessages.map((msg: Message) => (
-              <MessageCard key={msg._id} message={msg} />
+              <MessageCard key={msg._id} message={msg} email={email} />
             ))}
 
             {/* Streaming bubble */}

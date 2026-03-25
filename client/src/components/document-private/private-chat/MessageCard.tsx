@@ -7,9 +7,10 @@ import rehypeRaw from "rehype-raw";
 
 interface MessageCardProps {
   message: Message;
+  email: string;
 }
 
-function MessageCard({ message: msg }: MessageCardProps) {
+function MessageCard({ message: msg, email }: MessageCardProps) {
   return (
     <div
       className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
@@ -68,7 +69,7 @@ function MessageCard({ message: msg }: MessageCardProps) {
       {msg.role === "user" && (
         <div className="w-7 h-7 rounded-full bg-white/10 border border-white/20 flex items-center justify-center shrink-0 mt-1">
           <span className="text-[11px] text-text/70 font-sans font-medium">
-            U
+            {email.slice(0, 1).toUpperCase() ?? "?"}
           </span>
         </div>
       )}
