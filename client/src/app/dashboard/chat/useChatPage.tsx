@@ -13,6 +13,7 @@ import useDropdown from "@/features/ui/useDropdown";
 
 import useChatScroll from "@/app/dashboard/chat/hooks/useChatScroll";
 import useMessageStream from "@/app/dashboard/chat/hooks/useMessageStream";
+import { Message } from "@/types/message";
 
 const useChatPage = () => {
   // ─── Route params ────────────────────────────────────────────────────────────
@@ -39,10 +40,7 @@ const useChatPage = () => {
 
   const chatId = initChat?._id ?? "";
 
-  const isChatsProcessing = useMemo(
-    () => initChatLoading || docLoading,
-    [initChatLoading, docLoading],
-  );
+  const isChatsProcessing = initChatLoading || docLoading;
 
   // ─── Messages (paginated) ─────────────────────────────────────────────────
   const { messagesByChatPage } = useMessage({ chatId });
@@ -54,14 +52,15 @@ const useChatPage = () => {
     isLoading: isLoadingMessages,
   } = messagesByChatPage;
 
-  const allMessages = useMemo(
-    () =>
-      messages?.pages
-        .slice()
-        .reverse()
-        .flatMap((page) => page.messages) ?? [],
-    [messages],
-  );
+  const allMessages = useMemo(() => {
+    if (!messages?.pages) return [];
+
+    const result: Message[] = [];
+    for (let i = messages.pages.length - 1; i >= 0; i--) {
+      result.push(...messages.pages[i].messages);
+    }
+    return result;
+  }, [messages?.pages.length, messages?.pages[0]]);
 
   const handleLoadMore = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage();
