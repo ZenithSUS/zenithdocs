@@ -5,6 +5,8 @@ import { useParams } from "next/navigation";
 import useDocumentPublicPage from "./useDocumentPublicPage";
 import CursorGlow from "@/components/CursorGlow";
 import LoadingScreen from "@/components/LoadingScreen";
+import DocumentSharedViewer from "@/components/document-public/DocumentSharedViewerWrapper";
+import ErrorScreen from "@/components/ErrorScreen";
 
 function DocumentPublicPage() {
   const params = useParams();
@@ -21,21 +23,32 @@ function DocumentPublicPage() {
     documentShareRefetch,
     isDocumentShareError,
     documentShareError,
+    isDownloadable,
   } = useDocumentPublicPage(token);
 
   if (isDocumentShareLoading) {
     return <LoadingScreen />;
   }
 
+  if (isDocumentShareError) {
+    return (
+      <ErrorScreen error={documentShareError} onRetry={documentShareRefetch} />
+    );
+  }
+
   return (
-    <div className="space-y-5">
+    <div className="h-screen bg-background text-text font-serif flex flex-col overflow-hidden relative">
       <CursorGlow mousePos={mousePos} />
 
       <DocumentPublicHeader
         title={documentInfo?.title ?? "Untitled"}
         fileSize={documentInfo?.fileSize ?? 0}
         fileType={documentInfo?.fileType ?? "N/A"}
+        fileUrl={documentInfo?.fileUrl ?? ""}
+        isDownloadable={isDownloadable}
       />
+
+      <DocumentSharedViewer document={documentShare?.documentId ?? null} />
     </div>
   );
 }

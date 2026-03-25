@@ -1,5 +1,5 @@
 import sizefmt from "@/helpers/size-format";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Download } from "lucide-react";
 import { useRouter } from "next/navigation";
 import FileIcon from "../FileIcon";
 
@@ -7,18 +7,45 @@ interface DocumentPublicHeaderProps {
   title: string | null;
   fileSize: number | null;
   fileType: string | null;
+  fileUrl: string | null;
+  isDownloadable: boolean;
 }
 
 function DocumentPublicHeader({
   title,
   fileSize,
   fileType,
+  fileUrl,
+  isDownloadable,
 }: DocumentPublicHeaderProps) {
   const router = useRouter();
+
+  const handleDownload = () => {
+    if (!fileUrl) return;
+    const a = document.createElement("a");
+    a.href = fileUrl;
+    a.download = title ?? "dowmnload";
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
 
   return (
     <div className="px-8 py-3 sm:py-4 sm:px-12 flex justify-between items-center gap-3 bg-background/90 min-w-0 border-b border-white/8 sticky top-0 z-10">
       <div className="flex items-center gap-3">
+        {/* Download button */}
+        {isDownloadable && (
+          <button
+            onClick={handleDownload}
+            className="shrink-0 flex items-center gap-2 text-text/50 hover:text-text/90 transition-colors"
+            title="Download"
+          >
+            <Download className="w-5 h-5 hover:text-primary cursor-pointer" />
+          </button>
+        )}
+
         {/* Back button */}
         <button
           onClick={() => router.back()}

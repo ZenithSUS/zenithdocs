@@ -17,6 +17,8 @@ const useDocumentPublicPage = (shareToken: string) => {
     [documentShare],
   );
 
+  const isDownloadable = documentShare?.allowDownload ?? false;
+
   const mousePos = useMousePosition();
 
   return {
@@ -30,6 +32,7 @@ const useDocumentPublicPage = (shareToken: string) => {
     documentShareRefetch,
     isDocumentShareError,
     documentShareError,
+    isDownloadable,
   };
 };
 
