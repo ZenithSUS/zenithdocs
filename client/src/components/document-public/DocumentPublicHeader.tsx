@@ -3,6 +3,7 @@ import { ArrowLeft, Download, Link } from "lucide-react";
 import { useRouter } from "next/navigation";
 import FileIcon from "../FileIcon";
 import { toast } from "sonner";
+import { useState } from "react";
 
 interface DocumentPublicHeaderProps {
   title: string | null;
@@ -20,6 +21,7 @@ function DocumentPublicHeader({
   isDownloadable,
 }: DocumentPublicHeaderProps) {
   const router = useRouter();
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const handleDownload = () => {
     if (!fileUrl) return;
@@ -31,6 +33,12 @@ function DocumentPublicHeader({
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+  };
+
+  const handleNavigate = () => {
+    if (isNavigating) return;
+    setIsNavigating(true);
+    router.back();
   };
 
   const handleCopyLink = () => {
@@ -56,7 +64,7 @@ function DocumentPublicHeader({
 
         {/* Back button */}
         <button
-          onClick={() => router.back()}
+          onClick={handleNavigate}
           className="flex items-center gap-2 text-text/50 hover:text-text/90 transition-colors group"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />

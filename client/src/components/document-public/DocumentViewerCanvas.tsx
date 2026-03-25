@@ -112,49 +112,57 @@ export default function DocumentViewerCanvas({
     >
       <div
         style={{
-          transform: `scale(${scale})`,
-          transformOrigin: "top center",
-          width: effectiveWidth,
+          width: effectiveWidth * scale,
+          paddingBottom: `calc((${scale} - 1) * 50%)`,
           marginLeft: "auto",
           marginRight: "auto",
-          marginBottom: `calc((${scale} - 1) * 100%)`,
         }}
-        className="py-6 flex flex-col items-center gap-4"
       >
-        <Document
-          key={`${documentId}__${fileUrl}`}
-          file={fileUrl}
-          onLoadSuccess={handleLoadSuccess}
-          loading={
-            <div
-              style={{ width: effectiveWidth, minHeight: 400 }}
-              className="animate-pulse bg-white/5 rounded"
-            />
-          }
-          error={
-            <div className="flex items-center justify-center h-64 w-full text-red-400/70 text-sm">
-              Failed to load PDF. Check CORS settings.
-            </div>
-          }
+        <div
+          style={{
+            transform: `scale(${scale})`,
+            transformOrigin: "top center",
+            width: effectiveWidth,
+            marginLeft: "auto",
+            marginRight: "auto",
+          }}
+          className="py-6 flex flex-col items-center gap-4"
         >
-          {isLoaded &&
-            Array.from({ length: numPages }, (_, i) => (
-              <div key={i} data-page={i + 1} className="mb-4">
-                <Page
-                  pageNumber={i + 1}
-                  width={effectiveWidth}
-                  renderTextLayer={true}
-                  renderAnnotationLayer={true}
-                  loading={
-                    <div
-                      style={{ width: effectiveWidth, minHeight: 300 }}
-                      className="animate-pulse bg-white/5 rounded"
-                    />
-                  }
-                />
+          <Document
+            key={`${documentId}__${fileUrl}`}
+            file={fileUrl}
+            onLoadSuccess={handleLoadSuccess}
+            loading={
+              <div
+                style={{ width: effectiveWidth, minHeight: 400 }}
+                className="animate-pulse bg-white/5 rounded"
+              />
+            }
+            error={
+              <div className="flex items-center justify-center h-64 w-full text-red-400/70 text-sm">
+                Failed to load PDF. Check CORS settings.
               </div>
-            ))}
-        </Document>
+            }
+          >
+            {isLoaded &&
+              Array.from({ length: numPages }, (_, i) => (
+                <div key={i} data-page={i + 1} className="mb-4">
+                  <Page
+                    pageNumber={i + 1}
+                    width={effectiveWidth}
+                    renderTextLayer={true}
+                    renderAnnotationLayer={true}
+                    loading={
+                      <div
+                        style={{ width: effectiveWidth, minHeight: 300 }}
+                        className="animate-pulse bg-white/5 rounded"
+                      />
+                    }
+                  />
+                </div>
+              ))}
+          </Document>
+        </div>
       </div>
     </div>
   );

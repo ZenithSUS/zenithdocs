@@ -2,6 +2,7 @@ import sizefmt from "@/helpers/size-format";
 import FileIcon from "../FileIcon";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Download } from "lucide-react";
+import { useState } from "react";
 
 interface DocumentPrivateHeaderProps {
   title: string | null;
@@ -19,6 +20,7 @@ function DocumentPrivateHeader({
   isDownloadable,
 }: DocumentPrivateHeaderProps) {
   const router = useRouter();
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const handleDownload = () => {
     if (!fileUrl) return;
@@ -30,6 +32,12 @@ function DocumentPrivateHeader({
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+  };
+
+  const handleBack = () => {
+    if (isNavigating) return;
+    setIsNavigating(true);
+    router.back();
   };
 
   return (
@@ -48,7 +56,8 @@ function DocumentPrivateHeader({
 
         {/* Back button */}
         <button
-          onClick={() => router.back()}
+          onClick={handleBack}
+          disabled={isNavigating}
           className="flex items-center gap-2 text-text/50 hover:text-text/90 transition-colors group"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
