@@ -28,10 +28,18 @@ function SharedTab({ userId, setNav }: SharedTabProps) {
 
   if (sharedDocumentsLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-        {Array.from({ length: 10 }).map((_, i) => (
-          <SharedDocumentSkeletonCard key={i} />
-        ))}
+      <div className="space-y-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <SharedDocumentSkeletonCard key={i} />
+          ))}
+        </div>
+
+        {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <SharedDocumentSkeletonCard key={i} />
+          ))}
+        </div> */}
       </div>
     );
   }
@@ -51,6 +59,7 @@ function SharedTab({ userId, setNav }: SharedTabProps) {
 
   return (
     <div className="space-y-5">
+      <h2>Your Shared Documents</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
         {allSharedDocuments.map((sharedDocument) => (
           <SharedDocumentCard
@@ -68,6 +77,8 @@ function SharedTab({ userId, setNav }: SharedTabProps) {
         fetchNextPage={fetchNextPage}
         fetchPreviousPage={fetchPreviousPage}
       />
+
+      {/* <h2>Document Shared with you</h2> */}
     </div>
   );
 }

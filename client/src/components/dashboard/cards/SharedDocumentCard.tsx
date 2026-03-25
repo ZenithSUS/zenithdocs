@@ -15,7 +15,7 @@ import {
   Users,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo } from "react";
+import { memo, useCallback, useMemo } from "react";
 
 interface SharedDocumentCardProps {
   sharedDocument: DocumentShare;
@@ -191,4 +191,4 @@ function SharedDocumentCard({ sharedDocument }: SharedDocumentCardProps) {
   );
 }
 
-export default SharedDocumentCard;
+export default memo(SharedDocumentCard);
