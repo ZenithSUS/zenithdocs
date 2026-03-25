@@ -10,9 +10,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   import.meta.url,
 ).toString();
 
-// Horizontal padding inside the canvas scroll area (px each side)
 const CANVAS_PADDING = 32;
-// Maximum base width for the document — keeps it readable on large screens
 const MAX_BASE_WIDTH = 900;
 
 interface DocumentSharedViewerProps {
@@ -32,10 +30,10 @@ export default function DocumentSharedViewer({
   const [numPages, setNumPages] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [scale, setScale] = useState(1.0);
-
   const [basePageWidth, setBasePageWidth] = useState<number>(0);
 
   const rafId = useRef<number | null>(null);
+  const canvasScrollRef = useRef<HTMLDivElement | null>(null);
 
   const containerRef = useCallback((node: HTMLDivElement | null) => {
     if (!node) return;
@@ -44,15 +42,14 @@ export default function DocumentSharedViewer({
       if (rafId.current !== null) cancelAnimationFrame(rafId.current);
       rafId.current = requestAnimationFrame(() => {
         const base = Math.min(width - CANVAS_PADDING * 2, MAX_BASE_WIDTH);
-        setBasePageWidth(Math.max(base, 200)); // floor at 200px
+        setBasePageWidth(Math.max(base, 200));
       });
     };
 
     commit(node.getBoundingClientRect().width);
-
-    const observer = new ResizeObserver(([entry]) => {
-      commit(entry.contentRect.width);
-    });
+    const observer = new ResizeObserver(([entry]) =>
+      commit(entry.contentRect.width),
+    );
     observer.observe(node);
 
     return () => {
@@ -60,6 +57,18 @@ export default function DocumentSharedViewer({
       if (rafId.current !== null) cancelAnimationFrame(rafId.current);
     };
   }, []);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    const target = canvasScrollRef.current?.querySelector<HTMLElement>(
+      `[data-page="${page}"]`,
+    );
+    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const handlePageVisible = (page: number) => {
+    setCurrentPage(page);
+  };
 
   const isPdf =
     document?.fileType === "application/pdf" || document?.fileType === "pdf";
@@ -80,28 +89,26 @@ export default function DocumentSharedViewer({
     );
   }
 
-  const pageWidth = basePageWidth * scale;
-
   return (
     <div className="flex flex-col h-full min-h-0">
       <DocumentViewerControls
         currentPage={currentPage}
         numPages={numPages}
         scale={scale}
-        onPageChange={setCurrentPage}
+        onPageChange={handlePageChange}
         onScaleChange={setScale}
       />
-
-      {/* Outer div measured for width; inner canvas handles scroll */}
       <div ref={containerRef} className="flex-1 min-h-0 overflow-hidden">
         <DocumentViewerCanvas
           fileUrl={document.fileUrl}
           documentId={document._id}
-          currentPage={currentPage}
           scale={scale}
-          pageWidth={pageWidth}
           basePageWidth={basePageWidth}
           onLoadSuccess={setNumPages}
+          onPageVisible={handlePageVisible}
+          scrollRefSetter={(el) => {
+            canvasScrollRef.current = el;
+          }}
         />
       </div>
     </div>
