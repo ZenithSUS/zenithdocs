@@ -26,7 +26,7 @@ export default function DocumentViewerCanvas({
 }: DocumentViewerCanvasProps) {
   const [numPages, setNumPages] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
+  const isDragging = useRef(false);
   const dragStart = useRef({ x: 0, y: 0 });
   const scrollRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -39,14 +39,6 @@ export default function DocumentViewerCanvas({
     onLoadSuccess(numPages);
   };
 
-  /**
-   * Attaches an IntersectionObserver to the given container
-   * and observes all elements with the "data-page" attribute.
-   * When an element with the "data-page" attribute comes into view,
-   * the onPageVisible callback is called with the page number as an argument.
-   * @param {HTMLDivElement | null} container - The container to observe.
-   * @param {function} onPageVisible - The callback to call when an element comes into view.
-   */
   const attachObserver = (container: HTMLDivElement | null) => {
     observerRef.current?.disconnect();
     if (!container || !onPageVisible) return;
@@ -67,16 +59,27 @@ export default function DocumentViewerCanvas({
       .forEach((el) => observerRef.current!.observe(el));
   };
 
+  // Cursor is mutated directly on the DOM element to avoid triggering re-renders.
+  const setCursor = (cursor: string) => {
+    if (scrollRef.current) scrollRef.current.style.cursor = cursor;
+  };
+
   const handleMouseDown = (e: React.MouseEvent) => {
-    setIsDragging(true);
+    isDragging.current = true;
     dragStart.current = { x: e.clientX, y: e.clientY };
+    setCursor("grabbing");
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || !scrollRef.current) return;
+    if (!isDragging.current || !scrollRef.current) return;
     scrollRef.current.scrollLeft -= e.clientX - dragStart.current.x;
     scrollRef.current.scrollTop -= e.clientY - dragStart.current.y;
     dragStart.current = { x: e.clientX, y: e.clientY };
+  };
+
+  const handleMouseUp = () => {
+    isDragging.current = false;
+    setCursor(scale > 1 ? "grab" : "default");
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -96,35 +99,35 @@ export default function DocumentViewerCanvas({
         (scrollRef as React.RefObject<HTMLDivElement | null>).current = el;
         scrollRefSetter?.(el);
         attachObserver(el);
+        // Set initial cursor without triggering a render
+        if (el) el.style.cursor = scale > 1 ? "grab" : "default";
       }}
       className="h-full w-full overflow-auto"
       style={{
         backgroundColor: "#1a1a1a",
-        cursor: isDragging ? "grabbing" : scale > 1 ? "grab" : "default",
         WebkitOverflowScrolling: "touch",
       }}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
-      onMouseUp={() => setIsDragging(false)}
-      onMouseLeave={() => setIsDragging(false)}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
     >
       <div
         style={{
-          width: effectiveWidth * scale,
-          paddingBottom: `calc((${scale} - 1) * 50%)`,
+          width: Math.max(effectiveWidth * scale, 0),
+          paddingBottom: scale > 1 ? `calc((${scale} - 1) * 50%)` : 0,
           marginLeft: "auto",
           marginRight: "auto",
         }}
+        className="flex justify-center min-h-full "
       >
         <div
           style={{
             transform: `scale(${scale})`,
             transformOrigin: "top center",
             width: effectiveWidth,
-            marginLeft: "auto",
-            marginRight: "auto",
           }}
           className="py-6 flex flex-col items-center gap-4"
         >
