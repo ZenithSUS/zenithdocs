@@ -1,7 +1,8 @@
 import sizefmt from "@/helpers/size-format";
-import { ArrowLeft, Download } from "lucide-react";
+import { ArrowLeft, Download, Link } from "lucide-react";
 import { useRouter } from "next/navigation";
 import FileIcon from "../FileIcon";
+import { toast } from "sonner";
 
 interface DocumentPublicHeaderProps {
   title: string | null;
@@ -30,6 +31,13 @@ function DocumentPublicHeader({
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+  };
+
+  const handleCopyLink = () => {
+    try {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success("Link copied to clipboard");
+    } catch {}
   };
 
   return (
@@ -70,23 +78,34 @@ function DocumentPublicHeader({
       </div>
 
       {/* Document info */}
-      <div className="flex items-center gap-2.5 min-w-0 overflow-hidden">
-        {/* Icon */}
-        <div className="shrink-0 hidden sm:block">
-          <FileIcon type={fileType ?? "N/A"} />
+      <div className="flex items-center gap-3 min-w-0 overflow-hidden">
+        <div className="flex items-center gap-3">
+          {/* Icon */}
+          <div className="shrink-0 hidden sm:block">
+            <FileIcon type={fileType ?? "N/A"} />
+          </div>
+
+          <div className="flex flex-col min-w-0">
+            <p
+              className="text-[12px] sm:text-[13px] font-semibold truncate max-w-40 xs:max-w-[220px] sm:max-w-95 md:max-w-none"
+              title={title ?? "Untitled"}
+            >
+              {title || "Untitled"}
+            </p>
+            <p className="text-[10px] sm:text-[11px] text-text/50 font-sans">
+              {sizefmt.bytes(fileSize ?? 0)}
+            </p>
+          </div>
         </div>
 
-        <div className="flex flex-col min-w-0">
-          <p
-            className="text-[12px] sm:text-[13px] font-semibold truncate max-w-40 xs:max-w-[220px] sm:max-w-95 md:max-w-none"
-            title={title ?? "Untitled"}
-          >
-            {title || "Untitled"}
-          </p>
-          <p className="text-[10px] sm:text-[11px] text-text/50 font-sans">
-            {sizefmt.bytes(fileSize ?? 0)}
-          </p>
-        </div>
+        {/* Copy link */}
+        <button
+          onClick={handleCopyLink}
+          className="shrink-0 flex items-center gap-2 text-text/50 hover:text-text/90 transition-colors bg-primary hover:bg-primary/20 rounded-full p-2"
+          title="Copy link"
+        >
+          <Link className="hover:text-primary cursor-pointer" size={16} />
+        </button>
       </div>
     </div>
   );
