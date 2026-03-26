@@ -1,5 +1,5 @@
 import { Message } from "@/types/message";
-import { markdownComponents, remarkGfm } from "../../ui/markdownComponents";
+import { markdownComponents, remarkGfm } from "../ui/markdownComponents";
 import { Sparkles, TrendingUp } from "lucide-react";
 
 import ReactMarkdown from "react-markdown";
@@ -8,9 +8,10 @@ import { memo } from "react";
 
 interface MessageCardProps {
   message: Message;
+  email?: string;
 }
 
-function PublicMessageCard({ message: msg }: MessageCardProps) {
+function MessageCard({ message: msg, email }: MessageCardProps) {
   return (
     <div
       className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
@@ -69,7 +70,7 @@ function PublicMessageCard({ message: msg }: MessageCardProps) {
       {msg.role === "user" && (
         <div className="w-7 h-7 rounded-full bg-white/10 border border-white/20 flex items-center justify-center shrink-0 mt-1">
           <span className="text-[11px] text-text/70 font-sans font-medium">
-            YOU
+            {email ? email.slice(0, 1).toUpperCase() : "YOU"}
           </span>
         </div>
       )}
@@ -77,4 +78,4 @@ function PublicMessageCard({ message: msg }: MessageCardProps) {
   );
 }
 
-export default memo(PublicMessageCard);
+export default memo(MessageCard);

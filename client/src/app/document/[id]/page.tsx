@@ -2,7 +2,7 @@
 
 import DocumentHeader from "@/components/document-share/DocumentHeader";
 import DocumentSharedViewer from "@/components/document-share/DocumentSharedViewerWrapper";
-import DocumentPrivateChat from "@/components/document-share/private-chat";
+import DocumentPrivateChat from "@/components/document-share/DocumentPrivateChat";
 import LoadingScreen from "@/components/LoadingScreen";
 import CursorGlow from "@/components/CursorGlow";
 import { useParams } from "next/navigation";

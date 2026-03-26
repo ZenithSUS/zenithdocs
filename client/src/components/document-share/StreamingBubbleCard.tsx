@@ -5,7 +5,7 @@ import {
 import { Sparkles, TrendingUp } from "lucide-react";
 import rehypeRaw from "rehype-raw";
 import ReactMarkdown from "react-markdown";
-import { StreamingBubble } from "../hooks/useMessageStream";
+import { StreamingBubble } from "./hooks/useMessageStream";
 
 interface StreamingBubbleProps {
   streamingBubble: StreamingBubble;

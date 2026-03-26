@@ -1,6 +1,6 @@
 import { Sparkles } from "lucide-react";
 import { UseFormSetValue } from "react-hook-form";
-import { MessageFormValues } from "../hooks/useMessageStream";
+import { MessageFormValues } from "./hooks/useMessageStream";
 
 interface StartingChatScreenProps {
   setValue: UseFormSetValue<MessageFormValues>;

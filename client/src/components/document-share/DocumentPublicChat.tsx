@@ -1,5 +1,5 @@
-import DocumentChatHeader from "../DocumentChatHeader";
-import usePublicChatScreen from "../hooks/usePublicChatScreen";
+import DocumentChatHeader from "./DocumentChatHeader";
+import usePublicChatScreen from "./hooks/usePublicChatScreen";
 
 interface DocumentPublicChatProps {
   shareToken: string;

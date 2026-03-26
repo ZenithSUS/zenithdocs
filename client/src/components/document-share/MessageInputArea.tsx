@@ -3,7 +3,7 @@ import {
   SubmitHandler,
   UseFormRegister,
 } from "react-hook-form";
-import { MessageFormValues } from "../hooks/useMessageStream";
+import { MessageFormValues } from "./hooks/useMessageStream";
 import { Send } from "lucide-react";
 import { memo } from "react";
 
