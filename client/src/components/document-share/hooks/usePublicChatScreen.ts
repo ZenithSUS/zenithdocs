@@ -24,10 +24,10 @@ const usePublicChatScreen = (shareToken: string) => {
     removeMessage,
   });
 
-  const textAreaRef = useAutoResizeTextarea("");
+  const textareaRef = useAutoResizeTextarea("");
   const messagesEndRef = useChatScroll(messages, null);
 
-  return { ...stream, messages, textAreaRef, messagesEndRef };
+  return { ...stream, messages, textareaRef, messagesEndRef };
 };
 
 export default usePublicChatScreen;
