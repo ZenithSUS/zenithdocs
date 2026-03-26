@@ -1,5 +1,5 @@
 import { useRef, useEffect } from "react";
-import { Message } from "@/types/message";
+import { Message } from "@/types/chat";
 
 interface StreamingBubble {
   content: string;

@@ -1,11 +1,11 @@
 "use client";
 
-import DocumentPublicHeader from "@/components/document-public/DocumentPublicHeader";
+import DocumentHeader from "@/components/document-share/DocumentHeader";
 import { useParams } from "next/navigation";
 import useDocumentPublicPage from "./useDocumentPublicPage";
 import CursorGlow from "@/components/CursorGlow";
 import LoadingScreen from "@/components/LoadingScreen";
-import DocumentSharedViewer from "@/components/document-public/DocumentSharedViewerWrapper";
+import DocumentSharedViewer from "@/components/document-share/DocumentSharedViewerWrapper";
 import ErrorScreen from "@/components/ErrorScreen";
 
 function DocumentPublicPage() {
@@ -40,7 +40,7 @@ function DocumentPublicPage() {
     <div className="h-screen bg-background text-text font-serif flex flex-col overflow-hidden relative">
       <CursorGlow mousePos={mousePos} />
 
-      <DocumentPublicHeader
+      <DocumentHeader
         title={documentInfo?.title ?? "Untitled"}
         fileSize={documentInfo?.fileSize ?? 0}
         fileType={documentInfo?.fileType ?? "N/A"}

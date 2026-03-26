@@ -20,3 +20,9 @@ export interface MessageInput {
   documentId: string;
   question: string;
 }
+
+export interface PublicMessageInput {
+  shareToken: string;
+  question: string;
+  history: { role: "user" | "assistant"; content: string }[];
+}

@@ -5,7 +5,7 @@ import { Message } from "@/types/message";
 import MessageInputArea from "./MessageInputArea";
 import StartingChatScreen from "./StartingChatScreen";
 import DocumentPrivateChatHeader from "./DocumentPrivateChatHeader";
-import usePrivateChatScreen from "./hooks/usePrivateChatScreen";
+import usePrivateChatScreen from "../hooks/usePrivateChatScreen";
 import StreamingBubbleCard from "./StreamingBubbleCard";
 import { FourSquare } from "react-loading-indicators";
 import MessageCard from "./MessageCard";

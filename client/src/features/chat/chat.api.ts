@@ -5,7 +5,7 @@ import {
   ResponseWithData,
   ResponseWithPagedData,
 } from "@/types/api";
-import { Chat, MessageInput } from "@/types/chat";
+import { Chat, MessageInput, PublicMessageInput } from "@/types/chat";
 
 export const initChatForDocument = async (documentId: string) => {
   const { data: res } = await api.post<ResponseWithData<Chat>>(
@@ -91,6 +91,70 @@ export const createChatStream = async (
     throw new Error("Failed to send message");
   }
 
+  if (!response.body) throw new Error("No stream body");
+
+  const reader = response.body.getReader();
+
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+
+    // Process all complete lines in buffer
+    const lines = buffer.split("\n");
+    buffer = lines.pop() ?? "";
+
+    for (const line of lines) {
+      if (!line.startsWith("data: ")) continue;
+
+      const text = line.slice(6);
+
+      if (text.startsWith("[CONFIDENCE]:")) {
+        const { score } = JSON.parse(text.slice("[CONFIDENCE]:".length));
+        setConfidence(score);
+        continue;
+      }
+
+      if (text === "[DONE]") {
+        onDone();
+        return;
+      }
+
+      // Decode the encoded newlines back
+      const decoded = text.replace(/\\n/g, "\n");
+      onChunk(decoded);
+    }
+  }
+
+  // Flush any remaining buffer
+  if (buffer.startsWith("data: ")) {
+    const text = buffer.slice(6);
+    if (text && text !== "[DONE]") onChunk(text);
+  }
+
+  onDone();
+};
+
+export const createPublicChatStream = async (
+  data: PublicMessageInput,
+  onChunk: (chunk: string) => void,
+  onDone: () => void,
+  setConfidence: (confidence: number) => void,
+): Promise<void> => {
+  const response = await fetch(`${config.api.baseUrl}/api/chat/public`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": config.api.key,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) throw new Error("Failed to send message");
   if (!response.body) throw new Error("No stream body");
 
   const reader = response.body.getReader();

@@ -1,8 +1,8 @@
 "use client";
 
-import DocumentPrivateHeader from "@/components/document-private/DocumentPrivateHeader";
-import DocumentSharedViewer from "@/components/document-private/DocumentSharedViewerWrapper";
-import DocumentPrivateChat from "@/components/document-private/private-chat";
+import DocumentHeader from "@/components/document-share/DocumentHeader";
+import DocumentSharedViewer from "@/components/document-share/DocumentSharedViewerWrapper";
+import DocumentPrivateChat from "@/components/document-share/private-chat";
 import LoadingScreen from "@/components/LoadingScreen";
 import CursorGlow from "@/components/CursorGlow";
 import { useParams } from "next/navigation";
@@ -58,7 +58,7 @@ export default function DocumentPrivatePage() {
         }}
       />
 
-      <DocumentPrivateHeader
+      <DocumentHeader
         title={documentInfo?.title ?? "Untitled"}
         fileType={documentInfo?.fileType ?? "N/A"}
         fileSize={documentInfo?.fileSize ?? 0}

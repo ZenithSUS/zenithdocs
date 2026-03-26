@@ -5,10 +5,11 @@ import {
   InfiniteData,
   useInfiniteQuery,
 } from "@tanstack/react-query";
-import { Chat, MessageInput } from "@/types/chat";
+import { Chat, MessageInput, PublicMessageInput } from "@/types/chat";
 import {
   createChat,
   createChatStream,
+  createPublicChatStream,
   deleteChatMessages,
   fetchChatByDocumentId,
   fetchChatByUserPaginated,
@@ -106,6 +107,16 @@ const useChat = (userId: string) => {
     [],
   );
 
+  const sendPublicMessageStream = useCallback(
+    (
+      input: PublicMessageInput,
+      onChunk: (chunk: string) => void,
+      onDone: () => void,
+      setConfidence: (confidence: number) => void,
+    ) => createPublicChatStream(input, onChunk, onDone, setConfidence),
+    [],
+  );
+
   const deleteChatMessagesMutation = useMutation<
     Chat,
     AxiosError,
@@ -146,6 +157,7 @@ const useChat = (userId: string) => {
     initChatDocument,
     chatByDocument,
     sendMessageStream,
+    sendPublicMessageStream,
   };
 };
 
