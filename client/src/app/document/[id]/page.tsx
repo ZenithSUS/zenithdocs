@@ -1,6 +1,6 @@
 "use client";
 
-import DocumentHeader from "@/components/document-share/DocumentHeader";
+import DocumentShareHeader from "@/components/document-share/DocumentShareHeader";
 import DocumentSharedViewer from "@/components/document-share/DocumentSharedViewerWrapper";
 import DocumentPrivateChat from "@/components/document-share/DocumentPrivateChat";
 import LoadingScreen from "@/components/LoadingScreen";
@@ -58,7 +58,7 @@ export default function DocumentPrivatePage() {
         }}
       />
 
-      <DocumentHeader
+      <DocumentShareHeader
         title={documentInfo?.title ?? "Untitled"}
         fileType={documentInfo?.fileType ?? "N/A"}
         fileSize={documentInfo?.fileSize ?? 0}

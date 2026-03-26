@@ -14,7 +14,7 @@ interface DocumentPublicHeaderProps {
   type: "public" | "private";
 }
 
-function DocumentPublicHeader({
+function DocumentShareHeader({
   title,
   fileSize,
   fileType,
@@ -123,4 +123,4 @@ function DocumentPublicHeader({
   );
 }
 
-export default DocumentPublicHeader;
+export default DocumentShareHeader;

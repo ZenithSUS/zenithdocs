@@ -1,6 +1,6 @@
 "use client";
 
-import DocumentHeader from "@/components/document-share/DocumentHeader";
+import DocumentShareHeader from "@/components/document-share/DocumentShareHeader";
 import { useParams } from "next/navigation";
 import useDocumentPublicPage from "./useDocumentPublicPage";
 import CursorGlow from "@/components/CursorGlow";
@@ -58,7 +58,7 @@ function DocumentPublicPage() {
         }}
       />
 
-      <DocumentHeader
+      <DocumentShareHeader
         title={documentInfo?.title ?? "Untitled"}
         fileSize={documentInfo?.fileSize ?? 0}
         fileType={documentInfo?.fileType ?? "N/A"}
