@@ -4,7 +4,7 @@ import { Message } from "@/types/message";
 
 import MessageInputArea from "./MessageInputArea";
 import StartingChatScreen from "./StartingChatScreen";
-import DocumentPrivateChatHeader from "./DocumentPrivateChatHeader";
+import DocumentChatHeader from "../DocumentChatHeader";
 import usePrivateChatScreen from "../hooks/usePrivateChatScreen";
 import StreamingBubbleCard from "./StreamingBubbleCard";
 import { FourSquare } from "react-loading-indicators";
@@ -76,7 +76,7 @@ export default function DocumentPrivateChat({
   return (
     <div className="h-full flex flex-col bg-background">
       {/* Chat Header */}
-      <DocumentPrivateChatHeader
+      <DocumentChatHeader
         documentId={documentId}
         chatId={chatId}
         isTyping={isTyping}

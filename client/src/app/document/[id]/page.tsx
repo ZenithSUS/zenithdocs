@@ -64,6 +64,7 @@ export default function DocumentPrivatePage() {
         fileSize={documentInfo?.fileSize ?? 0}
         fileUrl={documentInfo?.fileUrl ?? ""}
         isDownloadable={isDownloadable}
+        type="private"
       />
 
       {/* Mobile/Tablet tab switcher — hidden on desktop */}

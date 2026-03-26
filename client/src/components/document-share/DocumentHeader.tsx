@@ -11,6 +11,7 @@ interface DocumentPublicHeaderProps {
   fileType: string | null;
   fileUrl: string | null;
   isDownloadable: boolean;
+  type: "public" | "private";
 }
 
 function DocumentPublicHeader({
@@ -19,6 +20,7 @@ function DocumentPublicHeader({
   fileType,
   fileUrl,
   isDownloadable,
+  type,
 }: DocumentPublicHeaderProps) {
   const router = useRouter();
   const [isNavigating, setIsNavigating] = useState(false);
@@ -107,13 +109,15 @@ function DocumentPublicHeader({
         </div>
 
         {/* Copy link */}
-        <button
-          onClick={handleCopyLink}
-          className="shrink-0 flex items-center gap-2 text-text/50 hover:text-text/90 transition-colors bg-primary hover:bg-primary/20 rounded-full p-2"
-          title="Copy link"
-        >
-          <Link className="hover:text-primary cursor-pointer" size={16} />
-        </button>
+        {type === "public" && (
+          <button
+            onClick={handleCopyLink}
+            className="shrink-0 flex items-center gap-2 text-text/50 hover:text-text/90 transition-colors bg-primary hover:bg-primary/20 rounded-full p-2"
+            title="Copy link"
+          >
+            <Link className="hover:text-primary cursor-pointer" size={16} />
+          </button>
+        )}
       </div>
     </div>
   );

@@ -46,6 +46,7 @@ function DocumentPublicPage() {
         fileType={documentInfo?.fileType ?? "N/A"}
         fileUrl={documentInfo?.fileUrl ?? ""}
         isDownloadable={isDownloadable}
+        type="public"
       />
 
       <DocumentSharedViewer document={documentShare?.documentId ?? null} />
