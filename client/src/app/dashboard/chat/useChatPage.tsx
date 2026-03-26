@@ -10,8 +10,8 @@ import useMessage from "@/features/message/useMessage";
 import useMousePosition from "@/features/ui/useMousePostion";
 import useAutoResizeTextarea from "@/features/ui/useAutoResizeArea";
 import useDropdown from "@/features/ui/useDropdown";
+import useChatScroll from "@/features/ui/useChatScroll";
 
-import useChatScroll from "@/app/dashboard/chat/hooks/useChatScroll";
 import useMessageStream from "@/app/dashboard/chat/hooks/useMessageStream";
 import { Message } from "@/types/message";
 

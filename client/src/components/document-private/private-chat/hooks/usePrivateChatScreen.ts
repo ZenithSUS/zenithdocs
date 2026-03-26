@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 
 import useMessage from "@/features/message/useMessage";
 import useMessageStream from "@/components/document-private/hooks/useMessageStream";
-import useChatScroll from "./useChatScroll";
+import useChatScroll from "@/features/ui/useChatScroll";
 import useAutoResizeTextarea from "@/features/ui/useAutoResizeArea";
 
 interface usePrivateChatScreenProps {
