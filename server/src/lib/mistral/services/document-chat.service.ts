@@ -15,6 +15,7 @@ import {
 } from "../../../repositories/message.repository.js";
 import summarizeOldMessages from "../utils/summarize-message.js";
 import calculateDocumentConfidenceScore from "../utils/document-confidence.score.js";
+import redis from "../../../config/redis.js";
 
 interface StreamChatPayload {
   question: string;
@@ -80,7 +81,16 @@ export const streamDocumentChatWithContextService = async ({
   }));
 
   // Get relevant chunks for the current question
-  const embedding = await queryEmbedding(question);
+  const cacheKey = `embedding:${question}`;
+  const cacheEmbedding = await redis.get(cacheKey);
+
+  const embedding = cacheEmbedding
+    ? JSON.parse(cacheEmbedding)
+    : await queryEmbedding(question);
+
+  if (!cacheEmbedding)
+    await redis.setex(cacheKey, 3600, JSON.stringify(embedding));
+
   const chunks = await getSimilarityScore(embedding, documentId);
   const context = chunks.map((c) => c.text).join("\n\n");
   const confidenceScore = calculateDocumentConfidenceScore(chunks);

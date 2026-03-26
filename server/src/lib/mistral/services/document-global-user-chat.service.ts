@@ -1,6 +1,5 @@
 import { Response } from "express";
 import client from "../index.js";
-import AppError from "../../../utils/app-error.js";
 import { generateEmbedding } from "./embedding.service.js";
 import { getDocumentUserSimilarityScore } from "../../../repositories/document-chunk.repository.js";
 import {
@@ -16,6 +15,7 @@ import calculateGlobalConfidenceScore from "../utils/global-confidence-score.js"
 import { IDocumentChunkOutput } from "../../../models/DocumentChunk.js";
 import { globalChatUserSchema } from "../../../schemas/global-chat.schema.js";
 import isZenithDocsQuestion from "../../../utils/zenithdocs-question.js";
+import redis from "../../../config/redis.js";
 
 interface streamDocumentUserChatPayload {
   userId: string;
@@ -132,7 +132,17 @@ export const streamDocumentUserChat = async ({
   const MAX_PER_DOC = 3;
   const docCount = new Map();
 
-  const questionEmbedding = await generateEmbedding(validated.question);
+  const cacheKey = `global-embedding-${validated.question}`;
+  const cachedEmbedding = await redis.get(cacheKey);
+
+  const questionEmbedding = cachedEmbedding
+    ? JSON.parse(cachedEmbedding)
+    : await generateEmbedding(validated.question);
+
+  if (!cachedEmbedding) {
+    await redis.setex(cacheKey, 3600, JSON.stringify(questionEmbedding));
+  }
+
   const isAppQuestion = isZenithDocsQuestion(validated.question);
 
   let filteredChunks: IDocumentChunkOutput[] = [];
