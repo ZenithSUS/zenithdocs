@@ -27,6 +27,7 @@ const usePublicMessageStream = ({
 }: UsePublicMessageStreamOptions) => {
   const accumulatedRef = useRef("");
   const confidenceRef = useRef(0);
+  const messageIdRef = useRef(0);
 
   const [isTyping, setIsTyping] = useState(false);
   const [streamingBubble, setStreamingBubble] =
@@ -55,8 +56,11 @@ const usePublicMessageStream = ({
       setIsTyping(true);
       setStreamingBubble({ content: "" });
 
+      const userMessageId = `msg-${++messageIdRef.current}`;
+      const assistantMessageId = `msg-${++messageIdRef.current}`;
+
       addMessage({
-        _id: `msg-${messages.length + 1}`,
+        _id: userMessageId,
         role: "user",
         content: userMessage,
         createdAt: new Date(),
@@ -71,9 +75,7 @@ const usePublicMessageStream = ({
           },
           (chunk) => {
             accumulatedRef.current += chunk;
-            setStreamingBubble({
-              content: accumulatedRef.current,
-            });
+            setStreamingBubble({ content: accumulatedRef.current });
           },
           async () => {
             const finalContent = accumulatedRef.current.trimEnd();
@@ -81,7 +83,7 @@ const usePublicMessageStream = ({
             setStreamingBubble(null);
 
             addMessage({
-              _id: `msg-${messages.length + 1}`,
+              _id: assistantMessageId,
               role: "assistant",
               content: finalContent,
               createdAt: new Date(),
@@ -95,7 +97,7 @@ const usePublicMessageStream = ({
         setIsTyping(false);
         setStreamingBubble(null);
         accumulatedRef.current = "";
-        removeMessage(`msg-${messages.length + 1}`);
+        removeMessage(userMessageId);
       }
     },
     [sendPublicMessageStream, isTyping, shareToken, addMessage],
@@ -109,15 +111,12 @@ const usePublicMessageStream = ({
   };
 
   return {
-    // Form
     register,
     handleKeyDown,
     setValue,
     messageValue,
     onSubmit,
     handleSubmit,
-
-    // Stream state
     isTyping,
     streamingBubble,
     confidence,

@@ -5,6 +5,7 @@ import MessageInputArea from "./MessageInputArea";
 import StartingChatScreen from "./StartingChatScreen";
 import MessageCard from "./MessageCard";
 import { Message } from "@/types/message";
+import StreamingBubbleCard from "./StreamingBubbleCard";
 
 interface DocumentPublicChatProps {
   shareToken: string;
@@ -53,7 +54,21 @@ function DocumentPublicChat({
             documentTitle={documentTitle}
           />
         ) : (
-          <div className="space-y-4">{messagesNodes}</div>
+          <div className="space-y-4">
+            {/* Messages */}
+            {messagesNodes}
+
+            {/* Streaming bubble */}
+            {streamingBubble && (
+              <StreamingBubbleCard
+                streamingBubble={streamingBubble}
+                content={streamingBubble.content}
+                confidence={confidence}
+              />
+            )}
+
+            <div ref={messagesEndRef} />
+          </div>
         )}
       </div>
 

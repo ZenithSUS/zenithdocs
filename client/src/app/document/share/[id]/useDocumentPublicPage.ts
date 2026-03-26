@@ -27,7 +27,6 @@ const useDocumentPublicPage = (shareToken: string) => {
 
     // Document
     documentInfo,
-    documentShare,
     isDocumentShareLoading,
     documentShareRefetch,
     isDocumentShareError,

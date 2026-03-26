@@ -101,6 +101,7 @@ export default function DocumentPrivateChat({
               />
             )}
 
+            {/* Messages */}
             {messagesNodes}
 
             {/* Streaming bubble */}
