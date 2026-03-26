@@ -44,73 +44,73 @@ export interface IDocumentShareInput {
   allowDownload: boolean;
 }
 
-const documentShareSchema = new Schema<IDocumentShare>({
-  documentId: {
-    type: Schema.Types.ObjectId,
-    ref: "Document",
-    required: true,
-  },
-  ownerId: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  type: {
-    type: String,
-    enum: ["public", "private"],
-    required: true,
-  },
-  shareToken: {
-    type: String,
-  },
-  publicPermission: {
-    type: String,
-    enum: ["read", "write"],
-  },
-  allowedUsers: [
-    {
-      userId: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
-      },
-      permission: {
-        type: String,
-        enum: ["read", "write"],
-        required: true,
-      },
+const documentShareSchema = new Schema<IDocumentShare>(
+  {
+    documentId: {
+      type: Schema.Types.ObjectId,
+      ref: "Document",
+      required: true,
     },
-  ],
-  isActive: {
-    type: Boolean,
-    default: true,
+    ownerId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    type: {
+      type: String,
+      enum: ["public", "private"],
+      required: true,
+    },
+    shareToken: {
+      type: String,
+    },
+    publicPermission: {
+      type: String,
+      enum: ["read", "write"],
+      default: "read",
+    },
+    allowedUsers: [
+      {
+        userId: {
+          type: Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        permission: {
+          type: String,
+          enum: ["read", "write"],
+          required: true,
+        },
+      },
+    ],
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    expiresAt: {
+      type: Date,
+    },
+    allowDownload: {
+      type: Boolean,
+      default: true,
+    },
+    accessCount: {
+      type: Number,
+      default: 0,
+    },
+    lastAccessedAt: {
+      type: Date,
+    },
   },
-  expiresAt: {
-    type: Date,
-  },
-  allowDownload: {
-    type: Boolean,
-    default: true,
-  },
-  accessCount: {
-    type: Number,
-    default: 0,
-  },
-  lastAccessedAt: {
-    type: Date,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  { timestamps: true },
+);
 
 documentShareSchema.index({ documentId: 1, ownerId: 1 }, { unique: true });
 documentShareSchema.index({ shareToken: 1 }, { unique: true, sparse: true });
+documentShareSchema.index(
+  { documentId: 1, "allowedUsers.userId": 1 },
+  { unique: true, sparse: true },
+);
 
 export default mainDB.model<IDocumentShare>(
   "DocumentShare",
