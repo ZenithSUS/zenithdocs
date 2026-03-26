@@ -1,5 +1,6 @@
 import {
   chatController,
+  chatPublicController,
   getChatByDocumentController,
   getChatByUserPaginatedController,
   initChatForDocumentController,
@@ -12,6 +13,7 @@ import limiter from "../middlewares/limiter.middleware.js";
 const router = Router();
 
 router.post("/", protect, limiter("createChat"), chatController);
+router.post("/public", limiter("createPublicChat"), chatPublicController);
 router.post(
   "/document/:id/init",
   protect,

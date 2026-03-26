@@ -11,6 +11,16 @@ export const getChatByDocumentSchema = z.object({
   userId: objectId,
 });
 
+export const streamDocumentChatSchema = z.object({
+  question: z.string().min(1, "Question is required."),
+  documentId: objectId,
+});
+
+export const streamPublicDocumentChatSchema = z.object({
+  question: z.string().min(1, "Question is required."),
+  shareToken: z.string().min(1, "Share token is required."),
+});
+
 export const getChatByUserSchema = z.object({
   userId: objectId,
 });

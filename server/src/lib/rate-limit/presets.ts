@@ -88,6 +88,7 @@ export const rateLimiters = {
   // Chat write
   initChatForDocument: createLimiter(5, "1 m", "initChatForDocument"),
   createChat: createLimiter(10, "1 m", "createChat"),
+  createPublicChat: createLimiter(10, "1 m", "createPublicChat"),
 
   // Message read
   getMessagesByChatPaginated: createLimiter(

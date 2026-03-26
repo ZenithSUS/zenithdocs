@@ -7,6 +7,7 @@ import {
   initChatForDocumentService,
 } from "../services/chat.service.js";
 import { ParamsDictionary } from "express-serve-static-core";
+import { streamDocumentPublicChatService } from "../lib/mistral/services/document-public-chat-service.js";
 
 interface DocumentParams extends ParamsDictionary {
   id: string;
@@ -64,6 +65,35 @@ export const chatController = async (
     };
 
     await streamDocumentChatWithContextService(data);
+  } catch (error) {
+    if (!res.headersSent) {
+      next(error);
+    } else {
+      res.end();
+    }
+  }
+};
+
+/**
+ * Chat with a public document
+ * @route POST /api/chat/public
+ */
+export const chatPublicController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { question, shareToken, history } = req.body;
+
+    const data = {
+      question,
+      shareToken,
+      history,
+      res,
+    };
+
+    await streamDocumentPublicChatService(data);
   } catch (error) {
     if (!res.headersSent) {
       next(error);

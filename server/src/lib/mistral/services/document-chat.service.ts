@@ -16,6 +16,9 @@ import {
 import summarizeOldMessages from "../utils/summarize-message.js";
 import calculateDocumentConfidenceScore from "../utils/document-confidence.score.js";
 import redis from "../../../config/redis.js";
+import queryEmbedding from "../utils/query-embedding.js";
+import { streamDocumentChatSchema } from "../../../schemas/chat.schema.js";
+import { userTokenSchema } from "../../../utils/zod.utils.js";
 
 interface StreamChatPayload {
   question: string;
@@ -27,14 +30,6 @@ interface StreamChatPayload {
 
 const MAX_HISTORY_LENGTH = 10;
 
-const queryEmbedding = async (question: string) => {
-  const response = await client.embeddings.create({
-    model: "mistral-embed",
-    inputs: [question],
-  });
-  return response.data[0].embedding ?? [];
-};
-
 export const streamDocumentChatWithContextService = async ({
   question,
   documentId,
@@ -42,7 +37,14 @@ export const streamDocumentChatWithContextService = async ({
   role,
   res,
 }: StreamChatPayload) => {
-  const document = await getDocumentByIdService(documentId, userId, role);
+  const validated = streamDocumentChatSchema.parse({ question, documentId });
+  const authUser = userTokenSchema.parse({ userId, role });
+
+  const document = await getDocumentByIdService(
+    validated.documentId,
+    authUser.userId,
+    authUser.role,
+  );
 
   if (!document) {
     throw new AppError("Document not found", 404);
@@ -52,7 +54,7 @@ export const streamDocumentChatWithContextService = async ({
     throw new AppError("Document processing is not completed", 400);
   }
 
-  let chat = await getChatByDocument(documentId, userId);
+  let chat = await getChatByDocument(validated.documentId, authUser.userId);
 
   if (!chat) {
     chat = await createChat({
@@ -64,7 +66,7 @@ export const streamDocumentChatWithContextService = async ({
 
   const totalMessages = await getTotalMessagesByChatIdAndUser(
     chat._id.toString(),
-    userId,
+    authUser.userId,
   );
   const oldMessages = await getRecentMessagesByChatId(chat._id.toString());
 
@@ -91,7 +93,7 @@ export const streamDocumentChatWithContextService = async ({
   if (!cacheEmbedding)
     await redis.setex(cacheKey, 3600, JSON.stringify(embedding));
 
-  const chunks = await getSimilarityScore(embedding, documentId);
+  const chunks = await getSimilarityScore(embedding, validated.documentId);
   const context = chunks.map((c) => c.text).join("\n\n");
   const confidenceScore = calculateDocumentConfidenceScore(chunks);
 
@@ -124,7 +126,7 @@ ${context}`;
     messages: [
       { role: "system", content: systemPrompt }, // system context
       ...recentHistory, // previous conversation
-      { role: "user", content: question }, // current question (clean, no prompt)
+      { role: "user", content: validated.question }, // current question (clean, no prompt)
     ],
     stream: true,
     temperature: 0.4,
@@ -134,7 +136,7 @@ ${context}`;
 
   await createMessage({
     chatId: chat._id.toString(),
-    userId,
+    userId: authUser.userId,
     role: "user",
     content: question,
     createdAt: new Date(),
@@ -161,7 +163,7 @@ ${context}`;
 
   await createMessage({
     chatId: chat._id.toString(),
-    userId,
+    userId: authUser.userId,
     role: "assistant",
     content: fullResponse,
     confidenceScore,
