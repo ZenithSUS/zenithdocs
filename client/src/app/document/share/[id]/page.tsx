@@ -16,6 +16,7 @@ type ActiveTab = "viewer" | "chat";
 function DocumentPublicPage() {
   const params = useParams();
   const token = params?.id as string;
+
   const [activeTab, setActiveTab] = useState<ActiveTab>("viewer");
 
   const {
@@ -26,10 +27,13 @@ function DocumentPublicPage() {
     documentInfo,
 
     isDocumentShareLoading,
-    documentShareRefetch,
     isDocumentShareError,
     documentShareError,
     isDownloadable,
+
+    // Retry
+    pageRetries,
+    retryPrivateShare,
   } = useDocumentPublicPage(token);
 
   if (isDocumentShareLoading) {
@@ -38,7 +42,12 @@ function DocumentPublicPage() {
 
   if (isDocumentShareError) {
     return (
-      <ErrorScreen error={documentShareError} onRetry={documentShareRefetch} />
+      <ErrorScreen
+        error={documentShareError}
+        onRetry={retryPrivateShare}
+        messageErrorTitle={"Document Share Error"}
+        retries={pageRetries}
+      />
     );
   }
 

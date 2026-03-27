@@ -11,11 +11,15 @@ import useMousePosition from "@/features/ui/useMousePostion";
 import usageKeys from "@/features/usage/usage.key";
 import { Summary, SummaryType } from "@/types/summary";
 import { AxiosError } from "@/types/api";
+import useRetryStore from "@/store/useRetryStore";
 
 const useSummarizePage = () => {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const docId = searchParams?.get("doc") ?? "";
+
+  const { retries, increment } = useRetryStore();
+  const pageRetries = retries["summarize-page"] ?? 0;
 
   // ─── UI state ─────────────────────────────────────────────────────────────
   const mousePos = useMousePosition();
@@ -38,7 +42,13 @@ const useSummarizePage = () => {
 
   // ─── Document ─────────────────────────────────────────────────────────────
   const { documentById } = useDocument(user?._id ?? "", docId);
-  const { data: document, isLoading: docLoading } = documentById;
+  const {
+    data: document,
+    isLoading: docLoading,
+    isError: docError,
+    error: docErrorData,
+    refetch: refetchDocument,
+  } = documentById;
 
   // ─── Summary mutation ─────────────────────────────────────────────────────
   const { createSummaryMutation } = useSummary(user?._id ?? "", docId);
@@ -100,6 +110,24 @@ const useSummarizePage = () => {
     setTokenUsed(0);
   }, []);
 
+  const retryUser = () => {
+    increment("summarize-page");
+    refetchUser().then((result) => {
+      if (result.status === "success") {
+        useRetryStore.getState().reset("summarize-page");
+      }
+    });
+  };
+
+  const retryDoc = () => {
+    increment("summarize-page");
+    refetchDocument().then((result) => {
+      if (result.status === "success") {
+        useRetryStore.getState().reset("summarize-page");
+      }
+    });
+  };
+
   return {
     // Auth
     user,
@@ -111,6 +139,14 @@ const useSummarizePage = () => {
     // Document
     document,
     docLoading,
+    docError,
+    docErrorData,
+    refetchDocument,
+
+    // Retry
+    pageRetries,
+    retryUser,
+    retryDoc,
 
     // Summary state
     selectedType,

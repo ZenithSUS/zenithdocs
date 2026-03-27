@@ -2,9 +2,13 @@ import useAuth from "@/features/auth/useAuth";
 import useChat from "@/features/chat/useChat";
 import useDocumentShare from "@/features/document-share/useDocumentShare";
 import useMousePosition from "@/features/ui/useMousePostion";
+import useRetryStore from "@/store/useRetryStore";
 import { useMemo } from "react";
 
 const useDocumentPrivatePage = (shareId: string) => {
+  const { retries, increment } = useRetryStore();
+  const pageRetries = retries["document-private"] ?? 0;
+
   const { getDocumentShareById } = useDocumentShare("");
   const {
     data: documentShare,
@@ -40,6 +44,24 @@ const useDocumentPrivatePage = (shareId: string) => {
 
   const mousePos = useMousePosition();
 
+  const retryUser = () => {
+    increment("document-private");
+    refetchUser().then((result) => {
+      if (result.status === "success") {
+        useRetryStore.getState().reset("document-private");
+      }
+    });
+  };
+
+  const retryPrivateShare = () => {
+    increment("document-private");
+    refetchDocumentShare().then((result) => {
+      if (result.status === "success") {
+        useRetryStore.getState().reset("document-private");
+      }
+    });
+  };
+
   return {
     // Mouse
     mousePos,
@@ -48,7 +70,6 @@ const useDocumentPrivatePage = (shareId: string) => {
     documentInfo,
     documentShare,
     isDocumentShareLoading,
-    refetchDocumentShare,
     isDocumentShareError,
     documentShareError,
 
@@ -57,7 +78,6 @@ const useDocumentPrivatePage = (shareId: string) => {
     userLoading,
     userError,
     userErrorData,
-    refetchUser,
 
     // Chat
     chatId,
@@ -66,6 +86,11 @@ const useDocumentPrivatePage = (shareId: string) => {
     // Document
     documentId,
     isDownloadable,
+
+    // Retry
+    pageRetries,
+    retryUser,
+    retryPrivateShare,
   };
 };
 

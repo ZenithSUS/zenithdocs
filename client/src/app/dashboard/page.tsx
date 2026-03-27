@@ -35,7 +35,9 @@ export default function DashboardPage() {
     userLoading,
     userError,
     userErrorData,
-    refetchUser,
+
+    // Retry
+    pageRetry,
 
     // Navigation & layout
     nav,
@@ -66,6 +68,8 @@ export default function DashboardPage() {
       <ErrorScreen
         error={userErrorData}
         onRetry={() => handleRefetch("user")}
+        messageErrorTitle="User Error"
+        retries={pageRetry}
       />
     );
   }

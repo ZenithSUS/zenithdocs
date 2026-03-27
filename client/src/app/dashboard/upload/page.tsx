@@ -24,7 +24,6 @@ export default function UploadPage() {
     userLoading,
     userError,
     userErrorData,
-    refetchUser,
 
     // UI
     mousePos,
@@ -52,12 +51,23 @@ export default function UploadPage() {
 
     // Upload
     uploadFiles,
+
+    // Retries
+    pageRetries,
+    retryUser,
   } = useUploadPage();
 
   // ─── Guards ───────────────────────────────────────────────────────────────
 
   if (userError)
-    return <ErrorScreen error={userErrorData} onRetry={refetchUser} />;
+    return (
+      <ErrorScreen
+        error={userErrorData}
+        onRetry={retryUser}
+        messageErrorTitle="Upload Error"
+        retries={pageRetries}
+      />
+    );
   if (userLoading) return <LoadingScreen />;
 
   // ─── Render ───────────────────────────────────────────────────────────────

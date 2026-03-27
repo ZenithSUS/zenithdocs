@@ -21,7 +21,10 @@ export type AxiosError = {
         message: string;
       }[];
     };
+    status?: number;
   };
+  code?: string;
+  message?: string;
 };
 
 export type Pagination = {

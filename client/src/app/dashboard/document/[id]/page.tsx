@@ -20,6 +20,7 @@ import DocumentDetailsTab from "./components/DocumentDetailsTab";
 import DocumentSummariesTab from "./components/DocumentSummariesTab";
 import GlobalChat from "@/components/dashboard/globalchat";
 import { useState } from "react";
+import useRetryStore from "@/store/useRetryStore";
 
 export default function DocumentViewPage() {
   const router = useRouter();
@@ -32,16 +33,21 @@ export default function DocumentViewPage() {
 
     // Auth
     user,
-    userLoading,
     userError,
     userErrorData,
-    refetchUser,
 
     // Document
     document,
-    docLoading,
     folder,
     statusMeta,
+    isDocumentLoading,
+    isDocumentError,
+    documentErrorData,
+
+    // Retries
+    pageRetries,
+    retryUser,
+    retryDoc,
 
     // Summaries
     documentSummaries,
@@ -63,8 +69,26 @@ export default function DocumentViewPage() {
   // ─── Guards ───────────────────────────────────────────────────────────────
 
   if (userError)
-    return <ErrorScreen error={userErrorData} onRetry={refetchUser} />;
-  if (docLoading || userLoading) return <LoadingScreen />;
+    return (
+      <ErrorScreen
+        error={userErrorData}
+        onRetry={retryUser}
+        messageErrorTitle="User Error"
+        retries={pageRetries}
+      />
+    );
+
+  if (isDocumentError)
+    return (
+      <ErrorScreen
+        error={documentErrorData}
+        onRetry={retryDoc}
+        messageErrorTitle="Document Error"
+        retries={pageRetries}
+      />
+    );
+
+  if (isDocumentLoading) return <LoadingScreen />;
 
   if (!document) {
     return (

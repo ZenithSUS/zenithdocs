@@ -7,12 +7,16 @@ import useMousePosition from "@/features/ui/useMousePostion";
 import { calcPct } from "@/utils/usage";
 
 import { NavItem } from "@/components/dashboard/Sidebar";
+import useRetryStore from "@/store/useRetryStore";
 
 const useDashboardPage = () => {
   const [nav, setNav] = useState<NavItem>("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filterFolder, setFilterFolder] = useState<string>("all");
   const mainRef = useRef<HTMLElement>(null);
+
+  const { increment, retries } = useRetryStore();
+  const pageRetry = retries["dashboard-page"] ?? 0;
 
   // ─── Auth ────────────────────────────────────────────────────────────────
   const { me } = useAuth();
@@ -39,12 +43,27 @@ const useDashboardPage = () => {
   // ─── Refetch helper ───────────────────────────────────────────────────────
   const handleRefetch = useCallback(
     async (scope: "all" | "overview" | "user") => {
+      increment("dashboard-page");
+
       if (scope === "all") {
-        await Promise.all([overViewRefetch(), refetchUser()]);
+        const [overviewResult, userResult] = await Promise.all([
+          overViewRefetch(),
+          refetchUser(),
+        ]);
+        if (
+          overviewResult.status === "success" &&
+          userResult.status === "success"
+        ) {
+          useRetryStore.getState().reset("dashboard-page");
+        }
       } else if (scope === "overview") {
-        await overViewRefetch();
+        const { status } = await overViewRefetch();
+        if (status === "success")
+          useRetryStore.getState().reset("dashboard-page");
       } else {
-        await refetchUser();
+        const { status } = await refetchUser();
+        if (status === "success")
+          useRetryStore.getState().reset("dashboard-page");
       }
     },
     [overViewRefetch, refetchUser],
@@ -70,6 +89,9 @@ const useDashboardPage = () => {
     userError,
     userErrorData,
     refetchUser,
+
+    // Retries
+    pageRetry,
 
     // Navigation & layout
     nav,

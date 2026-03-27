@@ -17,7 +17,7 @@ import {
 } from "./chat.api";
 import chatKeys from "./chat.keys";
 import { useCallback } from "react";
-import { AxiosError } from "axios";
+import { AxiosError } from "@/types/api";
 import { ResponseWithData, ResponseWithPagedData } from "@/types/api";
 import { removeAllMessagesData } from "./chat.cache";
 

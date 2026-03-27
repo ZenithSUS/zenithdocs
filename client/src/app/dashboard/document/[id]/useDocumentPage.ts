@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams } from "next/navigation";
 
 import useAuth from "@/features/auth/useAuth";
@@ -6,12 +6,16 @@ import useDocument from "@/features/documents/useDocument";
 import useSummary from "@/features/summary/useSummary";
 import useMousePosition from "@/features/ui/useMousePostion";
 import STATUS_META from "@/constants/status-meta";
+import useRetryStore from "@/store/useRetryStore";
 
 const SUMMARIES_PER_PAGE = 3;
 
 const useDocumentPage = () => {
   const params = useParams();
   const documentId = params?.id as string;
+
+  const { retries, increment } = useRetryStore();
+  const pageRetries = retries["document-page"] ?? 0;
 
   // ─── UI state ─────────────────────────────────────────────────────────────
   const mousePos = useMousePosition();
@@ -32,11 +36,23 @@ const useDocumentPage = () => {
 
   // ─── Document ─────────────────────────────────────────────────────────────
   const { documentById } = useDocument(user?._id ?? "", documentId);
-  const { data: document, isLoading: docLoading } = documentById;
+  const {
+    data: document,
+    isLoading: docLoading,
+    refetch: refetchDocument,
+    isError: docError,
+    error: docErrorData,
+  } = documentById;
 
   // ─── Summaries ────────────────────────────────────────────────────────────
   const { summariesByDocumentPage } = useSummary(user?._id ?? "", documentId);
-  const { data: summariesData } = summariesByDocumentPage;
+  const {
+    data: summariesData,
+    isLoading: summariesLoading,
+    refetch: refetchSummaries,
+    isError: summariesError,
+    error: summariesErrorData,
+  } = summariesByDocumentPage;
 
   const allSummaries =
     summariesData?.pages.flatMap((page) => page.summaries) ?? [];
@@ -62,6 +78,40 @@ const useDocumentPage = () => {
     currentPage * SUMMARIES_PER_PAGE,
   );
 
+  const isDocumentLoading = useMemo(
+    () =>
+      docLoading ||
+      summariesLoading ||
+      (userLoading && !user) ||
+      (userLoading && !document),
+    [docLoading, summariesLoading, userLoading, user, document],
+  );
+
+  const isDocumentError = docError || summariesError;
+  const documentErrorData = docErrorData || summariesErrorData;
+
+  const refetchDocumentPage = async () => {
+    const docResult = await refetchDocument();
+    if (docResult.status !== "success") return docResult;
+    return await refetchSummaries();
+  };
+
+  const retryUser = () => {
+    increment("chat-page");
+    refetchUser().then(({ status }) => {
+      if (status === "success") useRetryStore.getState().reset("chat-page");
+    });
+  };
+
+  const retryDoc = () => {
+    increment("document-page");
+    refetchDocumentPage().then((result) => {
+      if (result.status === "success") {
+        useRetryStore.getState().reset("document-page");
+      }
+    });
+  };
+
   // Reset to page 1 when switching tabs
   useEffect(() => {
     setCurrentPage(1);
@@ -83,16 +133,21 @@ const useDocumentPage = () => {
 
     // Auth
     user,
-    userLoading,
     userError,
     userErrorData,
-    refetchUser,
 
     // Document
     document,
-    docLoading,
     folder,
     statusMeta,
+    isDocumentLoading,
+    isDocumentError,
+    documentErrorData,
+
+    // Retries
+    pageRetries,
+    retryUser,
+    retryDoc,
 
     // Summaries
     documentSummaries,

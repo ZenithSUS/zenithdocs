@@ -26,11 +26,17 @@ function SummarizePageContent() {
     userLoading,
     userError,
     userErrorData,
-    refetchUser,
 
     // Document
     document,
     docLoading,
+    docError,
+    docErrorData,
+
+    // Retry
+    retryDoc,
+    retryUser,
+    pageRetries,
 
     // Summary state
     selectedType,
@@ -56,7 +62,25 @@ function SummarizePageContent() {
   // ─── Guards ────────────────────────────────────────────────────────────────
 
   if (userError)
-    return <ErrorScreen error={userErrorData} onRetry={refetchUser} />;
+    return (
+      <ErrorScreen
+        error={userErrorData}
+        onRetry={retryUser}
+        messageErrorTitle="User Error"
+        retries={pageRetries}
+      />
+    );
+
+  if (docError)
+    return (
+      <ErrorScreen
+        error={docErrorData}
+        onRetry={retryDoc}
+        messageErrorTitle="Document Error"
+        retries={pageRetries}
+      />
+    );
+
   if (userLoading || docLoading) return <LoadingScreen />;
 
   if (!document) {

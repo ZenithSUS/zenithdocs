@@ -21,21 +21,52 @@ export default function DocumentPrivatePage() {
   const [activeTab, setActiveTab] = useState<ActiveTab>("viewer");
 
   const {
+    // Mouse
     mousePos,
+
+    // Document
     documentInfo,
     isDocumentShareLoading,
+    isDocumentShareError,
+    documentShareError,
+
+    // User
     user,
     userLoading,
     userError,
     userErrorData,
-    refetchUser,
+
+    // Document share info
     chatId,
     documentId,
     isDownloadable,
+
+    // Retry
+    pageRetries,
+    retryUser,
+    retryPrivateShare,
   } = useDocumentPrivatePage(shareId);
 
   if (userError) {
-    return <ErrorScreen error={userErrorData} onRetry={refetchUser} />;
+    return (
+      <ErrorScreen
+        error={userErrorData}
+        onRetry={retryUser}
+        messageErrorTitle="User Error"
+        retries={pageRetries}
+      />
+    );
+  }
+
+  if (isDocumentShareError) {
+    return (
+      <ErrorScreen
+        error={documentShareError}
+        onRetry={retryPrivateShare}
+        messageErrorTitle="Document Share Error"
+        retries={pageRetries}
+      />
+    );
   }
 
   if (isDocumentShareLoading || userLoading) {

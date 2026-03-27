@@ -8,10 +8,14 @@ import useMousePosition from "@/features/ui/useMousePostion";
 import { UploadFile } from "./upload.types";
 import useFileDrop from "./useFileDrop";
 import useFileUpload from "./useFileUpload";
+import useRetryStore from "@/store/useRetryStore";
 
 const useUploadPage = () => {
   const router = useRouter();
   const mousePos = useMousePosition();
+
+  const { retries, increment } = useRetryStore();
+  const pageRetries = retries["upload-page"] ?? 0;
 
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [selectedFolder, setSelectedFolder] = useState("");
@@ -50,13 +54,21 @@ const useUploadPage = () => {
     setFiles((prev) => prev.filter((f) => f.id !== id));
   }, []);
 
+  const retryUser = () => {
+    increment("upload-page");
+    refetchUser().then((result) => {
+      if (result.status === "success") {
+        useRetryStore.getState().reset("upload-page");
+      }
+    });
+  };
+
   return {
     // Auth
     user,
     userLoading,
     userError,
     userErrorData,
-    refetchUser,
 
     // Navigation
     router,
@@ -81,6 +93,10 @@ const useUploadPage = () => {
 
     // Upload
     uploadFiles,
+
+    // Retries
+    pageRetries,
+    retryUser,
   };
 };
 

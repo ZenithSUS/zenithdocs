@@ -14,7 +14,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 ).toString();
 
 interface DocumentViewerProps {
-  document: Doc;
+  document: Doc | null;
 }
 
 const CANVAS_PADDING = 32;
@@ -84,12 +84,12 @@ export default function DocumentViewer({ document }: DocumentViewerProps) {
   }, []);
 
   const isPdf =
-    document.fileType === "application/pdf" || document.fileType === "pdf";
+    document?.fileType === "application/pdf" || document?.fileType === "pdf";
 
   if (!isPdf) {
     return (
       <div className="h-full overflow-y-auto p-6 text-sm text-[#F5F5F5]/80 font-mono leading-relaxed whitespace-pre-wrap">
-        {document.rawText || "No preview available."}
+        {document?.rawText || "No preview available."}
       </div>
     );
   }

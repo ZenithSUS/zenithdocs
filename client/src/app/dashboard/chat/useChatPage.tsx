@@ -14,11 +14,16 @@ import useChatScroll from "@/features/ui/useChatScroll";
 
 import useMessageStream from "@/app/dashboard/chat/hooks/useMessageStream";
 import { Message } from "@/types/message";
+import useRetryStore from "@/store/useRetryStore";
 
 const useChatPage = () => {
   // ─── Route params ────────────────────────────────────────────────────────────
   const searchParams = useSearchParams();
   const docId = searchParams.get("doc") ?? "";
+
+  // ─── Retry store ────────────────────────────────────────────────────────────────────
+  const { retries, increment } = useRetryStore();
+  const pageRetries = retries["chat-page"] ?? 0;
 
   // ─── Auth ────────────────────────────────────────────────────────────────────
   const { me } = useAuth();
@@ -32,11 +37,22 @@ const useChatPage = () => {
 
   // ─── Document + chat metadata ─────────────────────────────────────────────
   const { documentById } = useDocument(user?._id ?? "", docId);
-  const { data: documentData, isLoading: docLoading } = documentById;
+  const {
+    data: documentData,
+    isLoading: docLoading,
+    isError: docError,
+    error: docErrorData,
+    refetch: refetchDocument,
+  } = documentById;
 
   const { initChatDocument } = useChat(user?._id ?? "");
-  const { data: initChat, isLoading: initChatLoading } =
-    initChatDocument(docId);
+  const {
+    data: initChat,
+    isLoading: initChatLoading,
+    refetch: refetchInitChat,
+    isError: initChatError,
+    error: initChatErrorData,
+  } = initChatDocument(docId);
 
   const chatId = initChat?._id ?? "";
 
@@ -73,11 +89,36 @@ const useChatPage = () => {
     userId: user?._id ?? "",
   });
 
-  // ─── UI utilities ─────────────────────────────────────────────────────────
+  // ─── UI utilities ────────────────────────────────────────────────────────
   const mousePos = useMousePosition();
   const options = useDropdown();
   const textareaRef = useAutoResizeTextarea(stream.messageValue);
   const messagesEndRef = useChatScroll(allMessages, stream.streamingBubble);
+
+  // ─── Error handling ────────────────────────────────────────────────────────
+  const isDocumentChatError = docError || initChatError;
+  const documentChatErrorData = docErrorData || initChatErrorData;
+
+  // ─── Retry Functions ──────────────────────────────────────────────────────
+  const retryUser = () => {
+    increment("chat-page");
+    refetchUser().then((result) => {
+      if (result.status === "success") {
+        useRetryStore.getState().reset("chat-page");
+      }
+    });
+  };
+
+  const retryDocumentChat = () => {
+    increment("chat-page");
+    refetchDocument().then(({ status }) => {
+      if (status !== "success") return;
+      refetchInitChat().then(({ status: initStatus }) => {
+        if (initStatus === "success")
+          useRetryStore.getState().reset("chat-page");
+      });
+    });
+  };
 
   return {
     // Auth
@@ -85,7 +126,6 @@ const useChatPage = () => {
     userLoading,
     userError,
     userErrorData,
-    refetchUser,
 
     // Document / chat metadata
     docId,
@@ -93,6 +133,14 @@ const useChatPage = () => {
     initChat,
     documentData,
     isChatsProcessing,
+    docLoading,
+    isDocumentChatError,
+    documentChatErrorData,
+
+    // Retry
+    pageRetries,
+    retryUser,
+    retryDocumentChat,
 
     // Messages
     allMessages,
@@ -101,14 +149,12 @@ const useChatPage = () => {
     isFetchingNextPage,
     handleLoadMore,
 
-    // Stream + form (spread from sub-hook)
+    // Stream + form
     ...stream,
 
-    // UI state
+    // UI
     mousePos,
-    options, // { isOpen, setIsOpen, ref }
-
-    // Refs
+    options,
     textareaRef,
     messagesEndRef,
   };

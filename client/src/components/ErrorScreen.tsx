@@ -2,16 +2,117 @@
 
 import { AxiosError } from "@/types/api";
 import { useRouter } from "next/navigation";
+import { useEffect, useState, useRef } from "react";
 
 interface ErrorScreenProps {
   error: AxiosError | null;
   onRetry?: () => void;
+  messageErrorTitle?: string;
+  retries: number;
 }
 
-function ErrorScreen({ error, onRetry }: ErrorScreenProps) {
+const MAX_RETRIES = 5;
+const RETRY_INTERVAL_MS = 5000;
+
+function subMessage(statusCode: number) {
+  switch (statusCode) {
+    case 401:
+      return "Unauthorized.";
+    case 404:
+      return "Data or resource not found.";
+    case 400:
+      return "Bad request.";
+    case 500:
+      return "Internal server error.";
+    default:
+      return "An unexpected error occurred.";
+  }
+}
+
+function ErrorScreen({
+  error,
+  onRetry,
+  messageErrorTitle,
+  retries,
+}: ErrorScreenProps) {
   const router = useRouter();
-  const message =
+  const [countdown, setCountdown] = useState(RETRY_INTERVAL_MS / 1000);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const statusCode = error?.response?.status ?? 500;
+  const isServerSleeping =
+    !error?.response &&
+    (error?.code === "ECONNABORTED" ||
+      error?.message?.includes("Network Error"));
+  const hasExceededRetries = retries >= MAX_RETRIES;
+
+  let message =
     error?.response?.data?.message ?? "An unexpected error occurred.";
+  let title = subMessage(statusCode);
+
+  if (isServerSleeping) {
+    if (hasExceededRetries) {
+      title = "Server is taking too long";
+      message = "Please try again manually.";
+    } else {
+      title = "Waking up server...";
+      message = "This may take a few seconds. Please wait or retry.";
+    }
+  }
+
+  const clearTimers = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    // Stop entirely once max retries reached
+    if (!isServerSleeping || !onRetry || hasExceededRetries) {
+      clearTimers();
+      return;
+    }
+
+    const seconds = RETRY_INTERVAL_MS / 1000;
+    setCountdown(seconds);
+
+    intervalRef.current = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(intervalRef.current!);
+          intervalRef.current = null;
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    timerRef.current = setTimeout(() => {
+      onRetry();
+    }, RETRY_INTERVAL_MS);
+
+    return clearTimers;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [retries]);
+
+  const handleManualRetry = () => {
+    clearTimers();
+    setCountdown(RETRY_INTERVAL_MS / 1000);
+    onRetry?.();
+  };
+
+  const retryLabel = (() => {
+    if (!isServerSleeping || hasExceededRetries) return "Try again";
+    return countdown > 0
+      ? `Retrying in ${countdown}s (${retries + 1}/${MAX_RETRIES})`
+      : "Retrying…";
+  })();
 
   return (
     <div className="relative h-screen w-full overflow-hidden bg-[#111111] font-serif text-[#f5f5f5] flex items-center justify-center">
@@ -88,14 +189,13 @@ function ErrorScreen({ error, onRetry }: ErrorScreenProps) {
         {/* Text block */}
         <div className="space-y-2 text-center">
           <p className="text-[0.6rem] uppercase tracking-[0.28em] text-[#ef4444]/80">
-            Authentication Error
+            {messageErrorTitle ??
+              (isServerSleeping ? "SERVER SLEEPING" : "ERROR")}
           </p>
           <h1 className="text-[1.45rem] font-normal leading-snug text-[#f5f5f5]">
-            Failed to load your account
+            {title}
           </h1>
-          <p className="mt-1.5 text-sm leading-relaxed text-[#a3a3a3]">
-            {message}
-          </p>
+          <p className="text-[0.8rem] text-[#a3a3a3]">{message}</p>
         </div>
 
         {/* Gold divider */}
@@ -103,12 +203,20 @@ function ErrorScreen({ error, onRetry }: ErrorScreenProps) {
 
         {/* Actions */}
         <div className="flex w-full flex-col gap-3 sm:flex-row">
-          {onRetry && (
+          {onRetry && statusCode !== 404 && (
             <button
-              onClick={onRetry}
+              onClick={handleManualRetry}
               className="flex-1 cursor-pointer rounded-xs border border-[#c9a227] bg-[#c9a227] px-5 py-2.5 text-sm tracking-[0.07em] text-[#111111] transition-opacity duration-200 hover:opacity-85"
             >
-              Try again
+              {retryLabel}
+            </button>
+          )}
+          {statusCode === 404 && (
+            <button
+              onClick={() => router.push("/dashboard")}
+              className="flex-1 cursor-pointer rounded-xs border border-[#c9a227] bg-[#c9a227] px-5 py-2.5 text-sm tracking-[0.07em] text-[#111111] transition-opacity duration-200 hover:opacity-85"
+            >
+              Go back
             </button>
           )}
           <button

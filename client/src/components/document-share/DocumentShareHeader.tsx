@@ -20,7 +20,6 @@ function DocumentShareHeader({
   fileType,
   fileUrl,
   isDownloadable,
-  type,
 }: DocumentPublicHeaderProps) {
   const router = useRouter();
   const [isNavigating, setIsNavigating] = useState(false);
@@ -107,17 +106,6 @@ function DocumentShareHeader({
             </p>
           </div>
         </div>
-
-        {/* Copy link */}
-        {type === "public" && (
-          <button
-            onClick={handleCopyLink}
-            className="shrink-0 flex items-center gap-2 text-text/50 hover:text-text/90 transition-colors bg-primary hover:bg-primary/20 rounded-full p-2"
-            title="Copy link"
-          >
-            <Link className="hover:text-primary cursor-pointer" size={16} />
-          </button>
-        )}
       </div>
     </div>
   );

@@ -15,7 +15,6 @@ import StreamingBubbleCard from "./components/StreamBubbleCard";
 import MessageInputArea from "./components/MessageInputArea";
 import LoadMoreMessageButton from "./components/LoadMoreMessageButton";
 import FullPageSpinner from "./components/FullPageSpinner";
-import ChatNotFound from "./components/ChatNotFound";
 import DocumentViewer from "./components/DocumentViewerWrapper";
 
 function DocumentChatContent() {
@@ -27,7 +26,6 @@ function DocumentChatContent() {
     user,
     userError,
     userErrorData,
-    refetchUser,
 
     // Document / chat metadata
     docId,
@@ -35,6 +33,13 @@ function DocumentChatContent() {
     documentData,
     isChatsProcessing,
     userLoading,
+    isDocumentChatError,
+    documentChatErrorData,
+
+    // Retry
+    pageRetries,
+    retryUser,
+    retryDocumentChat,
 
     // Messages
     allMessages,
@@ -92,15 +97,29 @@ function DocumentChatContent() {
 
   // ─── Guards ──────────────────────────────────────────────────────────────
   if (userError) {
-    return <ErrorScreen error={userErrorData} onRetry={refetchUser} />;
+    return (
+      <ErrorScreen
+        error={userErrorData}
+        onRetry={retryUser}
+        messageErrorTitle="User Error"
+        retries={pageRetries}
+      />
+    );
+  }
+
+  if (isDocumentChatError) {
+    return (
+      <ErrorScreen
+        error={documentChatErrorData}
+        onRetry={retryDocumentChat}
+        messageErrorTitle="Document Chat Error"
+        retries={pageRetries}
+      />
+    );
   }
 
   if (isChatsProcessing || userLoading) {
     return <FullPageSpinner />;
-  }
-
-  if (!documentData || !docId) {
-    return <ChatNotFound />;
   }
 
   return (
@@ -148,7 +167,7 @@ function DocumentChatContent() {
               Document
             </p>
             <h2 className="text-sm font-medium text-[#F5F5F5] truncate">
-              {documentData.title}
+              {documentData?.title ?? "Untitled"}
             </h2>
           </div>
           {/* Close button visible on mobile */}
@@ -160,7 +179,7 @@ function DocumentChatContent() {
           </button>
         </div>
         <div className="flex-1 min-h-0 flex flex-col overflow-auto">
-          <DocumentViewer document={documentData} />
+          <DocumentViewer document={documentData ?? null} />
         </div>
       </div>
 
@@ -197,7 +216,7 @@ function DocumentChatContent() {
         <ChatHeader
           docId={docId}
           chatId={initChat?._id ?? ""}
-          documentData={documentData}
+          documentData={documentData ?? null}
           options={options}
           isTyping={isTyping}
         />
@@ -213,7 +232,7 @@ function DocumentChatContent() {
               allMessages.length === 0 &&
               !streamingBubble && (
                 <EmptyStateMessage
-                  title={documentData.title}
+                  title={documentData?.title ?? "Untitled"}
                   setValue={setValue}
                 />
               )}

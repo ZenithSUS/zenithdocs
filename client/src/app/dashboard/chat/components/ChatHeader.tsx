@@ -7,7 +7,7 @@ import { useEffect } from "react";
 interface ChatHeaderProps {
   docId: string;
   chatId: string;
-  documentData: Doc;
+  documentData: Doc | null;
   options: {
     ref: React.RefObject<HTMLDivElement | null>;
     isOpen: boolean;
@@ -50,7 +50,7 @@ function ChatHeader({
           </div>
           <div className="min-w-0 text-center">
             <h1 className="text-[14px] font-serif text-text/90 truncate">
-              {documentData.title}
+              {documentData?.title ?? "Untitled Document"}
             </h1>
             <p className="text-[10px] text-text/40 font-sans tracking-wider">
               DOCUMENT CHAT
