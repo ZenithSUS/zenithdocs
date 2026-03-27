@@ -7,6 +7,7 @@ import {
   getDocumentShareById,
   getDocumentShareByToken,
   getDocumentSharesByUserIdPaginated,
+  increaseDocumentShareAccess,
   updateDocumentShare,
 } from "../repositories/document-share.repository.js";
 import { getDocumentById } from "../repositories/document.repository.js";
@@ -19,6 +20,8 @@ import {
   updateDocumentShareSchema,
 } from "../schemas/document-share.schema.js";
 import { IDocumentShareInput } from "../models/DocumentShare.js";
+import redis from "../config/redis.js";
+import { Request } from "express";
 
 /**
  * Creates a new document share
@@ -106,7 +109,7 @@ export const createDocumentShareService = async (data: IDocumentShareInput) => {
  * Gets a document share by token (Public share)
  *
  * @param {string} token - Document share token
- * @param {string} currentUserId - Current user ID
+ * @param {Request} req - Express request
  *
  * @throws {AppError} If the document share is not found
  * @throws {AppError} If the token is invalid
@@ -114,8 +117,13 @@ export const createDocumentShareService = async (data: IDocumentShareInput) => {
  *
  * @returns {Promise<DocumentShare>} Document share
  */
-export const getDocumentShareByTokenService = async (token: string) => {
-  const validated = getDocumentShareByTokenSchema.parse({ token });
+export const getDocumentShareByTokenService = async (
+  token: string,
+  req: Request,
+) => {
+  const validated = getDocumentShareByTokenSchema.parse({
+    token,
+  });
 
   const documentShare = await getDocumentShareByToken(validated.token);
 
@@ -123,14 +131,23 @@ export const getDocumentShareByTokenService = async (token: string) => {
     throw new AppError("Document share not found", 404);
   }
 
-  if (documentShare.shareToken !== validated.token) {
-    throw new AppError("Invalid token", 400);
+  if (documentShare.expiresAt && documentShare.expiresAt < new Date()) {
+    throw new AppError("Document share has expired", 404);
   }
 
-  if (documentShare.expiresAt) {
-    if (documentShare.expiresAt < new Date()) {
-      throw new AppError("Document share has expired", 404);
-    }
+  const ip =
+    (req.headers["x-forwarded-for"] as string)?.split(",")[0] ||
+    req.socket.remoteAddress ||
+    "unknown";
+
+  const key = `doc:${documentShare._id.toString()}:viewer:${ip}`;
+
+  const result = await redis.set(key, "1", "EX", 30, "NX");
+
+  if (result) {
+    void increaseDocumentShareAccess(documentShare._id.toString()).catch(
+      () => {},
+    );
   }
 
   return documentShare;
@@ -141,6 +158,7 @@ export const getDocumentShareByTokenService = async (token: string) => {
  *
  * @param {string} id - Document share ID
  * @param {string} currentUserId - Current user ID
+ * @param {Request} req - Express request
  * @throws {AppError} If the document share is not found
  *
  * @returns {Promise<DocumentShare>} Document share if found, null otherwise
@@ -148,6 +166,7 @@ export const getDocumentShareByTokenService = async (token: string) => {
 export const getDocumentShareByIdService = async (
   id: string,
   currentUserId: string,
+  req: Request,
 ) => {
   const validated = getDocumentShareByIdSchema.parse({
     id,
@@ -181,6 +200,23 @@ export const getDocumentShareByIdService = async (
     if (!allowedUser && !isOwner) {
       throw new AppError("You are not allowed to access this document", 403);
     }
+  }
+
+  const ip =
+    (req.headers["x-forwarded-for"] as string)?.split(",")[0] ||
+    req.socket.remoteAddress ||
+    "unknown";
+
+  const viewerId = currentUserId || ip;
+
+  const key = `doc:${documentShare._id.toString()}:viewer:${viewerId}`;
+
+  const result = await redis.set(key, "1", "EX", 30, "NX");
+
+  if (result) {
+    void increaseDocumentShareAccess(documentShare._id.toString()).catch(
+      () => {},
+    );
   }
 
   return documentShare;

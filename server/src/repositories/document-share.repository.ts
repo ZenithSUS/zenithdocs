@@ -125,6 +125,19 @@ export const getDocumentShareById = async (id: string) => {
 };
 
 /**
+ * Increases the access count of a document share by one and updates the last accessed at field to the current date.
+ * @param {string} id - Document share ID
+ * @returns {Promise<DocumentShare>} Updated document share if found, null otherwise
+ * @throws {AppError} If the document share is not found
+ */
+export const increaseDocumentShareAccess = async (id: string) => {
+  return await DocumentShare.findByIdAndUpdate(id, {
+    $inc: { accessCount: 1 },
+    $set: { lastAccessedAt: new Date() },
+  });
+};
+
+/**
  * Updates a document share by its ID
  *
  * @param {string} id - Document share ID

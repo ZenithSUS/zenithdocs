@@ -51,7 +51,7 @@ export const getDocumentShareByTokenController = async (
   try {
     const { token } = req.params;
 
-    const documentShare = await getDocumentShareByTokenService(token);
+    const documentShare = await getDocumentShareByTokenService(token, req);
 
     return res.status(200).json({
       success: true,
@@ -76,7 +76,7 @@ export const getDocumentShareByIdController = async (
     const { id } = req.params;
     const userId = req.user.sub;
 
-    const documentShare = await getDocumentShareByIdService(id, userId);
+    const documentShare = await getDocumentShareByIdService(id, userId, req);
 
     return res.status(200).json({
       success: true,
