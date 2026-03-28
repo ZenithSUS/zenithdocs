@@ -135,4 +135,17 @@ export const rateLimiters = {
   createDocumentShare: createLimiter(10, "1 m", "createDocumentShare"),
   updateDocumentShare: createLimiter(10, "1 m", "updateDocumentShare"),
   deleteDocumentShare: createLimiter(5, "1 m", "deleteDocumentShare"),
+
+  // Learning Set Write
+  createLearningSet: createLimiter(10, "1 m", "createLearningSet"),
+  updateLearningSet: createLimiter(10, "1 m", "updateLearningSet"),
+  deleteLearningSet: createLimiter(5, "1 m", "deleteLearningSet"),
+
+  // Learning Set Read
+  getLearningSetById: createLimiter(15, "1 m", "getLearningSetById"),
+  getLearningSetsByUserIdPaginated: createLimiter(
+    15,
+    "1 m",
+    "getLearningSetsByUserIdPaginated",
+  ),
 };
