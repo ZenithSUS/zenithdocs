@@ -5,6 +5,10 @@ import { Document, Page } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
+const PDF_OPTIONS = {
+  verbosity: 0, // 0 = errors only, suppress warnings entirely
+};
+
 interface DocumentViewerCanvasProps {
   fileUrl: string;
   documentId: string;
@@ -161,6 +165,7 @@ export default function DocumentViewerCanvas({
           <Document
             key={`${documentId}__${fileUrl}`}
             file={fileUrl}
+            options={PDF_OPTIONS}
             onLoadSuccess={handleLoadSuccess}
             loading={
               <div
