@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Document, Page } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
@@ -26,12 +26,42 @@ export default function DocumentViewerCanvas({
 }: DocumentViewerCanvasProps) {
   const [numPages, setNumPages] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
+
+  const [renderWidth, setRenderWidth] = useState(basePageWidth || 600);
+  const [cssScale, setCssScale] = useState(1);
+
   const isDragging = useRef(false);
   const dragStart = useRef({ x: 0, y: 0 });
   const scrollRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const effectiveWidth = basePageWidth > 0 ? basePageWidth : 600;
+  const targetWidth = Math.round((basePageWidth || 600) * scale);
+
+  useEffect(() => {
+    if (basePageWidth === 0) return;
+
+    // Immediately update CSS scale for instant visual feedback
+    setCssScale(targetWidth / renderWidth);
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setRenderWidth(targetWidth);
+      setCssScale(1); // Reset CSS scale
+    }, 300);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scale, basePageWidth]);
+
+  // Render width catches up to scale, so reset CSS scale
+  useEffect(() => {
+    setCssScale(1);
+  }, [renderWidth]);
+
+  const effectiveWidth = renderWidth > 0 ? renderWidth : 600;
 
   const handleLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
@@ -39,14 +69,6 @@ export default function DocumentViewerCanvas({
     onLoadSuccess(numPages);
   };
 
-  /**
-   * Attaches an IntersectionObserver to the given container
-   * and observes all elements with the "data-page" attribute.
-   * When an element with the "data-page" attribute comes into view,
-   * the onPageVisible callback is called with the page number as an argument.
-   * @param {HTMLDivElement | null} container - The container to observe.
-   * @param {function} onPageVisible - The callback to call when an element comes into view.
-   */
   const attachObserver = (container: HTMLDivElement | null) => {
     observerRef.current?.disconnect();
     if (!container || !onPageVisible) return;
@@ -110,7 +132,6 @@ export default function DocumentViewerCanvas({
       className="h-full w-full overflow-auto"
       style={{
         backgroundColor: "#1a1a1a",
-        cursor: isDragging ? "grabbing" : scale > 1 ? "grab" : "default",
         WebkitOverflowScrolling: "touch",
       }}
       onMouseDown={handleMouseDown}
@@ -122,20 +143,20 @@ export default function DocumentViewerCanvas({
     >
       <div
         style={{
-          width: Math.max(effectiveWidth * scale, 0),
-          paddingBottom: scale > 1 ? `calc((${scale} - 1) * 50%)` : 0,
+          width: effectiveWidth * cssScale,
+          minHeight: "100%",
           marginLeft: "auto",
           marginRight: "auto",
         }}
-        className="flex justify-center min-h-full"
+        className="flex justify-center"
       >
         <div
           style={{
-            transform: `scale(${scale})`,
+            transform: cssScale !== 1 ? `scale(${cssScale})` : undefined,
             transformOrigin: "top center",
             width: effectiveWidth,
           }}
-          className="py-6 flex flex-col items-center justify-center gap-4"
+          className="py-6 flex flex-col items-center gap-4"
         >
           <Document
             key={`${documentId}__${fileUrl}`}
@@ -158,7 +179,7 @@ export default function DocumentViewerCanvas({
                 <div key={i} data-page={i + 1} className="mb-4">
                   <Page
                     pageNumber={i + 1}
-                    width={effectiveWidth}
+                    width={effectiveWidth} // ← always the debounced render width
                     renderTextLayer={true}
                     renderAnnotationLayer={true}
                     loading={

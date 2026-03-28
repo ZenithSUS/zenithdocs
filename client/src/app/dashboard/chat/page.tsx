@@ -158,7 +158,7 @@ function DocumentChatContent() {
     bottom-0 left-0 right-0 border-t
     ${panelOpen ? "h-[60vh]" : "h-0 overflow-hidden border-t-0"}
     md:bottom-auto md:right-auto md:inset-y-0 md:left-0 md:border-t-0 md:border-r md:h-screen
-    ${panelOpen ? "md:w-72 lg:w-96 xl:w-120" : "md:w-0 md:overflow-hidden md:border-r-0"}
+    ${panelOpen ? "md:w-72 lg:w-120 xl:w-1/2" : "md:w-0 md:overflow-hidden md:border-r-0"}
   `}
       >
         <div className="px-4 py-3 border-b border-white/6 shrink-0 flex items-center justify-between">
@@ -189,7 +189,7 @@ function DocumentChatContent() {
         className={`fixed top-1/2 -translate-y-1/2 z-40 transition-all duration-300 ease-in-out
     bg-background border border-white/10 hover:bg-white/5
     rounded-r-lg px-1 py-4 flex flex-col items-center gap-1.5
-    ${panelOpen ? "md:left-72 lg:left-96 xl:left-120" : "left-0"}`}
+    ${panelOpen ? "md:left-72 lg:left-120 xl:left-1/2" : "left-0"}`}
       >
         {/* Animated chevron */}
         <ChevronLeft
@@ -209,7 +209,7 @@ function DocumentChatContent() {
       {/* Main content */}
       <div
         className={`flex flex-col flex-1 min-h-0 transition-all duration-300 ease-in-out ${
-          panelOpen ? "md:ml-72 lg:ml-96 xl:ml-120" : "md:ml-0"
+          panelOpen ? "md:ml-72 lg:ml-120 xl:ml-200" : "md:ml-0"
         }`}
       >
         {/* ── Header ─────────────────────────────────────────────────────────── */}
