@@ -8,7 +8,10 @@ import LearningSet, { ILearningSetInput } from "../models/LearningSet.js";
  */
 export const createLearningSet = async (data: ILearningSetInput) => {
   const learningSet = await LearningSet.create(data);
-  return learningSet;
+  const createdLearningSet = await LearningSet.findById(learningSet._id).select(
+    "-chunkHashes",
+  );
+  return createdLearningSet;
 };
 
 /**
@@ -27,6 +30,7 @@ export const getLearningSetById = async (id: string) => {
       path: "ownerId",
       select: "_id email",
     })
+    .select("-chunkHashes")
     .lean();
 
   return learningSet;
@@ -61,6 +65,7 @@ export const getLearningSetsByUserPaginated = async (
       path: "ownerId",
       select: "_id email",
     })
+    .select("-chunkHashes")
     .sort({ createdAt: -1 })
     .lean();
 
@@ -97,6 +102,7 @@ export const updateLearningSet = async (
       path: "ownerId",
       select: "_id email",
     })
+    .select("-chunkHashes")
     .lean();
 
   return learningSet;

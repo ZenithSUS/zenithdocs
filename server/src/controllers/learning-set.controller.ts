@@ -9,6 +9,8 @@ import {
 } from "../services/learning-set.service.js";
 import { ParamsDictionary } from "express-serve-static-core";
 import AppError from "../utils/app-error.js";
+import { generateLearningSets } from "../lib/mistral/services/document-learning-set.service.js";
+import { createLearningSetRequestSchema } from "../schemas/learning-set.schema.js";
 
 interface LearningSetParams extends ParamsDictionary {
   id: string;
@@ -25,12 +27,17 @@ export const createLearningSetController = async (
 ) => {
   try {
     const currentUserId = req.user.sub;
-    const data: ILearningSetInput = {
+    const role = req.user.role;
+    const validated = createLearningSetRequestSchema.parse({
       ...req.body,
       ownerId: currentUserId,
-    };
+      role,
+    });
 
-    const learningSet = await createLearningSetService(data);
+    // Generate learning set from chunks
+    const generatedLearningSet = await generateLearningSets(validated);
+
+    const learningSet = await createLearningSetService(generatedLearningSet);
 
     return res.status(200).json({
       success: true,

@@ -166,7 +166,10 @@ export const getSimilaritySummaryScore = async (
  * @returns {Promise<IDocumentChunk[]>} Document chunks
  */
 export const getDocumentChunksByDocumentId = async (documentId: string) => {
-  const documentChunks = await DocumentChunk.find({ documentId });
+  const documentChunks = await DocumentChunk.find({ documentId })
+    .sort({ chunkIndex: 1 })
+    .select("_id text chunkIndex")
+    .lean();
   return documentChunks;
 };
 
