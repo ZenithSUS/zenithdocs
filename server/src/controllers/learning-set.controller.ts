@@ -37,7 +37,10 @@ export const createLearningSetController = async (
     // Generate learning set from chunks
     const generatedLearningSet = await generateLearningSets(validated);
 
-    const learningSet = await createLearningSetService(generatedLearningSet);
+    const learningSet = await createLearningSetService({
+      ...generatedLearningSet,
+      title: validated.title,
+    });
 
     return res.status(200).json({
       success: true,
