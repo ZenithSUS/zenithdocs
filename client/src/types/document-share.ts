@@ -6,6 +6,7 @@ export interface DocumentShare {
     fileUrl: string;
     fileType: string;
     fileSize: number;
+    rawText?: string;
   };
   ownerId: {
     _id: string;

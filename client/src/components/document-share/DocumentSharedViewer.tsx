@@ -20,7 +20,7 @@ interface DocumentSharedViewerProps {
     fileUrl: string;
     fileType: string;
     fileSize: number;
-    rawText: string;
+    rawText?: string;
   } | null;
 }
 

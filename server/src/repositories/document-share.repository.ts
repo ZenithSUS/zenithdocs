@@ -132,7 +132,7 @@ export const getDocumentShareById = async (id: string) => {
     })
     .populate({
       path: "documentId",
-      select: "_id title fileType fileSize fileUrl",
+      select: "_id title fileType fileSize fileUrl rawText",
     })
     .select({
       "allowedUsers._id": 0,
