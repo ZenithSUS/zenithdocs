@@ -65,19 +65,59 @@ export const getDocumentsByUserPaginated = async (
 ) => {
   const offset = (page - 1) * limit;
 
-  const documents = await Document.find({ user: userId })
-    .skip(offset)
-    .limit(limit)
-    .populate({
-      path: "user",
-      select: "_id email",
-    })
-    .populate({
-      path: "folder",
-      select: "_id name",
-    })
-    .sort({ createdAt: -1 })
-    .lean();
+  const documents = await Document.aggregate([
+    {
+      $match: { user: new Types.ObjectId(userId) },
+    },
+    {
+      $lookup: {
+        from: "documentshares",
+        let: { documentId: "$_id" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ["$documentId", "$$documentId"] },
+                  { $eq: ["$ownerId", new Types.ObjectId(userId)] },
+                ],
+              },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              ownerId: 1,
+            },
+          },
+        ],
+        as: "shared",
+      },
+    },
+    {
+      $sort: { createdAt: -1 },
+    },
+    {
+      $skip: offset,
+    },
+    {
+      $limit: limit,
+    },
+    {
+      $addFields: {
+        isShared: {
+          $cond: {
+            if: { $gt: [{ $size: "$shared" }, 0] },
+            then: true,
+            else: false,
+          },
+        },
+      },
+    },
+    {
+      $unset: ["rawText", "shared"],
+    },
+  ]);
 
   const total = await Document.countDocuments({ user: userId });
 

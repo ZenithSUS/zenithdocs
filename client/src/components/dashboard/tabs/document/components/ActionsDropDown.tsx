@@ -114,22 +114,24 @@ const ActionsDropDown = ({
         icon={<MessageCircle className="w-4 h-4" />}
         label="Chat"
       />
-      <DropdownButton
-        onClick={(e) => {
-          e.stopPropagation();
-          if (doc)
-            handleShareClick({
-              id: doc._id,
-              title: doc.title,
-              fileSize: doc.fileSize,
-              fileType: doc.fileType,
-              fileUrl: doc.fileUrl,
-              rawText: doc.rawText,
-            });
-        }}
-        icon={<ShareIcon className="w-4 h-4" />}
-        label="Share"
-      />
+      {!doc?.isShared && (
+        <DropdownButton
+          onClick={(e) => {
+            e.stopPropagation();
+            if (doc)
+              handleShareClick({
+                id: doc._id,
+                title: doc.title,
+                fileSize: doc.fileSize,
+                fileType: doc.fileType,
+                fileUrl: doc.fileUrl,
+                rawText: doc.rawText,
+              });
+          }}
+          icon={<ShareIcon className="w-4 h-4" />}
+          label="Share"
+        />
+      )}
 
       <div className="border-t border-white/8" />
 

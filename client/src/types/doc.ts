@@ -11,6 +11,7 @@ export interface Doc {
   rawText: string;
   status: DocStatus;
   user: string;
+  isShared: boolean;
   folder?:
     | string
     | {
