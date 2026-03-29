@@ -1,4 +1,4 @@
-import { Response } from "express";
+import { Request, Response } from "express";
 import { getSimilarityScore } from "../../../repositories/document-chunk.repository.js";
 import { getDocumentById } from "../../../repositories/document.repository.js";
 import { streamPublicDocumentChatSchema } from "../../../schemas/chat.schema.js";
@@ -16,6 +16,7 @@ interface PublicStreamChatPayload {
     content: string;
   }[];
   res: Response;
+  req: Request;
 }
 
 export const streamDocumentPublicChatService = async (
@@ -30,6 +31,7 @@ export const streamDocumentPublicChatService = async (
 
   const sharedDocument = await getDocumentShareByTokenService(
     validated.shareToken,
+    payload.req,
   );
 
   if (sharedDocument.type !== "public") {

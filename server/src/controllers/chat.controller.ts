@@ -91,6 +91,7 @@ export const chatPublicController = async (
       shareToken,
       history,
       res,
+      req,
     };
 
     await streamDocumentPublicChatService(data);
