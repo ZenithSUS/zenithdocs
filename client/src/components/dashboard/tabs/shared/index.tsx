@@ -13,6 +13,7 @@ interface SharedTabProps {
 
 function SharedTab({ userId, setNav }: SharedTabProps) {
   const {
+    // Data
     allSharedDocuments,
     totalPages,
     currentPage,
@@ -24,6 +25,10 @@ function SharedTab({ userId, setNav }: SharedTabProps) {
     sharedDocumentError,
     sharedDocumentErrorData,
     refetchSharedDocuments,
+    isUpdatePending,
+
+    // Actions
+    handleToggleActive,
   } = useSharedTab(userId);
 
   if (sharedDocumentsLoading) {
@@ -65,6 +70,8 @@ function SharedTab({ userId, setNav }: SharedTabProps) {
           <SharedDocumentCard
             key={sharedDocument._id}
             sharedDocument={sharedDocument}
+            onToggleActive={handleToggleActive}
+            isTogglePending={isUpdatePending}
           />
         ))}
       </div>

@@ -25,8 +25,11 @@ export const api = axios.create({
 
 const attachToken = (req: InternalAxiosRequestConfig) => {
   const accessToken = localStorage.getItem("accessToken");
+
   if (accessToken) {
     req.headers.Authorization = `Bearer ${accessToken}`;
+  } else {
+    delete req.headers.Authorization;
   }
   return req;
 };

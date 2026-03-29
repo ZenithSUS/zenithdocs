@@ -8,7 +8,11 @@ import {
   fetchDocumentSharesByUserPaginated,
   updateDocumentShare,
 } from "./document-share.api";
-import { DocumentShare, DocumentShareInput } from "@/types/document-share";
+import {
+  DocumentShare,
+  DocumentShareInput,
+  UpdateDocumentShareInput,
+} from "@/types/document-share";
 import { AxiosError, ResponseWithPagedData } from "@/types/api";
 import {
   updateDocumentShareCache,
@@ -25,7 +29,8 @@ type DocumentSharePage = ResponseWithPagedData<
 
 type UpdateVariables = {
   id: string;
-  data: Partial<DocumentShare>;
+  data: UpdateDocumentShareInput;
+  document?: DocumentShareInfo;
 };
 
 type MutateContext = {
@@ -110,17 +115,63 @@ const useDocumentShare = (userId: string, page: number = 1) => {
   >({
     mutationKey: documentShareKeys.update(),
     mutationFn: ({ id, data }) => updateDocumentShare(id, data),
-    onMutate: async ({ id, data }) => {
+    onMutate: async ({ id, data, document }) => {
       await queryClient.cancelQueries({ queryKey: pageQueryKey });
 
-      // Snapshot for rollback
       const previousDocumentShares = getCurrentPageData();
 
-      // Optimistically apply partial update
-      updateDocumentShareCache(queryClient, pageQueryKey, {
-        ...previousDocumentShares?.documentShares.find((d) => d._id === id),
-        ...data,
-      } as DocumentShare);
+      const existing = previousDocumentShares?.documentShares.find(
+        (d) => d._id === id,
+      );
+      if (!existing) return { previousDocumentShares };
+
+      const resolveAllowedUsers = (
+        incoming: { userId: string; permission: "read" | "write" }[],
+        existing: DocumentShare["allowedUsers"],
+      ): NonNullable<DocumentShare["allowedUsers"]> =>
+        incoming.map((u) => ({
+          permission: u.permission,
+          userId: existing?.find((eu) => eu.userId._id === u.userId)
+            ?.userId ?? {
+            _id: u.userId,
+            email: "",
+          },
+        }));
+
+      const updatedDocumentShare: DocumentShare = {
+        ...existing,
+        // Spread only the safe fields from data (excludes documentId which is a string in UpdateDocumentShareInput)
+        ...(data.type && { type: data.type }),
+        ...(data.publicPermission !== undefined && {
+          publicPermission: data.publicPermission,
+        }),
+        ...(data.allowedUsers !== undefined && {
+          allowedUsers: resolveAllowedUsers(
+            data.allowedUsers,
+            existing.allowedUsers,
+          ),
+        }),
+        ...(data.allowDownload !== undefined && {
+          allowDownload: data.allowDownload,
+        }),
+        ...(data.isActive !== undefined && { isActive: data.isActive }),
+        ...(data.expiresAt !== undefined && {
+          expiresAt: data.expiresAt ? new Date(data.expiresAt) : undefined,
+        }),
+        // Override documentId and ownerId with proper object shapes only if document is provided
+        ...(document && {
+          documentId: {
+            ...document,
+            _id: document.id,
+          },
+          ownerId: {
+            _id: userId,
+            email: email || "",
+          },
+        }),
+      };
+
+      updateDocumentShareCache(queryClient, pageQueryKey, updatedDocumentShare);
 
       return { previousDocumentShares };
     },
@@ -132,7 +183,7 @@ const useDocumentShare = (userId: string, page: number = 1) => {
         );
       }
     },
-    onSuccess: (updatedDocumentShare) => {
+    onSuccess: (updatedDocumentShare, { document }) => {
       // Sync confirmed server data into cache
       updateDocumentShareCache(queryClient, pageQueryKey, updatedDocumentShare);
 

@@ -13,6 +13,7 @@ interface UserSearchComboboxProps {
   value: string;
   onChange: (id: string) => void;
   placeholder?: string;
+  initialEmail?: string;
   excludeIds?: (string | undefined)[];
 }
 
@@ -20,12 +21,13 @@ export function UserSearchCombobox({
   value,
   onChange,
   placeholder = "Search by email...",
+  initialEmail,
   excludeIds = [],
 }: UserSearchComboboxProps) {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialEmail ?? "");
   const [open, setOpen] = useState(false);
   const [debouncedQuery, setDebouncedQuery] = useState("");
-  const [isSelected, setIsSelected] = useState(false);
+  const [isSelected, setIsSelected] = useState(!!initialEmail);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const skipDebounceRef = useRef(false);

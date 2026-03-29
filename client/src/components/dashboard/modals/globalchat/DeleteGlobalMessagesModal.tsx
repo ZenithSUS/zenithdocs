@@ -10,7 +10,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import useGlobalMessage from "@/features/global-message/useGlobalMessage";
-import useMessage from "@/features/message/useMessage";
 import { handleApiError } from "@/helpers/api-error";
 import { AxiosError } from "@/types/api";
 import { Trash2Icon } from "lucide-react";
@@ -50,27 +49,25 @@ function DeleteGlobalMessagesModal({
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <AlertDialogTrigger asChild>
-          <button
-            className="w-7 h-7 rounded-lg flex items-center justify-center cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-            style={{
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.07)",
-            }}
-            onMouseEnter={(e) =>
-              ((e.currentTarget as HTMLElement).style.background =
-                "rgba(239,68,68,0.12)")
-            }
-            onMouseLeave={(e) =>
-              ((e.currentTarget as HTMLElement).style.background =
-                "rgba(255,255,255,0.04)")
-            }
-            disabled={isDeleting || disabled || !chatId}
-            aria-label="Delete Global Messages"
-          >
-            <Trash2Icon size={14} color="red" />
-          </button>
-        </AlertDialogTrigger>
+        <button
+          className="w-7 h-7 rounded-lg flex items-center justify-center cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+          style={{
+            background: "rgba(255,255,255,0.04)",
+            border: "1px solid rgba(255,255,255,0.07)",
+          }}
+          onMouseEnter={(e) =>
+            ((e.currentTarget as HTMLElement).style.background =
+              "rgba(239,68,68,0.12)")
+          }
+          onMouseLeave={(e) =>
+            ((e.currentTarget as HTMLElement).style.background =
+              "rgba(255,255,255,0.04)")
+          }
+          disabled={isDeleting || disabled || !chatId}
+          aria-label="Delete Global Messages"
+        >
+          <Trash2Icon size={14} color="red" />
+        </button>
       </AlertDialogTrigger>
       <AlertDialogContent className="bg-background border-white/12">
         <AlertDialogHeader>

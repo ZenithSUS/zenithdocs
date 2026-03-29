@@ -1,6 +1,10 @@
 import { api } from "@/lib/axios";
 import { ResponseWithData, ResponseWithPagedData } from "@/types/api";
-import { DocumentShare, DocumentShareInput } from "@/types/document-share";
+import {
+  DocumentShare,
+  DocumentShareInput,
+  UpdateDocumentShareInput,
+} from "@/types/document-share";
 
 export const createDocumentShare = async (data: DocumentShareInput) => {
   const { data: res } = await api.post<ResponseWithData<DocumentShare>>(
@@ -42,7 +46,7 @@ export const fetchDocumentSharesByUserPaginated = async (
 
 export const updateDocumentShare = async (
   id: string,
-  data: Partial<DocumentShare>,
+  data: UpdateDocumentShareInput,
 ) => {
   const { data: res } = await api.put<ResponseWithData<DocumentShare>>(
     `/api/document-shares/${id}`,

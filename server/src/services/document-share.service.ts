@@ -2,6 +2,7 @@ import { nanoid } from "nanoid";
 import AppError from "../utils/app-error.js";
 import {
   createDocumentShare,
+  deleteDocumentShareById,
   existsDocumentShareByToken,
   getDocumentShareByDocumentId,
   getDocumentShareById,
@@ -36,12 +37,10 @@ import { Request } from "express";
  * @returns {Promise<DocumentShare>} Document share
  */
 export const createDocumentShareService = async (data: IDocumentShareInput) => {
-  // Convert expiresAt to a Date object
-  if (data.expiresAt) {
-    data.expiresAt = new Date(data.expiresAt);
-  }
-
-  const validated = createDocumentShareSchema.parse(data);
+  const validated = createDocumentShareSchema.parse({
+    ...data,
+    expiresAt: data.expiresAt ? new Date(data.expiresAt) : undefined,
+  });
 
   const document = await getDocumentById(data.documentId);
   if (!document) {
@@ -266,26 +265,36 @@ export const updateDocumentShareService = async (
   currentUserId: string,
   data: Partial<IDocumentShareInput>,
 ) => {
+  const shouldClearExpiry = data.expiresAt === null;
   const documentShare = await getDocumentShareById(id);
 
   if (!documentShare) {
     throw new AppError("Document share not found", 404);
   }
 
-  if (documentShare.ownerId.toString() !== currentUserId) {
+  if (documentShare.ownerId._id.toString() !== currentUserId) {
     throw new AppError(
       "You are not allowed to update this document share",
       403,
     );
   }
 
+  if (data.type === "public") {
+    data.allowedUsers = [];
+  }
+
+  if (data.type === "private") {
+    data.publicPermission = undefined;
+  }
+
   const validated = updateDocumentShareSchema.parse({
     id,
     ownerId: currentUserId,
     ...data,
+    expiresAt: data.expiresAt ?? undefined,
   });
 
-  return await updateDocumentShare(id, validated);
+  return await updateDocumentShare(id, validated, shouldClearExpiry);
 };
 
 /**
@@ -306,14 +315,15 @@ export const deleteDocumentShareService = async (
     throw new AppError("Document share not found", 404);
   }
 
-  const data = deleteDocumentShareSchema.parse({ id, currentUserId });
+  const data = deleteDocumentShareSchema.parse({ id, ownerId: currentUserId });
 
-  if (documentShare.ownerId.toString() !== data.ownerId) {
+  if (documentShare.ownerId._id.toString() !== data.ownerId) {
     throw new AppError(
       "You are not allowed to delete this document share",
       403,
     );
   }
 
-  return await getDocumentShareById(id);
+  const deletedShare = await deleteDocumentShareById(data.id);
+  return deletedShare;
 };

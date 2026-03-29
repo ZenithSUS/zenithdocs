@@ -6,7 +6,6 @@ export interface DocumentShare {
     fileUrl: string;
     fileType: string;
     fileSize: number;
-    rawText: string;
   };
   ownerId: {
     _id: string;
@@ -16,7 +15,10 @@ export interface DocumentShare {
   shareToken?: string;
   publicPermission?: "read" | "write";
   allowedUsers?: {
-    userId: string;
+    userId: {
+      _id: string;
+      email: string;
+    };
     permission: "read" | "write";
   }[];
   isActive: boolean;
@@ -38,5 +40,13 @@ export interface DocumentShareInput {
     permission: "read" | "write";
   }[];
   allowDownload?: boolean;
-  expiresAt?: string;
+  expiresAt?: string | null;
 }
+
+export type UpdateDocumentShareInput = Partial<
+  Omit<DocumentShareInput, "documentId">
+> & {
+  documentId?: string;
+  isActive?: boolean;
+  expiresAt?: string | null;
+};

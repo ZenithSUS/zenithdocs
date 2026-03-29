@@ -1,5 +1,8 @@
 import { Types } from "mongoose";
-import DocumentShare, { IDocumentShareInput } from "../models/DocumentShare.js";
+import DocumentShare, {
+  IDocumentShare,
+  IDocumentShareInput,
+} from "../models/DocumentShare.js";
 
 /**
  * Creates a new document share
@@ -10,8 +13,17 @@ import DocumentShare, { IDocumentShareInput } from "../models/DocumentShare.js";
  * @throws {AppError} If the document share data is invalid
  */
 export const createDocumentShare = async (data: IDocumentShareInput) => {
-  const documentShare = new DocumentShare(data);
-  return await documentShare.save();
+  const documentShare = await DocumentShare.create(data);
+  const newDocumentShare = await DocumentShare.findById(documentShare._id)
+    .populate({ path: "allowedUsers.userId", select: "_id email" })
+    .populate({ path: "ownerId", select: "_id email" })
+    .populate({
+      path: "documentId",
+      select: "_id title fileType fileSize fileUrl",
+    })
+    .lean();
+
+  return newDocumentShare;
 };
 
 /**
@@ -70,7 +82,11 @@ export const getDocumentSharesByUserIdPaginated = async (
     })
     .populate({
       path: "documentId",
-      select: "_id title fileType fileSize fileUrl rawText",
+      select: "_id title fileType fileSize fileUrl",
+    })
+    .populate({
+      path: "allowedUsers.userId",
+      select: "_id email",
     })
     .select({
       "allowedUsers._id": 0,
@@ -116,7 +132,7 @@ export const getDocumentShareById = async (id: string) => {
     })
     .populate({
       path: "documentId",
-      select: "_id title fileType fileSize fileUrl rawText",
+      select: "_id title fileType fileSize fileUrl",
     })
     .select({
       "allowedUsers._id": 0,
@@ -150,22 +166,31 @@ export const increaseDocumentShareAccess = async (id: string) => {
 export const updateDocumentShare = async (
   id: string,
   data: Partial<IDocumentShareInput>,
+  clearExpiry = false, // ← new param
 ) => {
-  return await DocumentShare.findByIdAndUpdate(id, data, {
+  const { expiresAt, ...rest } = data;
+
+  const updateQuery: Record<string, unknown> = {
+    $set: rest,
+  };
+
+  if (clearExpiry) {
+    updateQuery.$unset = { expiresAt: "" };
+  } else if (expiresAt !== undefined) {
+    (updateQuery.$set as Record<string, unknown>).expiresAt = expiresAt;
+  }
+
+  return await DocumentShare.findByIdAndUpdate(id, updateQuery, {
     returnDocument: "after",
   })
-    .populate({
-      path: "ownerId",
-      select: "_id email",
-    })
+    .populate({ path: "ownerId", select: "_id email" })
     .populate({
       path: "documentId",
-      select: "_id title fileType fileSize fileUrl rawText",
+      select: "_id title fileType fileSize fileUrl",
     })
-    .select({
-      "allowedUsers._id": 0,
-    })
-    .lean();
+    .populate({ path: "allowedUsers.userId", select: "_id email" })
+    .select({ "allowedUsers._id": 0 })
+    .lean<IDocumentShare>();
 };
 
 /**

@@ -76,6 +76,18 @@ export const updateDocumentShareSchema = createDocumentShareBaseSchema
   .extend({
     id: objectId,
     ownerId: objectId,
+    isActive: z.boolean().optional(),
+    expiresAt: z.preprocess((val) => {
+      if (!val) return undefined;
+      const str = val as string;
+      // If no Z or offset, append Manila offset so it's parsed as local time
+      const withOffset =
+        str.endsWith("Z") || /[+-]\d{2}:\d{2}$/.test(str)
+          ? str
+          : `${str}+08:00`; // ← force Manila timezone
+      const date = new Date(withOffset);
+      return isNaN(date.getTime()) ? undefined : date;
+    }, z.date().optional()),
   });
 
 export const deleteDocumentShareSchema = z.object({

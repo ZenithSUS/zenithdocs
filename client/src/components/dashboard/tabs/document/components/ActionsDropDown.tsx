@@ -125,7 +125,6 @@ const ActionsDropDown = ({
                 fileSize: doc.fileSize,
                 fileType: doc.fileType,
                 fileUrl: doc.fileUrl,
-                rawText: doc.rawText,
               });
           }}
           icon={<ShareIcon className="w-4 h-4" />}
