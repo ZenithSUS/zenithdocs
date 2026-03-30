@@ -22,7 +22,7 @@ export const createManyDocumentChunks = async (
  * It returns up to 20 similar document chunks with the highest similarity score.
  * @param {EmbeddingResponse} queryEmbedding - The query embedding to search for similar document chunks.
  * @param {string} documentId - The ID of the document to search for similar document chunks.
- * @returns {Promise<IDocumentChunk[]>} An array of up to 5 similar document chunks with the highest similarity score.
+ * @returns {Promise<IDocumentChunk[]>} An array of up to 20 similar document chunks with the highest similarity score.
  */
 export const getSimilarityScore = async (
   queryEmbedding: number[],
