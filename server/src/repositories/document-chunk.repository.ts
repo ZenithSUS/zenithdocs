@@ -19,7 +19,7 @@ export const createManyDocumentChunks = async (
 
 /**
  * Searches for similar document chunks based on the given query embedding and document ID.
- * It returns up to 5 similar document chunks with the highest similarity score.
+ * It returns up to 20 similar document chunks with the highest similarity score.
  * @param {EmbeddingResponse} queryEmbedding - The query embedding to search for similar document chunks.
  * @param {string} documentId - The ID of the document to search for similar document chunks.
  * @returns {Promise<IDocumentChunk[]>} An array of up to 5 similar document chunks with the highest similarity score.
@@ -37,8 +37,8 @@ export const getSimilarityScore = async (
           index: "embedding",
           path: "embedding",
           queryVector: queryEmbedding,
-          numCandidates: 150,
-          limit: 5,
+          numCandidates: 300,
+          limit: 20,
           filter: {
             documentId: { $eq: new mongoose.Types.ObjectId(documentId) },
           },
