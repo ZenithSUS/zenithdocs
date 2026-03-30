@@ -95,7 +95,7 @@ const useDocument = (
   const documentsByUserPage = useInfiniteQuery<
     DocumentPage,
     AxiosError,
-    InfiniteData<DocumentPage>,
+    DocumentsInfiniteData,
     ReturnType<typeof documentKeys.byUserPage>,
     number
   >({

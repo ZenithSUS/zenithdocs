@@ -32,7 +32,7 @@ export const addInfiniteDocument = (
 export const updateInfiniteDocument = (
   queryClient: QueryClient,
   querykey: readonly unknown[],
-  updatedDoc: Partial<Doc> & { _id: string },
+  updatedDoc: Partial<Doc>,
 ) => {
   queryClient.setQueryData<DocumentsInfiniteData>(querykey, (oldData) => {
     if (!oldData) return oldData;
