@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import HeaderDropDown from "./HeaderDropDown";
 import { useRouter } from "next/navigation";
-import { Upload } from "lucide-react";
+import { Brain, Upload } from "lucide-react";
 import useDropdown from "@/features/ui/useDropdown";
 
 interface DashboardHeaderProps {
@@ -68,6 +68,17 @@ function DashboardHeader({
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3">
+        {/* Document Learning Center — desktop */}
+        <button
+          type="button"
+          className="hidden sm:flex items-center gap-2 px-4 py-2 bg-primary text-black rounded-sm
+            text-[11px] font-bold tracking-widest font-sans hover:bg-[#e0b530] transition-colors duration-200 hover:text-white cursor-pointer"
+          onClick={() => router.push("/dashboard/learning-sets")}
+        >
+          <Brain className="w-4 h-4" />
+          STUDY
+        </button>
+
         {/* Upload — desktop */}
         <button
           type="button"
@@ -77,6 +88,15 @@ function DashboardHeader({
         >
           <Upload className="w-4 h-4" />
           UPLOAD
+        </button>
+
+        {/* Document Learning Center — mobile icon only */}
+        <button
+          className="sm:hidden p-2 bg-primary text-black rounded-sm hover:bg-[#e0b530] transition-colors active:scale-95 cursor-pointer"
+          onClick={() => router.push("/dashboard/learning-sets")}
+          aria-label="Document Learning Center"
+        >
+          <Brain className="w-4 h-4" />
         </button>
 
         {/* Upload — mobile icon only */}
