@@ -197,7 +197,7 @@ export default function RegisterPage() {
             {[
               {
                 icon: "◈",
-                title: "10k tokens / month",
+                title: "15k tokens / month",
                 desc: "No credit card required",
               },
               {
