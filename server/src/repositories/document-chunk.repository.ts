@@ -27,6 +27,7 @@ export const createManyDocumentChunks = async (
 export const getSimilarityScore = async (
   queryEmbedding: number[],
   documentId: string,
+  minScore = 0.7,
 ) => {
   try {
     if (!queryEmbedding?.length) return [];
@@ -53,6 +54,8 @@ export const getSimilarityScore = async (
           score: { $meta: "vectorSearchScore" },
         },
       },
+      { $match: { score: { $gte: minScore } } },
+      { $sort: { score: -1 } },
     ]);
 
     return results;
