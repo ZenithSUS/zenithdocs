@@ -2,10 +2,23 @@
 
 import sizefmt from "@/helpers/size-format";
 import { User } from "@/types/user";
+import {
+  LayoutDashboard,
+  FileText,
+  BookOpen,
+  ScrollText,
+  Folder,
+  MessageSquare,
+  BarChart2,
+  ArrowLeftRight,
+  X,
+  Diamond,
+} from "lucide-react";
 
 export type NavItem =
   | "overview"
   | "documents"
+  | "studies"
   | "summaries"
   | "folders"
   | "chats"
@@ -28,14 +41,15 @@ interface DashboardSidebarProps {
   documentPct: number;
 }
 
-const navItems: { id: NavItem; icon: string; label: string }[] = [
-  { id: "overview", icon: "◈", label: "Overview" },
-  { id: "documents", icon: "▣", label: "Documents" },
-  { id: "summaries", icon: "◎", label: "Summaries" },
-  { id: "folders", icon: "⬡", label: "Folders" },
-  { id: "chats", icon: "⊕", label: "Chats" },
-  { id: "usage", icon: "◉", label: "Usage" },
-  { id: "shared", icon: "⇄", label: "Shared" },
+const navItems: { id: NavItem; icon: React.ReactNode; label: string }[] = [
+  { id: "overview", icon: <LayoutDashboard size={15} />, label: "Overview" },
+  { id: "documents", icon: <FileText size={15} />, label: "Documents" },
+  { id: "studies", icon: <BookOpen size={15} />, label: "Studies" },
+  { id: "summaries", icon: <ScrollText size={15} />, label: "Summaries" },
+  { id: "folders", icon: <Folder size={15} />, label: "Folders" },
+  { id: "chats", icon: <MessageSquare size={15} />, label: "Chats" },
+  { id: "usage", icon: <BarChart2 size={15} />, label: "Usage" },
+  { id: "shared", icon: <ArrowLeftRight size={15} />, label: "Shared" },
 ];
 
 function DashBoardSidebar({
@@ -62,20 +76,20 @@ function DashBoardSidebar({
       {/* Logo & close button */}
       <div className="shrink-0 px-6 py-5 border-b border-white/6 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-[20px] text-primary">◈</span>
+          <Diamond size={20} className="text-primary" />
           <span className="text-[15px] font-bold tracking-[0.08em] font-serif">
             ZENITH<span className="text-primary">DOCS</span>
           </span>
         </div>
         <button
-          className="lg:hidden text-text/40 hover:text-text/70 text-xl"
+          className="lg:hidden text-text/40 hover:text-text/70"
           onClick={() => setSidebarOpen(false)}
         >
-          ✕
+          <X size={18} />
         </button>
       </div>
 
-      {/* Nav — takes remaining space, scrolls if needed */}
+      {/* Nav */}
       <nav className="flex-1 min-h-0 overflow-y-auto lg:overflow-y-hidden lg:hover:overflow-y-auto px-3 py-5 flex flex-col gap-1">
         {navItems.map((item) => (
           <button
@@ -90,9 +104,7 @@ function DashBoardSidebar({
                 : "text-text/45 hover:text-text/80 hover:bg-white/4 border border-transparent"
             }`}
           >
-            <span
-              className={`text-[15px] ${nav === item.id ? "text-primary" : "text-text/30"}`}
-            >
+            <span className={nav === item.id ? "text-primary" : "text-text/30"}>
               {item.icon}
             </span>
             {item.label}
@@ -105,7 +117,7 @@ function DashBoardSidebar({
         ))}
       </nav>
 
-      {/* Bottom widgets + user — always pinned at bottom */}
+      {/* Bottom widgets + user */}
       <div className="shrink-0">
         {/* Token quota widget */}
         <div className="mx-3 mb-4 px-4 py-4 border border-primary/15 rounded-sm bg-primary/4">

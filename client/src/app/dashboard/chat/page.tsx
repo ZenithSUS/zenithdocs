@@ -123,7 +123,7 @@ function DocumentChatContent() {
   }
 
   return (
-    <div className="h-screen bg-[#111111] text-[#F5F5F5] font-serif flex flex-col overflow-hidden relative">
+    <div className="h-screen bg-background text-text font-serif flex flex-col overflow-hidden relative">
       <CursorGlow mousePos={mousePos} />
 
       {chatBotOpen ? (

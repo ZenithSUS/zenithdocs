@@ -109,9 +109,7 @@ export const getLearningSetsByUserPaginated = async (
       limit,
     );
 
-    const learningSetsCount = learningSets.learningSets.length;
-
-    return res.status(learningSetsCount ? 200 : 204).json({
+    return res.status(200).json({
       success: true,
       message: "Learning sets fetched successfully",
       data: learningSets,

@@ -1,5 +1,5 @@
 import "@/app/globals.css";
-import LogoutModal from "./modals/LogoutModal";
+import LogoutModal from "./dashboard/modals/LogoutModal";
 import sizefmt from "@/helpers/size-format";
 
 interface HeaderDropDownProps {

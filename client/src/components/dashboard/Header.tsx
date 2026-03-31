@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import HeaderDropDown from "./HeaderDropDown";
+import HeaderDropDown from "../HeaderDropDown";
 import { useRouter } from "next/navigation";
 import { Brain, Upload } from "lucide-react";
 import useDropdown from "@/features/ui/useDropdown";
@@ -58,6 +57,7 @@ function DashboardHeader({
           <p className="text-[11px] text-text/30 font-sans tracking-[0.05em] hidden sm:block">
             {nav === "overview" && "Your workspace at a glance"}
             {nav === "documents" && `${totalDocuments} total documents`}
+            {nav === "studies" && "Your learning sets"}
             {nav === "summaries" && `${totalSummaries} AI-generated summaries`}
             {nav === "folders" && `${totalFolders} folders`}
             {nav === "chats" && "Your chat history"}

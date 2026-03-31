@@ -4,8 +4,9 @@ import { LearningSet, LearningSetInput } from "@/types/learning-set";
 
 export const createLearningSet = async (data: LearningSetInput) => {
   const { data: res } = await api.post<ResponseWithData<LearningSet>>(
-    "/learning-sets",
+    "/api/learning-sets",
     data,
+    { timeout: 300000 }, // 5 minutes timeout
   );
 
   return res.data;
@@ -13,7 +14,7 @@ export const createLearningSet = async (data: LearningSetInput) => {
 
 export const fetchLearningSetById = async (id: string) => {
   const { data: res } = await api.get<ResponseWithData<LearningSet>>(
-    `/learning-sets/${id}`,
+    `/api/learning-sets/${id}`,
   );
 
   return res.data;
@@ -26,7 +27,7 @@ export const fetchLearningSetsByUserPaginated = async (
 ) => {
   const { data: res } = await api.get<
     ResponseWithPagedData<LearningSet, "learningSets">
-  >(`/learning-sets/user/${userId}`, {
+  >(`/api/learning-sets/user/${userId}`, {
     params: {
       page,
       limit,
@@ -41,7 +42,7 @@ export const updateLearningSet = async (
   data: Partial<LearningSetInput>,
 ) => {
   const { data: res } = await api.put<ResponseWithData<LearningSet>>(
-    `/learning-sets/${id}`,
+    `/api/learning-sets/${id}`,
     data,
   );
 
@@ -50,7 +51,7 @@ export const updateLearningSet = async (
 
 export const deleteLearningSet = async (id: string) => {
   const { data: res } = await api.delete<ResponseWithData<LearningSet>>(
-    `/learning-sets/${id}`,
+    `/api/learning-sets/${id}`,
   );
 
   return res.data;

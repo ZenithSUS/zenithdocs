@@ -1,0 +1,90 @@
+"use client";
+
+import LoadingScreen from "@/components/LoadingScreen";
+import ErrorScreen from "@/components/ErrorScreen";
+import LearningSetHeader from "./components/LearningSetHeader";
+import LearningSetConfig from "./components/LearningSetConfig";
+import useLearningSetPage from "./useLearningSetPage";
+import GeneratedLearningSets from "./components/GeneratedLearningSets";
+
+function LearningSetsPage() {
+  const {
+    // Retry
+    pageRetry,
+    retryLearningSetsPage,
+
+    // Auth
+    user,
+    userLoading,
+
+    // Documents
+    documents,
+    documentsLoading,
+    documentsHasNextPage,
+    fetchNextDocumentsPage,
+
+    // Learning Sets
+    createLearningSetMutation,
+    generatedSet,
+    setGeneratedSet,
+
+    // Errors
+    isLearningSetPageError,
+    learningSetPageErrorData,
+  } = useLearningSetPage();
+
+  if (userLoading || documentsLoading) return <LoadingScreen />;
+
+  if (isLearningSetPageError) {
+    return (
+      <ErrorScreen
+        error={learningSetPageErrorData}
+        onRetry={retryLearningSetsPage}
+        messageErrorTitle="Learning Sets Load Error"
+        retries={pageRetry}
+      />
+    );
+  }
+
+  return (
+    <div className="h-screen bg-background text-text font-serif flex flex-col">
+      <LearningSetHeader user={user} />
+
+      <main className="mt-18.25 h-[calc(100vh-73px)] overflow-y-auto px-5 sm:px-8 md:px-12 pt-10 pb-16">
+        {!generatedSet ? (
+          <>
+            <div className="mb-8">
+              <h1 className="text-2xl md:text-3xl font-serif font-semibold text-text/90 tracking-tight">
+                Create a Learning Set
+              </h1>
+              <p className="text-sm text-text/45 mt-1">
+                Pick a document, configure your preferences, and let AI do the
+                rest.
+              </p>
+            </div>
+            <LearningSetConfig
+              userId={user?._id ?? ""}
+              documents={documents}
+              documentsHasNextPage={documentsHasNextPage}
+              fetchNextDocumentsPage={fetchNextDocumentsPage}
+              createLearningSetMutation={createLearningSetMutation}
+              setGeneratedSet={setGeneratedSet}
+            />
+          </>
+        ) : (
+          <div className="flex flex-col gap-4">
+            <h2 className="text-2xl md:text-3xl font-serif font-semibold text-text/90 tracking-tight">
+              Your Learning Set
+            </h2>
+            <GeneratedLearningSets
+              learningSet={generatedSet}
+              setLearningSet={setGeneratedSet}
+            />
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
+
+export default LearningSetsPage;
