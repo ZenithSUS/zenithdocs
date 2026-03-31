@@ -347,8 +347,6 @@ function EditShareDocumentModal({
                       };
 
                       const handleClear = (e: React.MouseEvent) => {
-                        console.log("clear");
-                        console.log("current value", field.value);
                         e.stopPropagation();
                         e.preventDefault();
                         setValue("expiresAt", undefined, {

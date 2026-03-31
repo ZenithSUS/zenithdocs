@@ -3,6 +3,7 @@ import { mainDB } from "../config/db.js";
 import Summary from "./Summary.js";
 import Chat from "./Chat.js";
 import DocumentShare from "./DocumentShare.js";
+import LearningSet from "./LearningSet.js";
 
 export interface IDocument extends Document {
   title: string;
@@ -86,25 +87,34 @@ documentSchema.index({ folder: 1 });
 documentSchema.post("findOneAndDelete", async function (doc: IDocument) {
   if (!doc) return;
 
-  await Summary.deleteMany({ document: doc._id });
-  await Chat.deleteMany({ documentId: doc._id });
-  await DocumentShare.deleteMany({ documentId: doc._id });
+  await Promise.all([
+    Summary.deleteMany({ document: doc._id }),
+    Chat.deleteMany({ documentId: doc._id }),
+    DocumentShare.deleteMany({ documentId: doc._id }),
+    LearningSet.deleteMany({ documentId: doc._id }),
+  ]);
 });
 
 documentSchema.post("deleteOne", async (doc: IDocument) => {
   if (!doc) return;
 
-  await Summary.deleteMany({ document: doc._id });
-  await Chat.deleteMany({ documentId: doc._id });
-  await DocumentShare.deleteMany({ documentId: doc._id });
+  await Promise.all([
+    Summary.deleteMany({ document: doc._id }),
+    Chat.deleteMany({ documentId: doc._id }),
+    DocumentShare.deleteMany({ documentId: doc._id }),
+    LearningSet.deleteMany({ documentId: doc._id }),
+  ]);
 });
 
 documentSchema.post("deleteMany", async (doc: IDocument) => {
   if (!doc) return;
 
-  await Summary.deleteMany({ document: doc._id });
-  await Chat.deleteMany({ documentId: doc._id });
-  await DocumentShare.deleteMany({ documentId: doc._id });
+  await Promise.all([
+    Summary.deleteMany({ document: doc._id }),
+    Chat.deleteMany({ documentId: doc._id }),
+    DocumentShare.deleteMany({ documentId: doc._id }),
+    LearningSet.deleteMany({ documentId: doc._id }),
+  ]);
 });
 
 export default mainDB.model<IDocument>("Document", documentSchema);

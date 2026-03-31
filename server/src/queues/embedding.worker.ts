@@ -2,11 +2,16 @@ import { Worker } from "bullmq";
 import redis, { bullMQConnection } from "../config/redis.js";
 import { updateDocument } from "../repositories/document.repository.js";
 import { prepareDocumentforRAG } from "../lib/mistral/services/rag-index.service.js";
+import extractRawText, { terminateOcr } from "../lib/extract-text.js";
+import { unlink } from "fs/promises";
 import colors from "../utils/log-colors.js";
+import { downloadFileFromCloudinary } from "../lib/cloudinary.service.js";
 
 interface EmbeddingJobData {
   documentId: string;
   userId: string;
+  publicId: string;
+  mimeType: string;
 }
 
 export const embeddingWorker = new Worker(
@@ -16,7 +21,10 @@ export const embeddingWorker = new Worker(
     console.log(`${colors.green}Job added to queue${colors.reset}: ${job.id}`);
     console.log("=".repeat(50) + "\n");
 
-    const { documentId, userId }: EmbeddingJobData = job.data;
+    const { documentId, userId, publicId, mimeType }: EmbeddingJobData =
+      job.data;
+
+    const tempFilePath = await downloadFileFromCloudinary(publicId, mimeType);
 
     await updateDocument(documentId, { status: "processing" });
     await redis.publish(
@@ -30,7 +38,12 @@ export const embeddingWorker = new Worker(
     );
 
     try {
+      const rawText = await extractRawText(tempFilePath, mimeType);
+
+      await updateDocument(documentId, { rawText });
+
       await prepareDocumentforRAG(documentId, userId);
+
       await updateDocument(documentId, { status: "completed" });
       await redis.publish(
         "document-events",
@@ -53,34 +66,45 @@ export const embeddingWorker = new Worker(
         }),
       );
       throw error;
+    } finally {
+      // Always clean up the temp file — whether success or failure
+      await unlink(tempFilePath).catch(() => {});
     }
   },
   {
     connection: bullMQConnection,
     concurrency: 1,
-    lockDuration: 60000,
-    lockRenewTime: 30000,
-    stalledInterval: 30000, // check for stalled jobs every 30s
+    lockDuration: 300000, // 5 min lock
+    lockRenewTime: 60000, // renew every 1 min
+    stalledInterval: 60000, // check every 1 min
     skipVersionCheck: true,
   },
 );
 
+embeddingWorker.on("completed", (job) => {
+  console.log("=".repeat(50));
+  console.log(`${colors.green}Job ${job.id} completed${colors.reset}`);
+  console.log("=".repeat(50) + "\n");
+});
+
 embeddingWorker.on("failed", (job, err) => {
+  console.error("=".repeat(50));
   console.error(
-    `[Embedding] Job ${job?.id} failed after ${job?.attemptsMade} attempts:`,
+    `${colors.red}Job ${job?.id} failed:${colors.reset}`,
     err.message,
   );
+  console.error("=".repeat(50) + "\n");
 });
 
 embeddingWorker.on("error", (err) => {
-  console.error("[Embedding Worker Error]", err);
+  console.log("=".repeat(50));
+  console.error(`${colors.red}Worker error:${colors.reset}`, err);
+  console.log("=".repeat(50) + "\n");
 });
 
-embeddingWorker.on("completed", (job) => {
+embeddingWorker.on("stalled", (jobId) => {
   console.log("=".repeat(50));
-  console.log(
-    `${colors.green}Job ${job.id} completed!${colors.green}${colors.reset}`,
-  );
+  console.warn(`${colors.yellow}Job ${jobId} stalled${colors.reset}`);
   console.log("=".repeat(50) + "\n");
 });
 
@@ -89,22 +113,10 @@ const shutdown = async (signal: string) => {
   console.log(`[Embedding] Received ${signal}, shutting down gracefully...`);
   console.log("=".repeat(50) + "\n");
 
-  try {
-    // Stop accepting new jobs, wait for active job to finish
-    await embeddingWorker.close();
-
-    console.log("=".repeat(50));
-    console.log("[Embedding] Worker  closed.");
-    console.log("=".repeat(50) + "\n");
-  } catch (err) {
-    console.log("=".repeat(50));
-    console.error("[Embedding] Error during shutdown:", err);
-    console.log("=".repeat(50) + "\n");
-    process.exit(1);
-  }
-
+  await embeddingWorker.close();
+  await terminateOcr();
   process.exit(0);
 };
 
-process.on("SIGTERM", () => shutdown("SIGTERM")); // Docker/K8s stop
-process.on("SIGINT", () => shutdown("SIGINT")); // Ctrl-C
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));

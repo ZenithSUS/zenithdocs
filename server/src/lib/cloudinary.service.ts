@@ -1,6 +1,9 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 import config from "../config/env.js";
+import os from "os";
+import path from "path";
+import https from "https";
 
 cloudinary.config({
   cloud_name: config.cloudinary.cloudName,
@@ -10,6 +13,41 @@ cloudinary.config({
 
 const baseFolder =
   config.nodeEnv === "production" ? "zenithdocs" : "zenithdocs-dev";
+
+export const downloadFileFromCloudinary = (
+  publicId: string,
+  mimeType: string,
+): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    cloudinary.api.resource(
+      publicId,
+      { resource_type: "raw" },
+      (error, result) => {
+        if (error || !result) return reject(error);
+
+        const ext = mimeType.split("/")[1] ?? "bin";
+        const tempPath = path.join(
+          os.tmpdir(),
+          `reprocess=${Date.now()}.${ext}`,
+        );
+        const file = fs.createWriteStream(tempPath);
+
+        https.get(result.secure_url, (response) => {
+          response.pipe(file);
+          file
+            .on("finish", () => {
+              file.close();
+              resolve(tempPath);
+            })
+            .on("error", () => {
+              fs.unlink(tempPath, () => {});
+              reject(error);
+            });
+        });
+      },
+    );
+  });
+};
 
 export const uploadToCloudinary = (
   filePath: string,

@@ -15,7 +15,10 @@ import {
   incrementUsage,
   updateUsageMonthByUser,
 } from "../repositories/usage.repository.js";
-import { deleteFileFromCloudinary } from "../lib/cloudinary.service.js";
+import {
+  deleteFileFromCloudinary,
+  downloadFileFromCloudinary,
+} from "../lib/cloudinary.service.js";
 import colors from "../utils/log-colors.js";
 import {
   deleteDocumentChunksByDocumentId,
@@ -29,6 +32,7 @@ import {
   updateDocumentSchema,
 } from "../schemas/document.schema.js";
 import { userTokenSchema } from "../utils/zod.utils.js";
+import mimeTypeMap from "../constants/mine-types.js";
 
 /**
  * Creates a new document with the given data
@@ -110,9 +114,19 @@ export const reprocessDocumentService = async (
     await deleteDocumentChunksByDocumentId(docId);
   }
 
+  const mimeType = mimeTypeMap[document.fileType];
+  if (!mimeType) {
+    throw new AppError("File type not supported", 400);
+  }
+
   await embeddingQueue.add(
     "embedding",
-    { documentId: docId, userId: currentUserId },
+    {
+      documentId: docId,
+      userId: currentUserId,
+      publicId: document.publicId,
+      mimeType,
+    },
     {
       attempts: 1,
       backoff: {

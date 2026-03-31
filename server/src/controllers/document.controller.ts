@@ -48,8 +48,6 @@ export const createDocumentController = async (
 
     const data: Partial<IDocumentInput> = req.body;
 
-    const rawText = await extractRawText(tempFilePath, req.file.mimetype);
-
     const { url, publicId } = await uploadToCloudinary(
       tempFilePath,
       req.file.originalname,
@@ -64,23 +62,24 @@ export const createDocumentController = async (
       fileUrl: url,
       fileType: req.file.mimetype.split("/")[1],
       fileSize: req.file.size,
-      rawText,
+      rawText: "",
+      status: "processing",
       publicId,
     };
 
     const document = await createDocumentService(finalData);
 
-    await unlink(tempFilePath).catch(() => {});
-
     await embeddingQueue.add(
       "embedding",
-      { documentId: document._id.toString(), userId: document.user.toString() },
+      {
+        documentId: document._id.toString(),
+        userId: document.user.toString(),
+        publicId,
+        mimeType: req.file.mimetype,
+      },
       {
         attempts: 1,
-        backoff: {
-          type: "exponential",
-          delay: 5000,
-        },
+        backoff: { type: "exponential", delay: 5000 },
       },
     );
 
@@ -90,13 +89,11 @@ export const createDocumentController = async (
       data: document,
     });
   } catch (error) {
-    // Delete the uploaded file from Cloudinary when error occurs
     if (uploadedPublicId) {
       await cloudinary.uploader.destroy(uploadedPublicId, {
         resource_type: "raw",
       });
     }
-
     if (tempFilePath) await unlink(tempFilePath).catch(() => {});
     next(error);
   }
