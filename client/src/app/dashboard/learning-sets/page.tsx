@@ -6,9 +6,17 @@ import LearningSetHeader from "./components/LearningSetHeader";
 import LearningSetConfig from "./components/LearningSetConfig";
 import useLearningSetPage from "./useLearningSetPage";
 import GeneratedLearningSets from "./components/GeneratedLearningSets";
+import CursorGlow from "@/components/CursorGlow";
+import GlobalChat from "@/components/dashboard/globalchat";
+import { Zap } from "lucide-react";
 
 function LearningSetsPage() {
   const {
+    // UI
+    mousePos,
+    chatBotOpen,
+    setChatBotOpen,
+
     // Retry
     pageRetry,
     retryLearningSetsPage,
@@ -48,6 +56,25 @@ function LearningSetsPage() {
 
   return (
     <div className="h-screen bg-background text-text font-serif flex flex-col">
+      {/* Ambient cursor glow */}
+      <CursorGlow mousePos={mousePos} />
+
+      {/* Global ChatBot */}
+      {chatBotOpen ? (
+        <div className="fixed bottom-5 right-5 z-50">
+          <GlobalChat user={user ?? null} setIsOpen={setChatBotOpen} />
+        </div>
+      ) : (
+        <div className="bg-background rounded-full p-2 border border-primary fixed bottom-5 right-5 z-50 hover:bg-primary/10 hover:scale-105 transition-transform">
+          <Zap
+            onClick={() => setChatBotOpen(true)}
+            className="cursor-pointer hover:scale-105 transition-transform"
+            size={20}
+            strokeWidth={2}
+          />
+        </div>
+      )}
+
       <LearningSetHeader user={user} />
 
       <main className="mt-18.25 h-[calc(100vh-73px)] overflow-y-auto px-5 sm:px-8 md:px-12 pt-10 pb-16">

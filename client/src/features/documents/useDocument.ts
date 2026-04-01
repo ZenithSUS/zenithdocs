@@ -53,14 +53,9 @@ type MutationContext = {
  *   - updateDocumentMutation: A mutation that updates a document by its ID.
  *   - deleteDocumentMutation: A mutation that deletes a document by its ID.
  */
-const useDocument = (
-  userId: string,
-  documentId: string = "",
-  options: UseFormOptions<Partial<Doc>> = {},
-) => {
+const useDocument = (userId: string, documentId: string = "") => {
   const queryClient = useQueryClient();
   const documentLimit = 10;
-  const { setError } = options;
 
   // Create document
   const createDocumentMutation = useMutation<Doc, AxiosError, Partial<Doc>>({
@@ -72,16 +67,6 @@ const useDocument = (
         documentKeys.byUserPage(userId, documentLimit),
         newDocs,
       );
-    },
-    onError: (err) => {
-      const data = err.response?.data;
-      if (data?.errors && setError) {
-        data.errors.forEach((e: { field: string; message: string }) => {
-          setError(e.field as keyof Partial<Doc>, { message: e.message });
-        });
-      } else {
-        toast.error(data?.message ?? "Something went wrong");
-      }
     },
   });
 

@@ -1,6 +1,7 @@
 import useAuth from "@/features/auth/useAuth";
 import useDocument from "@/features/documents/useDocument";
 import useLearningSet from "@/features/learning-sets/useLearningSet";
+import useMousePosition from "@/features/ui/useMousePostion";
 import useRetryStore from "@/store/useRetryStore";
 import { LearningSet } from "@/types/learning-set";
 import { useState } from "react";
@@ -10,6 +11,10 @@ const useLearningSetPage = () => {
   const pageRetry = retries["learning-sets-page"] ?? 0;
 
   const [generatedSet, setGeneratedSet] = useState<LearningSet | null>(null);
+  const [chatBotOpen, setChatBotOpen] = useState(false);
+
+  // ─── Mouse Position ─────────────────────────────────────────────────────────
+  const mousePos = useMousePosition();
 
   // ─── Auth ────────────────────────────────────────────────────────────────────
   const { me } = useAuth();
@@ -57,6 +62,11 @@ const useLearningSetPage = () => {
   };
 
   return {
+    // UI
+    mousePos,
+    chatBotOpen,
+    setChatBotOpen,
+
     // Retry
     pageRetry,
     retryLearningSetsPage,

@@ -149,7 +149,7 @@ ${context}`;
   );
 
   for await (const chunk of stream) {
-    const token = chunk.data.choices[0].delta.content;
+    const token = chunk.data.choices[0]?.delta?.content;
 
     if (token) {
       fullResponse += token;

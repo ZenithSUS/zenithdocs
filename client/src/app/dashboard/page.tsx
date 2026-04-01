@@ -12,12 +12,14 @@ import useDashboardPage from "./useDashboard";
 import DocumentsLoadingSkeleton from "@/components/dashboard/tabs/document/components/DocumentsLoadingSkeleton";
 import FolderLoadingSkeletion from "@/components/dashboard/tabs/folder/components/FolderLoadingSkeletion";
 import DocumentChatLoading from "@/components/dashboard/tabs/chat/DocumentChatLoading";
+import SharedDocumentLoading from "@/components/dashboard/tabs/shared/components/SharedDocumentLoading";
 import GlobalChat from "@/components/dashboard/globalchat";
 import { Zap } from "lucide-react";
 
 // Lazy-load dashboard tab components for code splitting
 const OverViewTab = lazy(() => import("@/components/dashboard/tabs/overview"));
 const DocumentsTab = lazy(() => import("@/components/dashboard/tabs/document"));
+const StudyTab = lazy(() => import("@/components/dashboard/tabs/study"));
 const SummaryTab = lazy(() => import("@/components/dashboard/tabs/summary"));
 const ChatsTab = lazy(() => import("@/components/dashboard/tabs/chat"));
 const FolderTab = lazy(() => import("@/components/dashboard/tabs/folder"));
@@ -178,6 +180,13 @@ export default function DashboardPage() {
             </Suspense>
           )}
 
+          {/* ═══ STUDIES ═════════════════════════════════════════════════════ */}
+          {nav === "studies" && (
+            <Suspense fallback={<DashboardTabLoading />}>
+              <StudyTab userId={user?._id ?? ""} />
+            </Suspense>
+          )}
+
           {/* ══ SUMMARIES ═════════════════════════════════════════════════════ */}
           {nav === "summaries" && (
             <Suspense fallback={<DashboardTabLoading />}>
@@ -219,7 +228,7 @@ export default function DashboardPage() {
           )}
 
           {nav === "shared" && (
-            <Suspense fallback={<DashboardTabLoading />}>
+            <Suspense fallback={<SharedDocumentLoading />}>
               <SharedTab userId={user?._id ?? ""} setNav={setNav} />
             </Suspense>
           )}

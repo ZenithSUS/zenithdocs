@@ -135,7 +135,7 @@ function SummarizePageContent() {
           </button>
           <div className="h-4 w-px bg-[#F5F5F5]/10" />
           <h1 className="text-[15px] font-bold tracking-[0.08em] font-serif">
-            AI <span className="text-[#C9A227]">SUMMARIZE</span>
+            DOCUMENT <span className="text-[#C9A227]">SUMMARIZE</span>
           </h1>
         </div>
       </header>

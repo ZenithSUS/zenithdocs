@@ -4,6 +4,7 @@ import SharedDocumentSkeletonCard from "../../skeleton/SharedDocumentSkeletonCar
 import PageControls from "./components/PageControls";
 import SharedDocumentEmpty from "./components/SharedDocumentEmpty";
 import SharedDocumentError from "./components/SharedDocumentError";
+import SharedDocumentLoading from "./components/SharedDocumentLoading";
 import useSharedTab from "./useSharedTab";
 
 interface SharedTabProps {
@@ -32,21 +33,7 @@ function SharedTab({ userId, setNav }: SharedTabProps) {
   } = useSharedTab(userId);
 
   if (sharedDocumentsLoading) {
-    return (
-      <div className="space-y-5">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <SharedDocumentSkeletonCard key={i} />
-          ))}
-        </div>
-
-        {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <SharedDocumentSkeletonCard key={i} />
-          ))}
-        </div> */}
-      </div>
-    );
+    return <SharedDocumentLoading />;
   }
 
   if (sharedDocumentError) {

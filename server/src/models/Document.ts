@@ -4,6 +4,7 @@ import Summary from "./Summary.js";
 import Chat from "./Chat.js";
 import DocumentShare from "./DocumentShare.js";
 import LearningSet from "./LearningSet.js";
+import Message from "./Message.js";
 
 export interface IDocument extends Document {
   title: string;
@@ -92,6 +93,7 @@ documentSchema.post("findOneAndDelete", async function (doc: IDocument) {
     Chat.deleteMany({ documentId: doc._id }),
     DocumentShare.deleteMany({ documentId: doc._id }),
     LearningSet.deleteMany({ documentId: doc._id }),
+    Message.deleteMany({ userId: doc.user }),
   ]);
 });
 
@@ -103,6 +105,7 @@ documentSchema.post("deleteOne", async (doc: IDocument) => {
     Chat.deleteMany({ documentId: doc._id }),
     DocumentShare.deleteMany({ documentId: doc._id }),
     LearningSet.deleteMany({ documentId: doc._id }),
+    Message.deleteMany({ userId: doc.user }),
   ]);
 });
 
@@ -114,6 +117,7 @@ documentSchema.post("deleteMany", async (doc: IDocument) => {
     Chat.deleteMany({ documentId: doc._id }),
     DocumentShare.deleteMany({ documentId: doc._id }),
     LearningSet.deleteMany({ documentId: doc._id }),
+    Message.deleteMany({ userId: doc.user }),
   ]);
 });
 
