@@ -13,8 +13,5 @@ RUN npm install --omit=dev
 # Copy all source files
 COPY . .
 
-# Expose port
-EXPOSE 8000
-
-# Run server
-CMD ["npx", "tsx", "src/server.ts"]
+# Background worker 
+CMD ["npm", "run", "worker"]

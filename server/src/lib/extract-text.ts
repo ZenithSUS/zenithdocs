@@ -16,8 +16,6 @@ const pdfParse: (
 
 const TESSDATA_DIR = path.resolve(process.cwd(), "tessdata");
 
-// ─── Singleton OCR worker ────────────────────────────────────────────────────
-
 let _worker: TesseractWorker | null = null;
 
 const getOcrWorker = async (): Promise<TesseractWorker> => {
@@ -32,7 +30,7 @@ const getOcrWorker = async (): Promise<TesseractWorker> => {
 };
 
 export const warmOcr = async (): Promise<void> => {
-  await getOcrWorker();
+  await getOcrWorker(); // initializes and keeps it alive
   console.log("[ocr] tesseract worker ready");
 };
 
@@ -43,11 +41,11 @@ export const terminateOcr = async (): Promise<void> => {
   }
 };
 
-// ─── Logging suppression ─────────────────────────────────────────────────────
-
+// ─── Logging suppression ────────────────────────────────────────────────────
 const suppressPdfLogs = <T>(fn: () => Promise<T>): Promise<T> => {
   const originalLog = console.log;
   const originalWarn = console.warn;
+
   console.log = (...args: any[]) => {
     const msg = args[0]?.toString() ?? "";
     if (!msg.startsWith("Info:") && !msg.startsWith("Warning:"))
@@ -58,14 +56,14 @@ const suppressPdfLogs = <T>(fn: () => Promise<T>): Promise<T> => {
     if (!msg.startsWith("Warning: fetchStandardFontData"))
       originalWarn(...args);
   };
+
   return fn().finally(() => {
     console.log = originalLog;
     console.warn = originalWarn;
   });
 };
 
-// ─── Page image detection ────────────────────────────────────────────────────
-
+// Scan all pages in a single document open, return a boolean[] per page.
 const scanPagesForImages = (
   fileBuffer: Buffer,
   numPages: number,
@@ -77,27 +75,34 @@ const scanPagesForImages = (
         const page = doc.loadPage(i) as mupdf.PDFPage;
         const resources = page.getObject().get("Resources");
         if (!resources || resources.isNull()) return false;
+
         const xObject = resources.get("XObject");
         if (!xObject || xObject.isNull()) return false;
+
         const resolved = xObject.isIndirect() ? xObject.resolve() : xObject;
         if (!resolved.isDictionary()) return false;
+
         let hasImage = false;
         // Note: mupdf forEach passes (value, key) — not (key, value)
         resolved.forEach((val: mupdf.PDFObject, key: string | number) => {
           if (hasImage) return;
+          // Fast path: image XObjects are conventionally named "ImageN"
           if (typeof key === "string" && key.startsWith("Image")) {
             hasImage = true;
             return;
           }
+          // Fallback: resolve the object and check its Subtype
           try {
             const entry = val.isIndirect() ? val.resolve() : val;
             const subtype = entry.get("Subtype");
-            if (subtype && !subtype.isNull() && subtype.asName() === "Image")
+            if (subtype && !subtype.isNull() && subtype.asName() === "Image") {
               hasImage = true;
+            }
           } catch {
-            /* skip */
+            /* skip malformed entries */
           }
         });
+
         return hasImage;
       } catch {
         return false;
@@ -108,22 +113,6 @@ const scanPagesForImages = (
   }
 };
 
-// ─── Adaptive scale ──────────────────────────────────────────────────────────
-// Fewer OCR pages = higher quality render. More pages = lower res to save RAM.
-// Tesseract handles 1.0x fine for normal body text and large slide text.
-
-const getScaleForPageCount = (numOcrPages: number): number => {
-  if (numOcrPages <= 5) return 2.0; // high quality, few pages
-  if (numOcrPages <= 15) return 1.5; // balanced
-  if (numOcrPages <= 30) return 1.2; // lower res, still readable
-  return 1.0; // minimum — works for normal/large text
-};
-
-// Max width cap — prevents huge pages from producing massive pixmaps
-const MAX_WIDTH_PX = 1920;
-
-// ─── OCR helpers ─────────────────────────────────────────────────────────────
-
 const ocrImageBuffer = async (
   worker: TesseractWorker,
   imageBuffer: Buffer,
@@ -133,7 +122,9 @@ const ocrImageBuffer = async (
     os.tmpdir(),
     `ocr-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`,
   );
+
   await fs.writeFile(tmpFile, imageBuffer);
+
   try {
     const { data } = await worker.recognize(tmpFile);
     return data.text.trim();
@@ -142,50 +133,53 @@ const ocrImageBuffer = async (
   }
 };
 
+// ─── Render a single PDF page to PNG via mupdf ──────────────────────────────
+
 const renderPageToBuffer = (
   fileBuffer: Buffer,
   pageIndex: number,
-  scale: number,
+  scale = 2.0, // higher scale = better Tesseract accuracy
 ): Buffer => {
   const doc = mupdf.Document.openDocument(fileBuffer, "application/pdf");
+
   try {
     const page = doc.loadPage(pageIndex);
-    const bounds = page.getBounds();
-    const pageWidthPt = bounds[2] - bounds[0];
-
-    // Never exceed MAX_WIDTH_PX regardless of requested scale
-    const finalScale = Math.min(scale, MAX_WIDTH_PX / pageWidthPt);
-
-    const matrix = mupdf.Matrix.scale(finalScale, finalScale);
+    const matrix = mupdf.Matrix.scale(scale, scale);
     const pixmap = page.toPixmap(
       matrix,
       mupdf.ColorSpace.DeviceRGB,
       false,
       true,
     );
+
     const png = Buffer.from(pixmap.asPNG());
     pixmap.destroy();
     page.destroy();
+
     return png;
   } finally {
     doc.destroy();
   }
 };
 
-// ─── Heuristic ───────────────────────────────────────────────────────────────
+// ─── Heuristic: does this page need OCR? ────────────────────────────────────
+// A page needs OCR if it has very little native text relative to its index.
+// Threshold: fewer than 50 characters of real content (ignore whitespace).
 
 const PAGE_TEXT_THRESHOLD = 50;
 
-const pageNeedsOcr = (nativeText: string): boolean =>
-  nativeText.replace(/\s+/g, "").length < PAGE_TEXT_THRESHOLD;
+const pageNeedsOcr = (nativeText: string): boolean => {
+  return nativeText.replace(/\s+/g, "").length < PAGE_TEXT_THRESHOLD;
+};
 
-// ─── PDF extraction ──────────────────────────────────────────────────────────
+// ─── PDF extraction ─────────────────────────────────────────────────────────
 
 const extractPdfText = async (filePath: string): Promise<string> => {
   const buffer = await fs.readFile(filePath);
   const parsed = await suppressPdfLogs(() => pdfParse(buffer));
   const nativePages = parsed.text.split("\f").map((p) => p.trim());
 
+  // Single document open to scan all pages for images at once
   const pageHasImage = scanPagesForImages(buffer, parsed.numpages);
 
   const needsOcrCount = nativePages.filter(
@@ -193,34 +187,34 @@ const extractPdfText = async (filePath: string): Promise<string> => {
   ).length;
 
   if (needsOcrCount === 0) {
-    console.log("[extract] native text only, skipping OCR");
+    console.log(
+      "[extract] PDF has full native text and no images, skipping OCR",
+    );
     return nativePages.join("\n\n");
   }
 
-  // Pick scale based on how many pages need OCR — fewer pages = higher quality
-  const scale = getScaleForPageCount(needsOcrCount);
+  console.log(`[extract] ${needsOcrCount}/${parsed.numpages} pages need OCR`);
 
-  console.log(
-    `[extract] ${needsOcrCount}/${parsed.numpages} pages need OCR (scale: ${scale}x)`,
-  );
-
+  // Create ONE worker for all pages that need OCR
   const worker = await getOcrWorker();
-  const parts: string[] = [];
+
+  const mergedPages: string[] = [];
 
   for (let i = 0; i < parsed.numpages; i++) {
     const native = nativePages[i] ?? "";
 
     if (!pageNeedsOcr(native) && !pageHasImage[i]) {
-      parts.push(native);
-      nativePages[i] = ""; // release reference — GC can reclaim
+      mergedPages.push(native);
       continue;
     }
 
+    // Render, OCR, then let the pixmap buffer go out of scope before
+    // moving to the next page — keeps peak memory to one page at a time.
     let ocrText = "";
     try {
-      const pageBuffer = renderPageToBuffer(buffer, i, scale);
+      const pageBuffer = renderPageToBuffer(buffer, i);
       ocrText = await ocrImageBuffer(worker, pageBuffer);
-      // pageBuffer goes out of scope here — GC can reclaim
+      // pageBuffer goes out of scope here — GC can reclaim it
     } catch (err) {
       console.warn(
         `[extract] OCR failed on page ${i + 1}:`,
@@ -229,28 +223,33 @@ const extractPdfText = async (filePath: string): Promise<string> => {
     }
 
     if (pageHasImage[i] && ocrText.length > native.length * 0.8) {
-      // Image-based page: OCR is more complete than native text layer
+      // Image-based page: OCR of the full rendered page is more complete
+      // than the native text layer. Use OCR as primary, then append any
+      // native lines not already captured (e.g. metadata, hyperlinks).
       const nativeOnlyLines = native
         .split("\n")
         .map((l) => l.trim())
         .filter((l) => l.length > 2 && !ocrText.includes(l));
-      parts.push([ocrText, ...nativeOnlyLines].filter(Boolean).join("\n"));
+
+      mergedPages.push(
+        [ocrText, ...nativeOnlyLines].filter(Boolean).join("\n"),
+      );
     } else {
-      // Text-heavy page with incidental image: native is primary
+      // Text-heavy page with incidental image: keep native as primary,
+      // append OCR lines that add genuinely new content.
       const ocrLines = ocrText
         .split("\n")
         .map((l) => l.trim())
         .filter((l) => l.length > 2 && !native.includes(l));
-      parts.push([native, ...ocrLines].filter(Boolean).join("\n"));
-    }
 
-    nativePages[i] = ""; // release reference after merge
+      mergedPages.push([native, ...ocrLines].filter(Boolean).join("\n"));
+    }
   }
 
-  return parts.join("\n\n");
+  return mergedPages.join("\n\n");
 };
 
-// ─── DOCX extraction ─────────────────────────────────────────────────────────
+// ─── DOCX extraction ────────────────────────────────────────────────────────
 
 const extractDocxText = async (filePath: string): Promise<string> => {
   const { value: nativeText } = await mammoth.extractRawText({
@@ -265,8 +264,10 @@ const extractDocxText = async (filePath: string): Promise<string> => {
   );
 
   console.log(`[extract] ${imageEntries.length} images in DOCX`);
+
   if (imageEntries.length === 0) return nativeText;
 
+  // Create ONE worker for all images
   const worker = await getOcrWorker();
   const ocrTexts: string[] = [];
 
@@ -274,7 +275,6 @@ const extractDocxText = async (filePath: string): Promise<string> => {
     const ext = name.split(".").pop() ?? "png";
     const imgBuffer = Buffer.from(await entry.async("arraybuffer"));
 
-    // Skip tiny images — likely icons or decorations, not content
     if (imgBuffer.byteLength < 10 * 1024) continue;
 
     try {
@@ -283,6 +283,7 @@ const extractDocxText = async (filePath: string): Promise<string> => {
         .split("\n")
         .map((l) => l.trim())
         .filter((l) => l.length > 2 && !nativeText.includes(l));
+
       if (newLines.length > 0) ocrTexts.push(newLines.join("\n"));
     } catch (err) {
       console.warn(
@@ -295,7 +296,7 @@ const extractDocxText = async (filePath: string): Promise<string> => {
   return [nativeText, ...ocrTexts].filter(Boolean).join("\n\n");
 };
 
-// ─── Public API ──────────────────────────────────────────────────────────────
+// ─── Public API ─────────────────────────────────────────────────────────────
 
 const extractRawText = async (
   filePath: string,
@@ -304,10 +305,13 @@ const extractRawText = async (
   switch (mimeType) {
     case "application/pdf":
       return extractPdfText(filePath);
+
     case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
       return extractDocxText(filePath);
+
     case "text/plain":
       return fs.readFile(filePath, "utf-8");
+
     default:
       throw new Error(`Unsupported file type: ${mimeType}`);
   }

@@ -15,4 +15,4 @@ EXPOSE 8000
 
 # Run API and Worker simultaneously
 RUN npm install -g concurrently
-CMD ["concurrently", "npm run start", "npm run worker"]
+CMD ["npm", "run", "start"]
