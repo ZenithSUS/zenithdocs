@@ -87,8 +87,10 @@ Vary item types naturally and distribute them evenly across chunks.
 ### type: "flashcard"
 - Required: type, front, back, answer (answer = back)
 - Omit: question, choices, explanation
+- "back" and "answer" MUST be a concise keyword or phrase (1–5 words max). Never a full sentence.
+- "front" is the prompt or question shown to the learner.
 - Example:
-  { "type": "flashcard", "front": "What is Newton's First Law?", "back": "An object stays at rest or in motion unless acted upon by an external force.", "answer": "An object stays at rest or in motion unless acted upon by an external force." }
+  { "type": "flashcard", "front": "What is Newton's First Law?", "back": "Law of Inertia", "answer": "Law of Inertia" }
 
 ### type: "mcq"
 - Required: type, question, choices (min 4), answer (must be one of choices)
@@ -108,6 +110,8 @@ Vary item types naturally and distribute them evenly across chunks.
 - Required: type, question, answer
 - Optional: explanation
 - Omit: choices, front, back
+- "answer" MUST be a specific name, term, or keyword (1–5 words max). Never a full sentence.
+- Questions should prompt a specific name, term, or concept as the answer.
 - Example:
   { "type": "identification", "question": "What organ pumps blood throughout the body?", "answer": "Heart", "explanation": "The heart is the central organ of the circulatory system." }`,
 
@@ -145,6 +149,7 @@ Generate ONLY "identification" items. Do NOT generate any other item type.
 - Required: type, question, answer
 - Optional: explanation
 - Omit: choices, front, back
+- "answer" MUST be a specific name, term, or keyword (1–5 words max). Never a full sentence.
 - Questions should prompt a specific name, term, or concept as the answer.
 - Example:
   { "type": "identification", "question": "What organ pumps blood throughout the body?", "answer": "Heart", "explanation": "The heart is the central organ of the circulatory system." }`,
@@ -157,8 +162,10 @@ Generate ONLY "flashcard" items. Do NOT generate any other item type.
 ### type: "flashcard"
 - Required: type, front, back, answer (answer = back)
 - Omit: question, choices, explanation
+- "back" and "answer" MUST be a concise keyword or phrase (1–5 words max). Never a full sentence.
+- "front" is the prompt or question shown to the learner.
 - Example:
-  { "type": "flashcard", "front": "What is Newton's First Law?", "back": "An object stays at rest or in motion unless acted upon by an external force.", "answer": "An object stays at rest or in motion unless acted upon by an external force." }`,
+  { "type": "flashcard", "front": "What is Newton's First Law?", "back": "Law of Inertia", "answer": "Law of Inertia" }`,
   };
 
   const constraints = `
