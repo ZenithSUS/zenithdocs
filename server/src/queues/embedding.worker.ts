@@ -2,7 +2,7 @@ import { Worker } from "bullmq";
 import redis, { bullMQConnection } from "../config/redis.js";
 import { updateDocument } from "../repositories/document.repository.js";
 import { prepareDocumentforRAG } from "../lib/mistral/services/rag-index.service.js";
-import extractRawText, { terminateOcr } from "../lib/extract-text.js";
+import extractRawText from "../lib/extract-text.js";
 import { unlink } from "fs/promises";
 import colors from "../utils/log-colors.js";
 import { downloadFileFromCloudinary } from "../lib/cloudinary.service.js";
@@ -107,16 +107,3 @@ embeddingWorker.on("stalled", (jobId) => {
   console.warn(`${colors.yellow}Job ${jobId} stalled${colors.reset}`);
   console.log("=".repeat(50) + "\n");
 });
-
-const shutdown = async (signal: string) => {
-  console.log("=".repeat(50));
-  console.log(`[Embedding] Received ${signal}, shutting down gracefully...`);
-  console.log("=".repeat(50) + "\n");
-
-  await embeddingWorker.close();
-  await terminateOcr();
-  process.exit(0);
-};
-
-process.on("SIGTERM", () => shutdown("SIGTERM"));
-process.on("SIGINT", () => shutdown("SIGINT"));
