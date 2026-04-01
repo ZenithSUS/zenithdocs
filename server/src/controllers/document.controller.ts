@@ -76,6 +76,7 @@ export const createDocumentController = async (
         userId: document.user.toString(),
         publicId,
         mimeType: req.file.mimetype,
+        fileUrl: url,
       },
       {
         attempts: 1,

@@ -1,6 +1,9 @@
 import mammoth from "mammoth";
 import fs from "fs/promises";
 import * as pdfParseModule from "pdf-parse-new";
+import colors from "../utils/log-colors.js";
+import extractWithMistralOCR from "./mistral/services/extract-text-ocr.js";
+import { getFolderById } from "../repositories/folder.repository.js";
 
 // Suppress pdf-parse/PDF.js internal logs
 const originalConsoleLog = console.log;
@@ -46,27 +49,65 @@ const suppressPdfLogs = <T>(fn: () => Promise<T>): Promise<T> => {
  *
  * @returns {Promise<string>} - The raw text extracted from the file
  */
+
 const extractRawText = async (
-  filePath: string,
+  getFilePath: () => Promise<string>,
   mimeType: string,
+  fileUrl: string,
 ): Promise<string> => {
   switch (mimeType) {
     case "application/pdf": {
-      const buffer = filePath.startsWith("http")
-        ? await fetch(filePath)
-            .then((r) => r.arrayBuffer())
-            .then((ab) => Buffer.from(ab))
-        : await fs.readFile(filePath);
+      try {
+        return await extractWithMistralOCR(fileUrl);
+      } catch (error) {
+        // Only fallback on OCR-specific failures, not auth/network errors
+        const isOcrFailure =
+          error instanceof Error &&
+          !error.message.includes("401") &&
+          !error.message.includes("403") &&
+          !error.message.includes("429"); // don't fallback on rate limit
 
-      return suppressPdfLogs(() => pdfParse(buffer)).then((data) => data.text);
+        if (!isOcrFailure) throw error;
+
+        console.error("=".repeat(50));
+        console.error(
+          `${colors.red}Mistral OCR failed — falling back to pdf-parse (images will be lost)${colors.reset}`,
+        );
+        console.error(
+          "Reason:",
+          error instanceof Error ? error.message : error,
+        );
+        console.error("=".repeat(50) + "\n");
+
+        const filePath = await getFilePath();
+        const buffer = await fs.readFile(filePath);
+        const result = await suppressPdfLogs(() => pdfParse(buffer));
+        return result.text;
+      }
     }
 
     case "application/vnd.openxmlformats-officedocument.wordprocessingml.document": {
-      const result = await mammoth.extractRawText({ path: filePath });
-      return result.value;
+      try {
+        return await extractWithMistralOCR(fileUrl);
+      } catch (error) {
+        console.error("=".repeat(50));
+        console.error(
+          `${colors.red}Mistral OCR failed for DOCX — falling back to mammoth${colors.reset}`,
+        );
+        console.error(
+          "Reason:",
+          error instanceof Error ? error.message : error,
+        );
+        console.error("=".repeat(50) + "\n");
+
+        const filePath = await getFilePath();
+        const result = await mammoth.extractRawText({ path: filePath });
+        return result.value;
+      }
     }
 
     case "text/plain": {
+      const filePath = await getFilePath();
       return await fs.readFile(filePath, "utf-8");
     }
 

@@ -12,6 +12,7 @@ interface EmbeddingJobData {
   userId: string;
   publicId: string;
   mimeType: string;
+  fileUrl: string;
 }
 
 export const embeddingWorker = new Worker(
@@ -21,10 +22,15 @@ export const embeddingWorker = new Worker(
     console.log(`${colors.green}Job added to queue${colors.reset}: ${job.id}`);
     console.log("=".repeat(50) + "\n");
 
-    const { documentId, userId, publicId, mimeType }: EmbeddingJobData =
-      job.data;
+    const {
+      documentId,
+      userId,
+      publicId,
+      mimeType,
+      fileUrl,
+    }: EmbeddingJobData = job.data;
 
-    const tempFilePath = await downloadFileFromCloudinary(publicId, mimeType);
+    let tempFilePath: string | null = null;
 
     await updateDocument(documentId, { status: "processing" });
     await redis.publish(
@@ -38,7 +44,14 @@ export const embeddingWorker = new Worker(
     );
 
     try {
-      const rawText = await extractRawText(tempFilePath, mimeType);
+      const rawText = await extractRawText(
+        async () => {
+          tempFilePath = await downloadFileFromCloudinary(publicId, mimeType);
+          return tempFilePath;
+        },
+        mimeType,
+        fileUrl,
+      );
 
       await updateDocument(documentId, { rawText });
 
@@ -68,7 +81,7 @@ export const embeddingWorker = new Worker(
       throw error;
     } finally {
       // Always clean up the temp file — whether success or failure
-      await unlink(tempFilePath).catch(() => {});
+      if (tempFilePath) await unlink(tempFilePath).catch(() => {});
     }
   },
   {
