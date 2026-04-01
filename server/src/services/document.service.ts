@@ -126,6 +126,7 @@ export const reprocessDocumentService = async (
       userId: currentUserId,
       publicId: document.publicId,
       mimeType,
+      fileUrl: document.fileUrl,
     },
     {
       attempts: 1,
