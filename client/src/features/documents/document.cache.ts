@@ -1,9 +1,6 @@
-import { ResponseWithPagedData } from "@/types/api";
 import Doc from "@/types/doc";
-import { InfiniteData, QueryClient } from "@tanstack/react-query";
-
-type DocumentPage = ResponseWithPagedData<Doc, "documents">["data"];
-type DocumentsInfiniteData = InfiniteData<DocumentPage>;
+import { QueryClient } from "@tanstack/react-query";
+import { DocumentsInfiniteData } from "./useDocument";
 
 export const addInfiniteDocument = (
   queryClient: QueryClient,

@@ -37,12 +37,12 @@ const NewFolderModal = ({
   variant,
   onRefresh,
 }: NewFolderModalProps) => {
-  const { createFolderMutation } = useFolder();
+  const { createFolderMutation } = useFolder(userId);
   const {
     mutateAsync: createFolder,
     isPending,
     isError,
-  } = createFolderMutation(userId);
+  } = createFolderMutation;
 
   const [open, setOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");

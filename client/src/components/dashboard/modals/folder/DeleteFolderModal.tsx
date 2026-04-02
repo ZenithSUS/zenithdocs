@@ -28,8 +28,8 @@ interface DeleteFolderModalProps {
 function DeleteFolderModal({ userId, folderId }: DeleteFolderModalProps) {
   const queryClient = useQueryClient();
 
-  const { deleteFolderMutation } = useFolder();
-  const { mutateAsync: deleteFolder } = deleteFolderMutation(userId);
+  const { deleteFolderMutation } = useFolder(userId);
+  const { mutateAsync: deleteFolder } = deleteFolderMutation;
 
   const handleDelete = useCallback(async () => {
     try {

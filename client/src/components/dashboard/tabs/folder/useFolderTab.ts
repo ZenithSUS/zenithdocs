@@ -1,17 +1,15 @@
-import useFolder from "@/features/folder/useFolder";
-import useDocument from "@/features/documents/useDocument";
 import { useEffect, useRef } from "react";
 import { useDocumentByUserPage } from "@/features/documents/useDocumentByUserPage";
+import { useFolderByUserPage } from "@/features/folder/useFolderByUserPage";
 
 const useFolderTab = (userId: string) => {
-  const { foldersByUserPage } = useFolder();
   const {
     data: foldersData,
     fetchNextPage: fetchNextFolderPage,
     hasNextPage: hasNextFolderPage,
     isFetchingNextPage: isFetchingNextFolderPage,
     isLoading: foldersLoading,
-  } = foldersByUserPage(userId);
+  } = useFolderByUserPage(userId);
 
   const { data: documentsData, isLoading: documentsLoading } =
     useDocumentByUserPage(userId);

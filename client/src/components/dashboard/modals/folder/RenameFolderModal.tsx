@@ -37,8 +37,8 @@ function RenameFolderModal({
   folderName,
 }: RenameFolderModalProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const { updateFolderMutation } = useFolder();
-  const { mutateAsync: updateFolder } = updateFolderMutation(userId);
+  const { updateFolderMutation } = useFolder(userId);
+  const { mutateAsync: updateFolder } = updateFolderMutation;
 
   const { register, handleSubmit, formState, setError } = useForm<FolderForm>({
     resolver: zodResolver(folderRenameSchema),

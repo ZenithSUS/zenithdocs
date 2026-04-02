@@ -5,6 +5,29 @@ import { InfiniteData, QueryClient } from "@tanstack/react-query";
 type FolderPage = ResponseWithPagedData<Folder, "folders">["data"];
 type FolderInfiniteData = InfiniteData<FolderPage>;
 
+export const addInfiniteFolder = (
+  queryClient: QueryClient,
+  querykey: readonly unknown[],
+  newFolder: Folder,
+) => {
+  queryClient.setQueryData<FolderInfiniteData>(querykey, (oldData) => {
+    if (!oldData) return oldData;
+
+    const firstPage = oldData.pages[0];
+
+    return {
+      ...oldData,
+      pages: [
+        {
+          ...firstPage,
+          folders: [newFolder, ...firstPage.folders],
+        },
+        ...oldData.pages.slice(1),
+      ],
+    };
+  });
+};
+
 export const updateInfiniteFolder = (
   queryClient: QueryClient,
   querykey: readonly unknown[],

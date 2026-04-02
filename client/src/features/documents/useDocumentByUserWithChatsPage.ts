@@ -3,10 +3,10 @@ import { DocumentWithChatPage } from "./useDocument";
 import { AxiosError } from "@/types/api";
 import documentKeys from "./document.keys";
 import { fetchDocumentByUserWithChatsPaginated } from "./document.api";
+import fetchLimits from "@/constants/fetch-limits";
 
-export const useDocumentByUserWithChatsPage = (userId: string) => {
-  const documentLimit = 10;
-  return useInfiniteQuery<
+export const useDocumentByUserWithChatsPage = (userId: string) =>
+  useInfiniteQuery<
     DocumentWithChatPage,
     AxiosError,
     InfiniteData<DocumentWithChatPage>,
@@ -15,7 +15,11 @@ export const useDocumentByUserWithChatsPage = (userId: string) => {
   >({
     queryKey: documentKeys.byUserWithChatPage(userId),
     queryFn: ({ pageParam = 1 }) =>
-      fetchDocumentByUserWithChatsPaginated(userId, pageParam, documentLimit),
+      fetchDocumentByUserWithChatsPaginated(
+        userId,
+        pageParam,
+        fetchLimits.document,
+      ),
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
       const { page, totalPages } = lastPage.pagination;
@@ -34,4 +38,3 @@ export const useDocumentByUserWithChatsPage = (userId: string) => {
     }),
     enabled: !!userId,
   });
-};

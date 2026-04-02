@@ -6,6 +6,7 @@ import { useDocumentCreate } from "./useDocumentCreate";
 import { useDocumentDelete } from "./useDocumentDelete";
 import { useDocumentUpdate } from "./useDocumentUpdate";
 import { useDocumentReprocess } from "./useDocumentReprocess";
+import fetchLimits from "@/constants/fetch-limits";
 
 export type DocumentPage = ResponseWithPagedData<Doc, "documents">["data"];
 export type DocumentWithChatPage = ResponseWithPagedData<
@@ -26,23 +27,22 @@ export type MutationContext = {
 
 const useDocument = (userId: string) => {
   const queryClient = useQueryClient();
-  const documentLimit = 10;
 
   return {
     createDocumentMutation: useDocumentCreate(
       queryClient,
       userId,
-      documentLimit,
+      fetchLimits.document,
     ),
     deleteDocumentMutation: useDocumentDelete(
       queryClient,
       userId,
-      documentLimit,
+      fetchLimits.document,
     ),
     updateDocumentMutation: useDocumentUpdate(
       queryClient,
       userId,
-      documentLimit,
+      fetchLimits.document,
     ),
     reprocessDocumentMutation: useDocumentReprocess(),
   };

@@ -1,4 +1,3 @@
-import useDocument from "@/features/documents/useDocument";
 import { useDocumentByUserWithChatsPage } from "@/features/documents/useDocumentByUserWithChatsPage";
 
 interface useChatTabProps {

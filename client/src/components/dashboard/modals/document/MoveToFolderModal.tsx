@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import useDocument from "@/features/documents/useDocument";
-import useFolder from "@/features/folder/useFolder";
+import { useFolderByUserPage } from "@/features/folder/useFolderByUserPage";
 import { handleApiError } from "@/helpers/api-error";
 import { AxiosError } from "@/types/api";
 import { FolderIcon } from "lucide-react";
@@ -49,8 +49,7 @@ const MoveToFolderModal = ({
   const { updateDocumentMutation } = useDocument(userId);
   const { mutateAsync: updateDoc, isPending } = updateDocumentMutation;
 
-  const { foldersByUserPage } = useFolder();
-  const { data: foldersData } = foldersByUserPage(userId);
+  const { data: foldersData } = useFolderByUserPage(userId);
 
   const allFolders = foldersData?.pages.flatMap((page) => page.folders) || [];
 

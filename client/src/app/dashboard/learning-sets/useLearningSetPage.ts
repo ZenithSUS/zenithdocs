@@ -1,5 +1,6 @@
 import useAuth from "@/features/auth/useAuth";
 import useDocument from "@/features/documents/useDocument";
+import { useDocumentByUserPage } from "@/features/documents/useDocumentByUserPage";
 import useLearningSet from "@/features/learning-sets/useLearningSet";
 import useMousePosition from "@/features/ui/useMousePostion";
 import useRetryStore from "@/store/useRetryStore";
@@ -27,7 +28,6 @@ const useLearningSetPage = () => {
   } = me;
 
   // ─── Documents ───────────────────────────────────────────────────────────────
-  const { documentsByUserPage } = useDocument(user?._id ?? "");
   const {
     data: documents,
     isLoading: documentsLoading,
@@ -36,7 +36,7 @@ const useLearningSetPage = () => {
     refetch: refetchDocuments,
     hasNextPage: documentsHasNextPage,
     fetchNextPage: fetchNextDocumentsPage,
-  } = documentsByUserPage;
+  } = useDocumentByUserPage(user?._id ?? "");
 
   // ─── Learning Sets ───────────────────────────────────────────────────────────
   const { createLearningSetMutation } = useLearningSet(user?._id ?? "");

@@ -3,6 +3,7 @@ import learningSetKeys from "./learning-set.keys";
 import { AxiosError, ResponseWithPagedData } from "@/types/api";
 import { LearningSet } from "@/types/learning-set";
 import { fetchLearningSetsByUserPaginated } from "./learning-set.api";
+import fetchLimits from "@/constants/fetch-limits";
 
 export type LearningSetPage = ResponseWithPagedData<
   LearningSet,
@@ -11,19 +12,21 @@ export type LearningSetPage = ResponseWithPagedData<
 
 export type LearningSetsInfiniteData = InfiniteData<LearningSetPage>;
 
-export const useLearningSetByUserPage = (userId: string) => {
-  const learningSetLimit = 10;
-
-  return useInfiniteQuery<
+export const useLearningSetByUserPage = (userId: string) =>
+  useInfiniteQuery<
     LearningSetPage,
     AxiosError,
     LearningSetsInfiniteData,
     ReturnType<typeof learningSetKeys.byUserPage>,
     number
   >({
-    queryKey: learningSetKeys.byUserPage(userId, learningSetLimit),
+    queryKey: learningSetKeys.byUserPage(userId, fetchLimits.learningSets),
     queryFn: ({ pageParam = 1 }) =>
-      fetchLearningSetsByUserPaginated(userId, pageParam, learningSetLimit),
+      fetchLearningSetsByUserPaginated(
+        userId,
+        pageParam,
+        fetchLimits.learningSets,
+      ),
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
       const { page, totalPages } = lastPage.pagination;
@@ -31,4 +34,3 @@ export const useLearningSetByUserPage = (userId: string) => {
     },
     enabled: !!userId,
   });
-};

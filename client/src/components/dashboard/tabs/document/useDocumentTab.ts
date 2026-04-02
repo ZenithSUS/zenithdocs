@@ -7,6 +7,7 @@ import Doc, { DocumentShareInfo } from "@/types/doc";
 import { toast } from "sonner";
 import { AxiosError } from "@/types/api";
 import { useDocumentByUserPage } from "@/features/documents/useDocumentByUserPage";
+import { useFolderByUserPage } from "@/features/folder/useFolderByUserPage";
 
 const useDocumentTab = (userId: string, filterFolder: string) => {
   const router = useRouter();
@@ -59,9 +60,8 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
     refetch: refetchDocumentChats,
   } = useDocumentByUserPage(userId);
 
-  const { foldersByUserPage } = useFolder();
   const { data: foldersData, isLoading: foldersLoading } =
-    foldersByUserPage(userId);
+    useFolderByUserPage(userId);
 
   const { summariesByUserPage } = useSummary(userId);
   const { data: summariesData } = summariesByUserPage;

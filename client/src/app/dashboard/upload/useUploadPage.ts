@@ -9,6 +9,7 @@ import { UploadFile } from "./upload.types";
 import useFileDrop from "./useFileDrop";
 import useFileUpload from "./useFileUpload";
 import useRetryStore from "@/store/useRetryStore";
+import { useFolderByUserPage } from "@/features/folder/useFolderByUserPage";
 
 const useUploadPage = () => {
   const router = useRouter();
@@ -31,8 +32,7 @@ const useUploadPage = () => {
   } = me;
 
   // ─── Folders ──────────────────────────────────────────────────────────────
-  const { foldersByUserPage } = useFolder();
-  const { data: folders } = foldersByUserPage(user?._id ?? "");
+  const { data: folders } = useFolderByUserPage(user?._id ?? "");
   const allFolders = folders?.pages.flatMap((page) => page.folders) ?? [];
 
   // ─── File drop ────────────────────────────────────────────────────────────

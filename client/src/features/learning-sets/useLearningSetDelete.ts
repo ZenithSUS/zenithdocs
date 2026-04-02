@@ -1,6 +1,6 @@
 import { AxiosError } from "@/types/api";
 import { LearningSet } from "@/types/learning-set";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { QueryClient, useMutation } from "@tanstack/react-query";
 import { LearningSetsInfiniteData } from "./useLearningSetByUserPage";
 import learningSetKeys from "./learning-set.keys";
 import { deleteLearningSet } from "./learning-set.api";
@@ -10,10 +10,11 @@ type MutationContext = {
   previousLearningSets?: LearningSetsInfiniteData;
 };
 
-export const useDeleteLearningSet = (userId: string) => {
-  const queryClient = useQueryClient();
-  const learningSetLimit = 10;
-
+export const useDeleteLearningSet = (
+  queryClient: QueryClient,
+  userId: string,
+  learningSetLimit: number,
+) =>
   useMutation<LearningSet, AxiosError, string, MutationContext>({
     mutationKey: learningSetKeys.delete(),
     mutationFn: (id) => deleteLearningSet(id),
@@ -55,4 +56,3 @@ export const useDeleteLearningSet = (userId: string) => {
       });
     },
   });
-};
