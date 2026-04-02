@@ -1,68 +1,84 @@
 import { LearningSet } from "@/types/learning-set";
 import { QueryClient } from "@tanstack/react-query";
-import { LearningSetsInfiniteData } from "./useLearningSetByUserPage";
+import { LearningSetPage } from "./useLearningSet";
 
-export const addInfiniteLearningSet = (
+export const addLearningSetCache = (
   queryClient: QueryClient,
   querykey: readonly unknown[],
   newLearningSet: LearningSet,
 ) => {
-  queryClient.setQueryData<LearningSetsInfiniteData>(querykey, (oldData) => {
-    if (!oldData) return undefined;
+  queryClient.setQueriesData<LearningSetPage>(
+    { queryKey: querykey },
+    (oldData) => {
+      if (!oldData) return undefined;
 
-    const firstPage = oldData.pages[0];
+      const isPageOne = oldData.pagination.page === 1;
+      const newTotal = isPageOne ? 1 : oldData.pagination.total + 1;
+      const newTotalPages = isPageOne
+        ? 1
+        : Math.ceil(newTotal / oldData.pagination.limit);
 
-    return {
-      ...oldData,
-      pages: [
-        {
-          ...firstPage,
-          learningSets: [newLearningSet, ...firstPage.learningSets],
+      return {
+        ...oldData,
+        // Add pagination if the current page or learningSets is empty
+        pagination: {
+          ...oldData.pagination,
+          total: newTotal,
+          totalPages: newTotalPages,
         },
-        ...oldData.pages.slice(1),
-      ],
-    };
-  });
+        learningSets: isPageOne
+          ? [newLearningSet, ...oldData.learningSets]
+          : oldData.learningSets,
+      };
+    },
+  );
 };
 
-export const updateInfiniteLearningSet = (
+export const updateLearningSetCache = (
   queryClient: QueryClient,
   querykey: readonly unknown[],
   updatedLearningSet: Partial<LearningSet>,
 ) => {
-  queryClient.setQueryData<LearningSetsInfiniteData>(querykey, (oldData) => {
+  queryClient.setQueryData<LearningSetPage>(querykey, (oldData) => {
     if (!oldData) return oldData;
 
     return {
       ...oldData,
-      pages: oldData.pages.map((page) => ({
-        ...page,
-        learningSets: page.learningSets.map((learningSet) =>
-          learningSet._id === updatedLearningSet._id
-            ? { ...learningSet, ...updatedLearningSet }
-            : learningSet,
-        ),
-      })),
+      learningSets: oldData.learningSets.map((learningSet) =>
+        learningSet._id === updatedLearningSet._id
+          ? {
+              ...learningSet,
+              ...updatedLearningSet,
+            }
+          : learningSet,
+      ),
     };
   });
 };
 
-export const removeInfiniteLearningSet = (
+export const removeLearningSetCache = (
   queryClient: QueryClient,
   querykey: readonly unknown[],
   deletedLearningSetId: string,
 ) => {
-  queryClient.setQueryData<LearningSetsInfiniteData>(querykey, (oldData) => {
+  queryClient.setQueryData<LearningSetPage>(querykey, (oldData) => {
     if (!oldData) return oldData;
+
+    const hasItem = oldData.learningSets.some(
+      (d) => d._id === deletedLearningSetId,
+    );
+    const newTotal = oldData.pagination.total - 1;
 
     return {
       ...oldData,
-      pages: oldData.pages.map((page) => ({
-        ...page,
-        learningSets: page.learningSets.filter(
-          (learningSet) => learningSet._id !== deletedLearningSetId,
-        ),
-      })),
+      pagination: {
+        ...oldData.pagination,
+        total: newTotal,
+        totalPages: Math.ceil(newTotal / oldData.pagination.limit),
+      },
+      learningSets: hasItem
+        ? oldData.learningSets.filter((d) => d._id !== deletedLearningSetId)
+        : oldData.learningSets,
     };
   });
 };

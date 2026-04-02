@@ -1,19 +1,14 @@
 import { LearningSet } from "@/types/learning-set";
 import { QueryClient, useMutation } from "@tanstack/react-query";
 import { AxiosError } from "@/types/api";
-import { LearningSetsInfiniteData } from "./useLearningSetByUserPage";
 import learningSetKeys from "./learning-set.keys";
 import { updateLearningSet } from "./learning-set.api";
-import { updateInfiniteLearningSet } from "./learning-set.cache";
-
-type UpdateVariables = {
-  id: string;
-  data: Partial<LearningSet>;
-};
-
-type MutationContext = {
-  previousLearningSets?: LearningSetsInfiniteData;
-};
+import {
+  LearningSetPage,
+  MutationContext,
+  UpdateVariables,
+} from "./useLearningSet";
+import { updateLearningSetCache } from "./learning-set.cache";
 
 export const useUpdateLearningSet = (
   queryClient: QueryClient,
@@ -28,16 +23,14 @@ export const useUpdateLearningSet = (
         queryKey: learningSetKeys.byUserPage(userId, learningSetLimit),
       });
 
-      const previousLearningSets =
-        queryClient.getQueryData<LearningSetsInfiniteData>(
-          learningSetKeys.byUserPage(userId, learningSetLimit),
-        );
-
-      updateInfiniteLearningSet(
-        queryClient,
+      const previousLearningSets = queryClient.getQueryData<LearningSetPage>(
         learningSetKeys.byUserPage(userId, learningSetLimit),
-        { _id: id, ...data },
       );
+
+      updateLearningSetCache(queryClient, learningSetKeys.byUser(userId), {
+        _id: id,
+        ...data,
+      });
 
       return { previousLearningSets };
     },
@@ -50,9 +43,9 @@ export const useUpdateLearningSet = (
       }
     },
     onSuccess: (updatedLearningSet) => {
-      updateInfiniteLearningSet(
+      updateLearningSetCache(
         queryClient,
-        learningSetKeys.byUserPage(userId, learningSetLimit),
+        learningSetKeys.byUser(userId),
         updatedLearningSet,
       );
 

@@ -96,7 +96,7 @@ export const useDocumentShareUpdate = (
         );
       }
     },
-    onSuccess: (updatedDocumentShare, { document }) => {
+    onSuccess: (updatedDocumentShare) => {
       // Sync confirmed server data into cache
       updateDocumentShareCache(
         queryClient,

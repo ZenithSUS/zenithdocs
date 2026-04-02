@@ -1,36 +1,15 @@
-import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import learningSetKeys from "./learning-set.keys";
 import { AxiosError, ResponseWithPagedData } from "@/types/api";
-import { LearningSet } from "@/types/learning-set";
 import { fetchLearningSetsByUserPaginated } from "./learning-set.api";
 import fetchLimits from "@/constants/fetch-limits";
+import { LearningSetPage } from "./useLearningSet";
 
-export type LearningSetPage = ResponseWithPagedData<
-  LearningSet,
-  "learningSets"
->["data"];
+export const useLearningSetByUserPage = (userId: string, page: number = 1) =>
+  useQuery<LearningSetPage, AxiosError>({
+    queryKey: learningSetKeys.byUserPage(userId, page),
+    queryFn: () =>
+      fetchLearningSetsByUserPaginated(userId, page, fetchLimits.learningSets),
 
-export type LearningSetsInfiniteData = InfiniteData<LearningSetPage>;
-
-export const useLearningSetByUserPage = (userId: string) =>
-  useInfiniteQuery<
-    LearningSetPage,
-    AxiosError,
-    LearningSetsInfiniteData,
-    ReturnType<typeof learningSetKeys.byUserPage>,
-    number
-  >({
-    queryKey: learningSetKeys.byUserPage(userId, fetchLimits.learningSets),
-    queryFn: ({ pageParam = 1 }) =>
-      fetchLearningSetsByUserPaginated(
-        userId,
-        pageParam,
-        fetchLimits.learningSets,
-      ),
-    initialPageParam: 1,
-    getNextPageParam: (lastPage) => {
-      const { page, totalPages } = lastPage.pagination;
-      return page < totalPages ? page + 1 : undefined;
-    },
     enabled: !!userId,
   });
