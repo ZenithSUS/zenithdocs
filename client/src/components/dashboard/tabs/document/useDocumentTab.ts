@@ -1,13 +1,12 @@
 import { useState, useEffect, useRef, useCallback, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import useDocument from "@/features/documents/useDocument";
-import useFolder from "@/features/folder/useFolder";
-import useSummary from "@/features/summary/useSummary";
 import Doc, { DocumentShareInfo } from "@/types/doc";
 import { toast } from "sonner";
 import { AxiosError } from "@/types/api";
 import { useDocumentByUserPage } from "@/features/documents/useDocumentByUserPage";
 import { useFolderByUserPage } from "@/features/folder/useFolderByUserPage";
+import { useSummaryByUserPage } from "@/features/summary/useSummaryByUserPage";
 
 const useDocumentTab = (userId: string, filterFolder: string) => {
   const router = useRouter();
@@ -63,8 +62,7 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
   const { data: foldersData, isLoading: foldersLoading } =
     useFolderByUserPage(userId);
 
-  const { summariesByUserPage } = useSummary(userId);
-  const { data: summariesData } = summariesByUserPage;
+  const { data: summariesData } = useSummaryByUserPage(userId);
 
   // ─── Mutations ───────────────────────────────────────────────────
   const { mutateAsync: reprocessDoc } = reprocessDocumentMutation;

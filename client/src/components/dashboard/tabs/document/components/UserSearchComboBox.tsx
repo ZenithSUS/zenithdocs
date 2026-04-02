@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { Input } from "@/components/ui/input";
-import useUser from "@/features/user/useUser";
 import { ThreeDot } from "react-loading-indicators";
 import { X } from "lucide-react";
+import { useUserSearch } from "@/features/user/useUserSearch";
 
 interface User {
   _id: string;
@@ -31,9 +31,7 @@ export function UserSearchCombobox({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const skipDebounceRef = useRef(false);
-
-  const { searchUsersByEmailQuery } = useUser(debouncedQuery);
-  const { data: users = [], isLoading } = searchUsersByEmailQuery;
+  const { data: users = [], isLoading } = useUserSearch(debouncedQuery);
 
   const filteredUsers = useMemo(() => {
     return users.filter((user) => !excludeIds?.includes(user._id));

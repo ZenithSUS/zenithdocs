@@ -32,7 +32,7 @@ function DeleteSummaryModal({
   documentId,
 }: DeleteSummaryModalProps) {
   const queryClient = useQueryClient();
-  const { deleteSummaryMutation } = useSummary(userId, documentId, summaryId);
+  const { deleteSummaryMutation } = useSummary(userId, documentId);
   const { mutateAsync: deleteSummary } = deleteSummaryMutation;
 
   const handleDelete = useCallback(async () => {

@@ -2,12 +2,11 @@ import { useState, useEffect, useMemo } from "react";
 import { useParams } from "next/navigation";
 
 import useAuth from "@/features/auth/useAuth";
-import useDocument from "@/features/documents/useDocument";
-import useSummary from "@/features/summary/useSummary";
 import useMousePosition from "@/features/ui/useMousePostion";
 import STATUS_META from "@/constants/status-meta";
 import useRetryStore from "@/store/useRetryStore";
 import { useDocumentById } from "@/features/documents/useDocumentById";
+import { useSummaryByDocumentPage } from "@/features/summary/useSummaryByDocumentPage";
 
 const SUMMARIES_PER_PAGE = 3;
 
@@ -45,14 +44,13 @@ const useDocumentPage = () => {
   } = useDocumentById(documentId);
 
   // ─── Summaries ────────────────────────────────────────────────────────────
-  const { summariesByDocumentPage } = useSummary(user?._id ?? "", documentId);
   const {
     data: summariesData,
     isLoading: summariesLoading,
     refetch: refetchSummaries,
     isError: summariesError,
     error: summariesErrorData,
-  } = summariesByDocumentPage;
+  } = useSummaryByDocumentPage(documentId);
 
   const allSummaries =
     summariesData?.pages.flatMap((page) => page.summaries) ?? [];

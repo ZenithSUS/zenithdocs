@@ -1,13 +1,12 @@
 import { useEffect, useRef } from "react";
-import useSummary from "@/features/summary/useSummary";
 import { SummaryType } from "@/types/summary";
+import { useSummaryByUserPage } from "@/features/summary/useSummaryByUserPage";
 
 const ALL_TYPES: SummaryType[] = ["short", "bullet", "detailed", "executive"];
 
 const useSummaryTab = (userId: string) => {
-  const { summariesByUserPage } = useSummary(userId);
   const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
-    summariesByUserPage;
+    useSummaryByUserPage(userId);
 
   const loadMoreRef = useRef<HTMLDivElement>(null);
 

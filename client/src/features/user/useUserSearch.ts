@@ -6,15 +6,10 @@ import userKeys from "./user.keys";
 import { User } from "@/types/user";
 import { AxiosError } from "@/types/api";
 
-const useUser = (searchQuery: string) => {
-  const searchUsersByEmailQuery = useQuery<User[], AxiosError>({
+export const useUserSearch = (searchQuery: string) =>
+  useQuery<User[], AxiosError>({
     queryKey: userKeys.searchByEmail(searchQuery),
     queryFn: () => searchUsersByEmail(searchQuery),
     staleTime: 1000 * 30,
     enabled: searchQuery.length > 1,
   });
-
-  return { searchUsersByEmailQuery };
-};
-
-export default useUser;
