@@ -1,12 +1,6 @@
-import queryClient from "@/lib/tanstack";
-import { ResponseWithPagedData } from "@/types/api";
 import { DocumentShare } from "@/types/document-share";
 import { QueryClient } from "@tanstack/react-query";
-
-type DocumentSharePage = ResponseWithPagedData<
-  DocumentShare,
-  "documentShares"
->["data"];
+import { DocumentSharePage } from "./useDocumentShare";
 
 export const addDocumentShareCache = (
   queryClient: QueryClient,

@@ -3,6 +3,7 @@ import { useGlobalChatInit } from "@/features/global-chat/useGlobalChatInit";
 import useGlobalMessage from "@/features/global-message/useGlobalMessage";
 import useAutoResizeTextarea from "@/features/ui/useAutoResizeArea";
 import useGlobalMessageStream from "./hooks/useGlobalMessageStream";
+import { useGlobalMessageByChatPage } from "@/features/global-message/useGlobalMessageByChatPage";
 
 const useGlobalChatUI = (userId: string) => {
   const {
@@ -14,8 +15,7 @@ const useGlobalChatUI = (userId: string) => {
 
   const chatId = initChat?._id ?? "";
 
-  const { globalMessagesByChatPage, deleteGlobalMessageMutation } =
-    useGlobalMessage(chatId);
+  const { deleteGlobalMessageMutation } = useGlobalMessage(chatId);
   const {
     data: globalMessages,
     isLoading: globalMessagesLoading,
@@ -23,7 +23,7 @@ const useGlobalChatUI = (userId: string) => {
     error: globalMessagesErrorData,
     hasNextPage: hasNextGlobalMessagePage,
     fetchNextPage: fetchNextGlobalMessagePage,
-  } = globalMessagesByChatPage;
+  } = useGlobalMessageByChatPage(chatId);
 
   const stream = useGlobalMessageStream({ chatId, userId });
   const textareaRef = useAutoResizeTextarea(stream.messageValue);

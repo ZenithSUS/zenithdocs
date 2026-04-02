@@ -1,16 +1,13 @@
-import { ResponseWithPagedData } from "@/types/api";
 import { Folder } from "@/types/folder";
-import { InfiniteData, QueryClient } from "@tanstack/react-query";
-
-type FolderPage = ResponseWithPagedData<Folder, "folders">["data"];
-type FolderInfiniteData = InfiniteData<FolderPage>;
+import { QueryClient } from "@tanstack/react-query";
+import { FoldersInfiniteData } from "./useFolder";
 
 export const addInfiniteFolder = (
   queryClient: QueryClient,
   querykey: readonly unknown[],
   newFolder: Folder,
 ) => {
-  queryClient.setQueryData<FolderInfiniteData>(querykey, (oldData) => {
+  queryClient.setQueryData<FoldersInfiniteData>(querykey, (oldData) => {
     if (!oldData) return oldData;
 
     const firstPage = oldData.pages[0];
@@ -33,7 +30,7 @@ export const updateInfiniteFolder = (
   querykey: readonly unknown[],
   updatedFolder: Folder,
 ) => {
-  queryClient.setQueryData<FolderInfiniteData>(querykey, (oldData) => {
+  queryClient.setQueryData<FoldersInfiniteData>(querykey, (oldData) => {
     if (!oldData) return oldData;
 
     return {
@@ -53,7 +50,7 @@ export const removeInfiniteFolder = (
   querykey: readonly unknown[],
   deletedId: string,
 ) => {
-  queryClient.setQueryData<FolderInfiniteData>(querykey, (oldData) => {
+  queryClient.setQueryData<FoldersInfiniteData>(querykey, (oldData) => {
     if (!oldData) return oldData;
 
     return {

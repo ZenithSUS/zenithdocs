@@ -1,9 +1,6 @@
-import { ResponseWithPagedData } from "@/types/api";
 import { Summary } from "@/types/summary";
-import { InfiniteData, QueryClient } from "@tanstack/react-query";
-
-type SummaryPage = ResponseWithPagedData<Summary, "summaries">["data"];
-type SummaryByUserInfiniteData = InfiniteData<SummaryPage>;
+import { QueryClient } from "@tanstack/react-query";
+import { SummaryByUserInfiniteData } from "./useSummary";
 
 export const addInfiniteSummary = (
   queryClient: QueryClient,

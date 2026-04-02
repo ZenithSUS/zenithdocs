@@ -1,13 +1,6 @@
-import { ResponseWithPagedData } from "@/types/api";
 import { LearningSet } from "@/types/learning-set";
-import { InfiniteData, QueryClient } from "@tanstack/react-query";
-
-type LearningSetPage = ResponseWithPagedData<
-  LearningSet,
-  "learningSets"
->["data"];
-
-type LearningSetsInfiniteData = InfiniteData<LearningSetPage>;
+import { QueryClient } from "@tanstack/react-query";
+import { LearningSetsInfiniteData } from "./useLearningSetByUserPage";
 
 export const addInfiniteLearningSet = (
   queryClient: QueryClient,
