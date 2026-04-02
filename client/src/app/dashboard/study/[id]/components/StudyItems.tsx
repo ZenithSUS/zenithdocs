@@ -28,7 +28,7 @@ function StudyItems({ learningItems, pageSize = 5 }: StudyItemsProps) {
       </p>
 
       {/* Items list */}
-      <div className=" max-h-125 overflow-y-auto">
+      <div className=" max-h-125 overflow-y-auto px-2">
         <div className="flex flex-col gap-3">
           {visibleItems.map((learningItem, index) => (
             <GeneratedLearningCard key={index} learningItem={learningItem} />
