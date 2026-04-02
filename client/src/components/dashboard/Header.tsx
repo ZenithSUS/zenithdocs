@@ -1,141 +1,79 @@
 "use client";
 
-import HeaderDropDown from "../HeaderDropDown";
-import { useRouter } from "next/navigation";
-import { Brain, Upload } from "lucide-react";
+import HeaderDropDown from "@/components/HeaderDropDown";
 import useDropdown from "@/features/ui/useDropdown";
+import { useDashboardOverview } from "@/features/dashboard/useDashboardOverview";
+import { User } from "@/types/user";
+import { calcPct } from "@/utils/usage";
+import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-interface DashboardHeaderProps {
-  userId: string;
-  plan: string;
-  email: string;
-  nav: string;
-  setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  totalDocuments: number;
-  totalSummaries: number;
-  totalFolders: number;
-  tokensUsed: number;
-  tokenLimit: number;
-  tokenPct: number;
-  documentUsed: number;
-  documentLimit: number;
-  documentPct: number;
+interface HeaderProps {
+  user: User | null | undefined;
+  title: string;
+  titleHighlight: string;
 }
 
-function DashboardHeader({
-  userId,
-  plan,
-  email,
-  nav,
-  setSidebarOpen,
-  totalDocuments,
-  totalSummaries,
-  totalFolders,
-  tokensUsed,
-  tokenLimit,
-  tokenPct,
-  documentUsed,
-  documentLimit,
-  documentPct,
-}: DashboardHeaderProps) {
+function Header({ user, title, titleHighlight }: HeaderProps) {
   const router = useRouter();
   const options = useDropdown();
 
+  const { data: overview } = useDashboardOverview(user?._id ?? "");
+
+  const tokenPct = calcPct(overview?.tokensUsed, user?.tokenLimit);
+  const documentPct = calcPct(overview?.documentsUploaded, user?.documentLimit);
+
   return (
-    <header className="px-5 sm:px-8 py-4 border-b border-white/6 flex items-center justify-between bg-background/90 backdrop-blur-sm sticky top-0 z-10">
-      <div className="flex items-center gap-4">
+    <header className="fixed top-0 left-0 right-0 z-45 px-5 sm:-px-8 md:px-12 py-5 bg-[#111111]/92 backdrop-blur-xl border-b border-[#C9A227]/12 flex items-center justify-between">
+      <div className="flex items-center gap-4 min-w-0">
         <button
-          className="lg:hidden text-text/50 hover:text-text/80 text-xl transition-colors"
-          onClick={() => setSidebarOpen(true)}
+          onClick={() => router.push("/dashboard")}
+          className="flex items-center gap-2 text-text/50 hover:text-text/90 transition-colors group"
         >
-          ☰
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          <span className="text-[12px] font-sans tracking-wider hidden sm:inline hover:text-yellow-400 cursor-pointer transition-colors duration-300 ease-in-out">
+            BACK
+          </span>
         </button>
-        <div>
-          <h1 className="text-[18px] sm:text-[20px] font-normal font-serif tracking-[-0.01em] capitalize">
-            {nav}
-          </h1>
-          <p className="text-[11px] text-text/30 font-sans tracking-[0.05em] hidden sm:block">
-            {nav === "overview" && "Your workspace at a glance"}
-            {nav === "documents" && `${totalDocuments} total documents`}
-            {nav === "studies" && "Your learning sets"}
-            {nav === "summaries" && `${totalSummaries} AI-generated summaries`}
-            {nav === "folders" && `${totalFolders} folders`}
-            {nav === "chats" && "Your chat history"}
-            {nav === "usage" && "Token & document consumption"}
-            {nav === "shared" && "Your shared documents"}
-          </p>
-        </div>
+
+        <div className="h-5 w-px bg-[#C9A227]/12" />
+
+        <h1 className="text-lg font-bold tracking-wide font-serif truncate uppercase">
+          {title} <span className="text-primary">{titleHighlight}</span>
+        </h1>
       </div>
 
-      <div className="flex items-center gap-2 sm:gap-3">
-        {/* Document Learning Center — desktop */}
-        <button
-          type="button"
-          className="hidden sm:flex items-center gap-2 px-4 py-2 bg-primary text-black rounded-sm
-            text-[11px] font-bold tracking-widest font-sans hover:bg-[#e0b530] transition-colors duration-200 hover:text-white cursor-pointer"
-          onClick={() => router.push("/dashboard/learning-sets")}
+      {/* User Icon */}
+      <div className="relative" ref={options.ref}>
+        {/* Dropdown */}
+        {options.isOpen && (
+          <HeaderDropDown
+            userId={user?._id ?? ""}
+            email={user?.email ?? ""}
+            plan={user?.plan ?? ""}
+            tokensUsed={overview?.tokensUsed ?? 0}
+            tokenLimit={user?.tokenLimit ?? 0}
+            tokenPct={tokenPct}
+            documentUsed={overview?.documentsUploaded ?? 0}
+            documentLimit={user?.documentLimit ?? 0}
+            documentPct={documentPct}
+          />
+        )}
+
+        <div
+          className="h-10 w-10 rounded-full bg-[#C9A227]/12 p-1 flex items-center justify-center border-2 border-[#C9A227]/30 cursor-pointer"
+          onClick={() => options.setIsOpen((prev) => !prev)}
         >
-          <Brain className="w-4 h-4" />
-          STUDY
-        </button>
-
-        {/* Upload — desktop */}
-        <button
-          type="button"
-          className="hidden sm:flex items-center gap-2 px-4 py-2 bg-primary text-black rounded-sm
-            text-[11px] font-bold tracking-widest font-sans hover:bg-[#e0b530] transition-colors duration-200 hover:text-white cursor-pointer"
-          onClick={() => router.push("/dashboard/upload")}
-        >
-          <Upload className="w-4 h-4" />
-          UPLOAD
-        </button>
-
-        {/* Document Learning Center — mobile icon only */}
-        <button
-          className="sm:hidden p-2 bg-primary text-black rounded-sm hover:bg-[#e0b530] transition-colors active:scale-95 cursor-pointer"
-          onClick={() => router.push("/dashboard/learning-sets")}
-          aria-label="Document Learning Center"
-        >
-          <Brain className="w-4 h-4" />
-        </button>
-
-        {/* Upload — mobile icon only */}
-        <button
-          className="sm:hidden p-2 bg-primary text-black rounded-sm hover:bg-[#e0b530] transition-colors active:scale-95 cursor-pointer"
-          onClick={() => router.push("/dashboard/upload")}
-          aria-label="Upload"
-        >
-          <Upload className="w-4 h-4" />
-        </button>
-
-        {/* Avatar + dropdown */}
-        <div className="relative" ref={options.ref}>
-          {options.isOpen && (
-            <HeaderDropDown
-              userId={userId}
-              email={email}
-              plan={plan}
-              tokensUsed={tokensUsed}
-              tokenLimit={tokenLimit}
-              tokenPct={tokenPct}
-              documentUsed={documentUsed}
-              documentLimit={documentLimit}
-              documentPct={documentPct}
-            />
-          )}
-
-          <div
-            className="w-8 h-8 rounded-full cursor-pointer bg-primary/20 border border-primary/30
-              flex items-center justify-center text-[11px] text-primary font-bold font-sans
-              hover:bg-primary/30 transition-colors duration-150 select-none hover:bg-white/4 hover:border-2"
-            onClick={() => options.setIsOpen((prev) => !prev)}
+          <span
+            className="text-sm font-bold text-primary uppercase"
+            style={{ lineHeight: 0 }}
           >
-            {email.slice(0, 1).toUpperCase()}
-          </div>
+            {user?.email ? user.email.charAt(0) : "U"}
+          </span>
         </div>
       </div>
     </header>
   );
 }
 
-export default DashboardHeader;
+export default Header;

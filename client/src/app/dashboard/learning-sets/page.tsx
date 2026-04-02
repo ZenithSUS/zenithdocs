@@ -2,9 +2,9 @@
 
 import LoadingScreen from "@/components/LoadingScreen";
 import ErrorScreen from "@/components/ErrorScreen";
-import LearningSetHeader from "./components/LearningSetHeader";
+import Header from "../../../components/dashboard/Header";
 import LearningSetConfig from "./components/LearningSetConfig";
-import useLearningSetPage from "./useLearningSetPage";
+import useLearningSetsPage from "./useLearningSetsPage";
 import GeneratedLearningSets from "./components/GeneratedLearningSets";
 import CursorGlow from "@/components/CursorGlow";
 import GlobalChat from "@/components/dashboard/globalchat";
@@ -39,7 +39,7 @@ function LearningSetsPage() {
     // Errors
     isLearningSetPageError,
     learningSetPageErrorData,
-  } = useLearningSetPage();
+  } = useLearningSetsPage();
 
   if (userLoading || documentsLoading) return <LoadingScreen />;
 
@@ -75,7 +75,7 @@ function LearningSetsPage() {
         </div>
       )}
 
-      <LearningSetHeader user={user} />
+      <Header user={user} title="Document" titleHighlight="Study" />
 
       <main className="mt-18.25 h-[calc(100vh-73px)] overflow-y-auto px-5 sm:px-8 md:px-12 pt-10 pb-16">
         {!generatedSet ? (

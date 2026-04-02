@@ -1,7 +1,7 @@
 "use client";
 
 import CursorGlow from "@/components/CursorGlow";
-import DashboardHeader from "@/components/dashboard/Header";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import DashboardTabLoading from "@/components/dashboard/DashBoardTabLoading";
 import DashBoardSidebar from "@/components/dashboard/Sidebar";
 

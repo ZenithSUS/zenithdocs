@@ -13,6 +13,7 @@ import UploadActions from "./components/UploadActions";
 import GlobalChat from "@/components/dashboard/globalchat";
 import { Zap } from "lucide-react";
 import { useState } from "react";
+import Header from "@/components/dashboard/Header";
 
 export default function UploadPage() {
   const router = useRouter();
@@ -93,20 +94,7 @@ export default function UploadPage() {
       )}
 
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-45 px-5 sm:px-8 md:px-12 py-5 bg-[#111111]/92 backdrop-blur-xl border-b border-[#C9A227]/12">
-        <div className="flex items-center gap-4 max-w-7xl mx-auto">
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="text-[#F5F5F5]/60 hover:text-[#C9A227] transition-colors duration-200 flex items-center gap-2 text-sm tracking-widest font-sans"
-          >
-            ← BACK
-          </button>
-          <div className="h-5 w-px bg-[#F5F5F5]/10" />
-          <h1 className="text-lg font-bold tracking-[0.08em] font-serif">
-            UPLOAD <span className="text-[#C9A227]">DOCUMENTS</span>
-          </h1>
-        </div>
-      </header>
+      <Header user={user} title="Upload" titleHighlight="Files" />
 
       {/* Main */}
       <main className="h-[calc(100vh-73px)] mt-18.25 flex-1 overflow-y-auto pt-6 pb-12 px-5 sm:px-8 md:px-12 mx-auto">

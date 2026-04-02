@@ -1,14 +1,7 @@
-import FlashCard from "@/components/dashboard/cards/learning-sets/FlashCard";
-import IdentificationCard from "@/components/dashboard/cards/learning-sets/IdentificationCard";
-import MCQCard from "@/components/dashboard/cards/learning-sets/MCQCard";
-import TFCard from "@/components/dashboard/cards/learning-sets/TFCard";
-import { LearningItem, LearningSet } from "@/types/learning-set";
+import GeneratedLearningCard from "@/components/dashboard/cards/learning-sets/GeneratedLearningCard";
+import { LearningSet } from "@/types/learning-set";
 import { BookOpen, Layers, RotateCcw } from "lucide-react";
 import { useState } from "react";
-
-interface GeneratedLearningItemsProps {
-  learningItem: LearningItem;
-}
 
 interface GeneratedLearningSetsProps {
   learningSet: LearningSet | null;
@@ -33,20 +26,6 @@ const TYPE_ICONS: Record<string, React.ReactNode> = {
   reviewer: <BookOpen className="w-3.5 h-3.5" />,
 };
 
-function GeneratedLearningItems({ learningItem }: GeneratedLearningItemsProps) {
-  switch (learningItem.type) {
-    case "flashcard":
-      return <FlashCard learningItem={learningItem} />;
-    case "mcq":
-      return <MCQCard learningItem={learningItem} />;
-    case "tf":
-      return <TFCard learningItem={learningItem} />;
-    case "identification":
-      return <IdentificationCard learningItem={learningItem} />;
-    default:
-      return null;
-  }
-}
 function GeneratedLearningSets({
   learningSet,
   setLearningSet,
@@ -159,7 +138,7 @@ function GeneratedLearningSets({
         <div className="max-h-125 overflow-y-auto overflow-x-hidden px-2 py-1">
           <div className="flex flex-col gap-2">
             {showedItems.map((item, idx) => (
-              <GeneratedLearningItems key={idx} learningItem={item} />
+              <GeneratedLearningCard key={idx} learningItem={item} />
             ))}
           </div>
           {hasMoreItems && (

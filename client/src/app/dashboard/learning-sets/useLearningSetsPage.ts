@@ -6,7 +6,7 @@ import useRetryStore from "@/store/useRetryStore";
 import { LearningSet } from "@/types/learning-set";
 import { useState } from "react";
 
-const useLearningSetPage = () => {
+const useLearningSetsPage = () => {
   const { increment, retries } = useRetryStore();
   const pageRetry = retries["learning-sets-page"] ?? 0;
 
@@ -92,4 +92,4 @@ const useLearningSetPage = () => {
   };
 };
 
-export default useLearningSetPage;
+export default useLearningSetsPage;

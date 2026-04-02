@@ -1,9 +1,10 @@
 "use client";
 
 import { LearningSet } from "@/types/learning-set";
-import { memo } from "react";
+import { memo, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { BookOpen, HelpCircle, Zap } from "lucide-react";
+import { ArrowUpRight, BookOpen, HelpCircle, Zap } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface LearningSetCardProps {
   learningSet: LearningSet;
@@ -43,9 +44,18 @@ const DIFFICULTY_CONFIG: Record<
 };
 
 function LearningSetCard({ learningSet }: LearningSetCardProps) {
+  const router = useRouter();
+  const [isNavigating, setIsNavigating] = useState(false);
+
   const timeAgo = formatDistanceToNow(new Date(learningSet.updatedAt), {
     addSuffix: true,
   });
+
+  const handleNavigate = () => {
+    if (isNavigating) return;
+    setIsNavigating(true);
+    router.push(`/dashboard/study/${learningSet._id}`);
+  };
 
   const cardCount = learningSet.items.length;
   const type = TYPE_CONFIG[learningSet.type];
@@ -63,13 +73,29 @@ function LearningSetCard({ learningSet }: LearningSetCardProps) {
       `}
     >
       {/* Type icon + title */}
-      <div className="flex items-start gap-3">
-        <span className={`mt-0.5 shrink-0 ${type.pill} p-1.5 rounded-lg`}>
-          {type.icon}
-        </span>
-        <p className="text-sm font-semibold text-white leading-snug line-clamp-2">
-          {learningSet.title ?? "Untitled"}
-        </p>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <span className={`mt-0.5 shrink-0 ${type.pill} p-1.5 rounded-lg`}>
+            {type.icon}
+          </span>
+          <p className="text-sm font-semibold text-white leading-snug line-clamp-2">
+            {learningSet.title ?? "Untitled"}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleNavigate}
+            className="p-1.5 rounded-lg text-white/30 hover:text-white/80 hover:bg-white/10 transition-all duration-200 opacity-0 group-hover:opacity-100 -translate-y-0.5 group-hover:translate-y-0"
+            aria-label="Navigate to study session"
+            disabled={isNavigating}
+          >
+            <ArrowUpRight
+              size={16}
+              className="text-white/40 hover:text-white transition-all duration-200"
+            />
+          </button>
+        </div>
       </div>
 
       {/* Footer row */}
