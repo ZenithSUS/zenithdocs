@@ -1,9 +1,8 @@
 import { useMemo, useCallback } from "react";
-
-import useMessage from "@/features/message/useMessage";
 import useMessageStream from "@/components/document-share/hooks/useMessageStream";
 import useChatScroll from "@/features/ui/useChatScroll";
 import useAutoResizeTextarea from "@/features/ui/useAutoResizeArea";
+import { useMessageByChatPage } from "@/features/message/useMessageByChatPage";
 
 interface usePrivateChatScreenProps {
   documentId: string;
@@ -16,14 +15,13 @@ const usePrivateChatScreen = ({
   chatId,
   userId,
 }: usePrivateChatScreenProps) => {
-  const { messagesByChatPage } = useMessage({ chatId });
   const {
     data: messages,
     isLoading: messagesLoading,
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
-  } = messagesByChatPage;
+  } = useMessageByChatPage(chatId);
 
   const allMessages = useMemo(
     () =>
