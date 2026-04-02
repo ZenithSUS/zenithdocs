@@ -30,7 +30,7 @@ function DeleteMessagesModal({
   const [open, setOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const { deleteMessageByChatMutation } = useMessage({ chatId });
+  const { deleteMessageByChatMutation } = useMessage(chatId);
   const { mutateAsync: deleteChatMessages } = deleteMessageByChatMutation;
 
   const handleDeleteMessages = useCallback(async () => {
