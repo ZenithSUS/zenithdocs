@@ -1,6 +1,6 @@
 import { DashboardOverview } from "@/types/dashboard";
 import { SummaryType } from "@/types/summary";
-import { SUMMARY_ICONS } from "../summaryIcons";
+import { LASTEST_SUMMARY_ICONS } from "@/constants/latest-summary-icons";
 
 interface Props {
   overview: DashboardOverview | undefined;
@@ -29,7 +29,7 @@ const LatestSummaries = ({ overview, onViewAll }: Props) => (
           <div key={s._id} className="px-5 py-5">
             <div className="flex items-center gap-2 mb-3">
               <span className="text-primary text-[14px]">
-                {SUMMARY_ICONS[s.type as SummaryType]}
+                {LASTEST_SUMMARY_ICONS[s.type as SummaryType]}
               </span>
               <span className="text-[10px] tracking-[0.12em] text-primary font-sans">
                 {s.type.toUpperCase()}

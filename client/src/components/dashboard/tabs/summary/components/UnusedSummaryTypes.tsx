@@ -1,5 +1,5 @@
 import { SummaryType } from "@/types/summary";
-import { SUMMARY_ICONS } from "../summaryIcons";
+import { SUMMARY_ICONS } from "@/constants/summary-icons";
 
 interface Props {
   unusedTypes: SummaryType[];

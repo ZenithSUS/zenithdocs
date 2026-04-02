@@ -1,7 +1,7 @@
 "use client";
 
 import FileIcon from "@/components/FileIcon";
-import { SUMMARY_ICONS } from "../tabs/summary/summaryIcons";
+import { SUMMARY_ICONS } from "@/constants/summary-icons";
 import { Summary } from "@/types/summary";
 import sizefmt from "@/helpers/size-format";
 import { useRouter } from "next/navigation";

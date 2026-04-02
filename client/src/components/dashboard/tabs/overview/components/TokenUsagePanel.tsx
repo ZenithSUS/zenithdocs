@@ -2,7 +2,7 @@ import { SummaryType } from "@/types/summary";
 import { DashboardOverview } from "@/types/dashboard";
 import UsageCard from "@/components/dashboard/cards/UsageCard";
 import UsageChartSkeleton from "@/components/dashboard/skeleton/UsageChartSkeleton";
-import { SUMMARY_ICONS } from "../summaryIcons";
+import { SUMMARY_ICONS } from "@/constants/summary-icons";
 
 interface Props {
   overview: DashboardOverview | undefined;
