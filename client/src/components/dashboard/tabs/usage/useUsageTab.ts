@@ -1,4 +1,4 @@
-import useUsage from "@/features/usage/useUsage";
+import { useUsageByUserSixMonths } from "@/features/usage/useUsageByUserSixMonths";
 
 interface UseUsageTabOptions {
   userId: string;
@@ -13,8 +13,7 @@ const useUsageTab = ({
   tokenLimit,
   currentTokensUsed,
 }: UseUsageTabOptions) => {
-  const { usageByUserSixMonths } = useUsage(userId, currentMonth);
-  const { data: usage = [] } = usageByUserSixMonths;
+  const { data: usage = [] } = useUsageByUserSixMonths(userId, currentMonth);
 
   const tokensUsed = Math.min(tokenLimit, currentTokensUsed);
   const remainingTokens = Math.max(0, tokenLimit - currentTokensUsed);
