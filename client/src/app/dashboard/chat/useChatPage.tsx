@@ -17,6 +17,7 @@ import { Message } from "@/types/message";
 import useRetryStore from "@/store/useRetryStore";
 import { useDocumentById } from "@/features/documents/useDocumentById";
 import { useChatInitDocument } from "@/features/chat/useChatInitDocument";
+import { useMessageByChatPage } from "@/features/message/useMessageByChatPage";
 
 const useChatPage = () => {
   // ─── Route params ────────────────────────────────────────────────────────────
@@ -60,14 +61,14 @@ const useChatPage = () => {
   const isChatsProcessing = initChatLoading || docLoading;
 
   // ─── Messages (paginated) ─────────────────────────────────────────────────
-  const { messagesByChatPage } = useMessage({ chatId });
+
   const {
     data: messages,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
     isLoading: isLoadingMessages,
-  } = messagesByChatPage;
+  } = useMessageByChatPage(chatId);
 
   const allMessages = useMemo(() => {
     if (!messages?.pages) return [];

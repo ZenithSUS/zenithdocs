@@ -4,6 +4,7 @@ const fetchLimits = {
   learningSets: 10,
   folder: 10,
   documentShare: 10,
+  message: 10,
   globalMessage: 10,
 };
 
