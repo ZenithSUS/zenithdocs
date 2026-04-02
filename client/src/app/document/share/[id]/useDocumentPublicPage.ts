@@ -1,4 +1,5 @@
 import useDocumentShare from "@/features/document-share/useDocumentShare";
+import { useDocumentShareByToken } from "@/features/document-share/useDocumentShareByToken";
 import useMousePosition from "@/features/ui/useMousePostion";
 import useRetryStore from "@/store/useRetryStore";
 import { useMemo } from "react";
@@ -7,14 +8,13 @@ const useDocumentPublicPage = (shareToken: string) => {
   const { retries, increment } = useRetryStore();
   const pageRetries = retries["document-public"] ?? 0;
 
-  const { getDocumentSharedByToken } = useDocumentShare("");
   const {
     data: documentShare,
     isLoading: isDocumentShareLoading,
     refetch: documentShareRefetch,
     isError: isDocumentShareError,
     error: documentShareError,
-  } = getDocumentSharedByToken(shareToken);
+  } = useDocumentShareByToken(shareToken);
 
   const documentInfo = useMemo(
     () => documentShare?.documentId || null,

@@ -3,20 +3,20 @@ import useDocumentShare from "@/features/document-share/useDocumentShare";
 import { AxiosError } from "@/types/api";
 import { handleApiError } from "@/helpers/api-error";
 import { toast } from "sonner";
+import { useDocumentShareByUser } from "@/features/document-share/useDocumentShareByUser";
 
 const useSharedTab = (userId: string) => {
   const [page, setPage] = useState(1);
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
 
-  const { getDocumentSharesByUserQuery, updateDocumentShareMutation } =
-    useDocumentShare(userId, page);
+  const { updateDocumentShareMutation } = useDocumentShare(userId, page);
   const {
     data: sharedDocuments,
     isLoading: sharedDocumentsLoading,
     isError: sharedDocumentError,
     error: sharedDocumentErrorData,
     refetch: refetchSharedDocuments,
-  } = getDocumentSharesByUserQuery;
+  } = useDocumentShareByUser(userId, page);
   const { mutateAsync: updateDocumentShare, isPending: isUpdatePending } =
     updateDocumentShareMutation;
 

@@ -1,6 +1,8 @@
 import useAuth from "@/features/auth/useAuth";
 import useChat from "@/features/chat/useChat";
+import { useChatInitDocument } from "@/features/chat/useChatInitDocument";
 import useDocumentShare from "@/features/document-share/useDocumentShare";
+import { useDocumentShareById } from "@/features/document-share/useDocumentShareById";
 import useMousePosition from "@/features/ui/useMousePostion";
 import useRetryStore from "@/store/useRetryStore";
 import { useMemo } from "react";
@@ -9,14 +11,13 @@ const useDocumentPrivatePage = (shareId: string) => {
   const { retries, increment } = useRetryStore();
   const pageRetries = retries["document-private"] ?? 0;
 
-  const { getDocumentShareById } = useDocumentShare("");
   const {
     data: documentShare,
     isLoading: isDocumentShareLoading,
     refetch: refetchDocumentShare,
     isError: isDocumentShareError,
     error: documentShareError,
-  } = getDocumentShareById(shareId);
+  } = useDocumentShareById(shareId);
 
   const documentId = documentShare?.documentId._id ?? "";
 
@@ -29,9 +30,10 @@ const useDocumentPrivatePage = (shareId: string) => {
     refetch: refetchUser,
   } = me;
 
-  const { initChatDocument } = useChat(user?._id ?? "");
-  const { data: initChat, isLoading: initChatLoading } =
-    initChatDocument(documentId);
+  const { data: initChat, isLoading: initChatLoading } = useChatInitDocument(
+    user?._id ?? "",
+    documentId,
+  );
 
   const chatId = initChat?._id ?? "";
 
