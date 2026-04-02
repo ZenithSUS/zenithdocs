@@ -4,7 +4,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import useAuth from "@/features/auth/useAuth";
-import useDocument from "@/features/documents/useDocument";
 import useSummary from "@/features/summary/useSummary";
 import useDashboard from "@/features/dashboard/useDashboard";
 import useMousePosition from "@/features/ui/useMousePostion";
@@ -12,6 +11,7 @@ import usageKeys from "@/features/usage/usage.key";
 import { Summary, SummaryType } from "@/types/summary";
 import { AxiosError } from "@/types/api";
 import useRetryStore from "@/store/useRetryStore";
+import { useDocumentById } from "@/features/documents/useDocumentById";
 
 const useSummarizePage = () => {
   const queryClient = useQueryClient();
@@ -41,14 +41,14 @@ const useSummarizePage = () => {
   } = me;
 
   // ─── Document ─────────────────────────────────────────────────────────────
-  const { documentById } = useDocument(user?._id ?? "", docId);
+
   const {
     data: document,
     isLoading: docLoading,
     isError: docError,
     error: docErrorData,
     refetch: refetchDocument,
-  } = documentById;
+  } = useDocumentById(docId);
 
   // ─── Summary mutation ─────────────────────────────────────────────────────
   const { createSummaryMutation } = useSummary(user?._id ?? "", docId);
