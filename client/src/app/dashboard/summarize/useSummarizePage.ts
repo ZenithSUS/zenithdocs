@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 import useAuth from "@/features/auth/useAuth";
 import useSummary from "@/features/summary/useSummary";
-import useDashboard from "@/features/dashboard/useDashboard";
+import { useDashboardOverview } from "@/features/dashboard/useDashboardOverview";
 import useMousePosition from "@/features/ui/useMousePostion";
 import usageKeys from "@/features/usage/usage.key";
 import { Summary, SummaryType } from "@/types/summary";
@@ -60,8 +60,7 @@ const useSummarizePage = () => {
   } = createSummaryMutation;
 
   // ─── Dashboard refetch ────────────────────────────────────────────────────
-  const { dashboardOverview } = useDashboard(user?._id ?? "");
-  const { refetch: refetchDashboard } = dashboardOverview;
+  const { refetch: refetchDashboard } = useDashboardOverview(user?._id ?? "");
 
   const refetchUsage = useCallback(async () => {
     await queryClient.refetchQueries({

@@ -4,15 +4,9 @@ import { getDashboardOverview } from "./dashboard.api";
 import { AxiosError } from "@/types/api";
 import { DashboardOverview } from "@/types/dashboard";
 
-const useDashboard = (userId: string) => {
-  // Get dashboard overview
-  const dashboardOverview = useQuery<DashboardOverview, AxiosError>({
+export const useDashboardOverview = (userId: string) =>
+  useQuery<DashboardOverview, AxiosError>({
     queryKey: dashboardKeys.overview(),
     queryFn: () => getDashboardOverview(userId),
     enabled: !!userId,
   });
-
-  return { dashboardOverview };
-};
-
-export default useDashboard;

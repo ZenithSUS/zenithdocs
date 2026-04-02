@@ -1,8 +1,8 @@
 "use client";
 
 import HeaderDropDown from "@/components/HeaderDropDown";
-import useDashboard from "@/features/dashboard/useDashboard";
 import useDropdown from "@/features/ui/useDropdown";
+import { useDashboardOverview } from "@/features/dashboard/useDashboardOverview";
 import { User } from "@/types/user";
 import { calcPct } from "@/utils/usage";
 import { ArrowLeft } from "lucide-react";
@@ -16,8 +16,7 @@ function LearningSetHeader({ user }: LearningSetHeaderProps) {
   const router = useRouter();
   const options = useDropdown();
 
-  const { dashboardOverview } = useDashboard(user?._id ?? "");
-  const { data: overview } = dashboardOverview;
+  const { data: overview } = useDashboardOverview(user?._id ?? "");
 
   const tokenPct = calcPct(overview?.tokensUsed, user?.tokenLimit);
   const documentPct = calcPct(overview?.documentsUploaded, user?.documentLimit);

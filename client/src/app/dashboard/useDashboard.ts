@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
 import useAuth from "@/features/auth/useAuth";
-import useDashboard from "@/features/dashboard/useDashboard";
+import { useDashboardOverview } from "@/features/dashboard/useDashboardOverview";
 import useMousePosition from "@/features/ui/useMousePostion";
 
 import { calcPct } from "@/utils/usage";
@@ -29,12 +29,12 @@ const useDashboardPage = () => {
   } = me;
 
   // ─── Overview ────────────────────────────────────────────────────────────
-  const { dashboardOverview } = useDashboard(user?._id ?? "");
+
   const {
     data: overview,
     isLoading: overviewLoading,
     refetch: overViewRefetch,
-  } = dashboardOverview;
+  } = useDashboardOverview(user?._id ?? "");
 
   // ─── Derived usage percentages ────────────────────────────────────────────
   const tokenPct = calcPct(overview?.tokensUsed, user?.tokenLimit);

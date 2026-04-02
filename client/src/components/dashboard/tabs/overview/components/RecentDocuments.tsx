@@ -1,4 +1,3 @@
-import { NavItem } from "@/components/dashboard/Sidebar";
 import DocumentCard from "@/components/dashboard/cards/DocumentCard";
 import DocumentCardSkeleton from "@/components/dashboard/skeleton/DocumentCardSkeleton";
 import { DashboardOverview } from "@/types/dashboard";

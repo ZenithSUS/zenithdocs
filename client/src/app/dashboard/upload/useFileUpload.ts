@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import useDocument from "@/features/documents/useDocument";
-import useDashboard from "@/features/dashboard/useDashboard";
+import { useDashboardOverview } from "@/features/dashboard/useDashboardOverview";
 import usageKeys from "@/features/usage/usage.key";
 import documentKeys from "@/features/documents/document.keys";
 
@@ -30,8 +30,7 @@ const useFileUpload = ({
   const { createDocumentMutation } = useDocument(userId);
   const { mutateAsync: createDocument } = createDocumentMutation;
 
-  const { dashboardOverview } = useDashboard(userId);
-  const { refetch: refetchDashboard } = dashboardOverview;
+  const { refetch: refetchDashboard } = useDashboardOverview(userId);
 
   const uploadFiles = useCallback(async () => {
     const pending = files.filter((f) => f.status === "processing");
