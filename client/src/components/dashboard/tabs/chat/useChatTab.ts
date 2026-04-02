@@ -1,11 +1,11 @@
 import useDocument from "@/features/documents/useDocument";
+import { useDocumentByUserWithChatsPage } from "@/features/documents/useDocumentByUserWithChatsPage";
 
 interface useChatTabProps {
   userId: string;
 }
 
 const useChatTab = ({ userId }: useChatTabProps) => {
-  const { documentsByUserWithChatsPage } = useDocument(userId);
   const {
     data: documentsWithChats,
     hasNextPage: hasNextDocumentPage,
@@ -15,7 +15,7 @@ const useChatTab = ({ userId }: useChatTabProps) => {
     isError: documentError,
     error: documentErrorData,
     refetch: refetchDocumentChats,
-  } = documentsByUserWithChatsPage;
+  } = useDocumentByUserWithChatsPage(userId);
 
   const allDocumentChats =
     documentsWithChats?.pages.flatMap((page) => page.documents) ?? [];

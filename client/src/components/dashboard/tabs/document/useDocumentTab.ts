@@ -6,6 +6,7 @@ import useSummary from "@/features/summary/useSummary";
 import Doc, { DocumentShareInfo } from "@/types/doc";
 import { toast } from "sonner";
 import { AxiosError } from "@/types/api";
+import { useDocumentByUserPage } from "@/features/documents/useDocumentByUserPage";
 
 const useDocumentTab = (userId: string, filterFolder: string) => {
   const router = useRouter();
@@ -46,10 +47,7 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
   const actionsButtonRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
 
   // ─── Queries ──────────────────────────────────────────────────────────────
-  const { documentsByUserPage, reprocessDocumentMutation } = useDocument(
-    userId,
-    "",
-  );
+  const { reprocessDocumentMutation } = useDocument(userId);
   const {
     data: documentsData,
     isLoading: documentsLoading,
@@ -59,7 +57,7 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
     isError: documentError,
     error: documentErrorData,
     refetch: refetchDocumentChats,
-  } = documentsByUserPage;
+  } = useDocumentByUserPage(userId);
 
   const { foldersByUserPage } = useFolder();
   const { data: foldersData, isLoading: foldersLoading } =

@@ -1,0 +1,47 @@
+import { AxiosError } from "@/types/api";
+import Doc from "@/types/doc";
+import { QueryClient, useMutation } from "@tanstack/react-query";
+import documentKeys from "./document.keys";
+import { deleteDocumentById } from "./document.api";
+import { removeInfiniteDocument } from "./document.cache";
+import { DocumentsInfiniteData, MutationContext } from "./useDocument";
+
+export const useDocumentDelete = (
+  queryClient: QueryClient,
+  userId: string,
+  documentLimit: number,
+) =>
+  useMutation<Doc, AxiosError, string, MutationContext>({
+    mutationKey: documentKeys.delete(),
+    mutationFn: (id) => deleteDocumentById(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({
+        queryKey: documentKeys.byUserPage(userId, documentLimit),
+      });
+
+      const previousDoc = queryClient.getQueryData<DocumentsInfiniteData>(
+        documentKeys.byUserPage(userId, documentLimit),
+      );
+
+      removeInfiniteDocument(
+        queryClient,
+        documentKeys.byUserPage(userId, documentLimit),
+        id,
+      );
+
+      return { previousDoc };
+    },
+    onError: (_, __, context) => {
+      if (context?.previousDoc) {
+        queryClient.setQueryData(
+          documentKeys.byUserPage(userId, documentLimit),
+          context.previousDoc,
+        );
+      }
+    },
+    onSuccess: (_, deletedId: string) => {
+      queryClient.removeQueries({
+        queryKey: documentKeys.byId(deletedId),
+      });
+    },
+  });

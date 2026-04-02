@@ -1,0 +1,56 @@
+import { AxiosError } from "@/types/api";
+import Doc from "@/types/doc";
+import { QueryClient, useMutation } from "@tanstack/react-query";
+import {
+  DocumentsInfiniteData,
+  MutationContext,
+  UpdateVariables,
+} from "./useDocument";
+import documentKeys from "./document.keys";
+import { updateDocumentById } from "./document.api";
+import { updateInfiniteDocument } from "./document.cache";
+
+export const useDocumentUpdate = (
+  queryClient: QueryClient,
+  userId: string,
+  documentLimit: number,
+) =>
+  useMutation<Doc, AxiosError, UpdateVariables, MutationContext>({
+    mutationKey: documentKeys.update(),
+    mutationFn: ({ id, data }: { id: string; data: Partial<Doc> }) =>
+      updateDocumentById(id, data),
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({
+        queryKey: documentKeys.byUserPage(userId, documentLimit),
+      });
+
+      const previousDoc = queryClient.getQueryData<DocumentsInfiniteData>(
+        documentKeys.byUserPage(userId, documentLimit),
+      );
+
+      updateInfiniteDocument(
+        queryClient,
+        documentKeys.byUserPage(userId, documentLimit),
+        { _id: id, ...data },
+      );
+
+      return { previousDoc };
+    },
+    onError: (_, __, context) => {
+      if (context?.previousDoc) {
+        queryClient.setQueryData(
+          documentKeys.byUserPage(userId, documentLimit),
+          context.previousDoc,
+        );
+      }
+    },
+    onSuccess: (updatedDoc: Doc) => {
+      updateInfiniteDocument(
+        queryClient,
+        documentKeys.byUserPage(userId, documentLimit),
+        updatedDoc,
+      );
+
+      queryClient.setQueryData(documentKeys.byId(updatedDoc._id), updatedDoc);
+    },
+  });

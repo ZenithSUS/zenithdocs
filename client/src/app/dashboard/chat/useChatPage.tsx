@@ -15,6 +15,7 @@ import useChatScroll from "@/features/ui/useChatScroll";
 import useMessageStream from "@/app/dashboard/chat/hooks/useMessageStream";
 import { Message } from "@/types/message";
 import useRetryStore from "@/store/useRetryStore";
+import { useDocumentById } from "@/features/documents/useDocumentById";
 
 const useChatPage = () => {
   // ─── Route params ────────────────────────────────────────────────────────────
@@ -36,14 +37,14 @@ const useChatPage = () => {
   } = me;
 
   // ─── Document + chat metadata ─────────────────────────────────────────────
-  const { documentById } = useDocument(user?._id ?? "", docId);
+
   const {
     data: documentData,
     isLoading: docLoading,
     isError: docError,
     error: docErrorData,
     refetch: refetchDocument,
-  } = documentById;
+  } = useDocumentById(docId);
 
   const { initChatDocument } = useChat(user?._id ?? "");
   const {

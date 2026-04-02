@@ -10,6 +10,7 @@ import documentKeys from "@/features/documents/document.keys";
 import { AxiosError } from "@/types/api";
 import Doc from "@/types/doc";
 import { UploadFile } from "./upload.types";
+import { useDocumentCreate } from "@/features/documents/useDocumentCreate";
 
 interface UseFileUploadOptions {
   userId: string;
@@ -27,7 +28,7 @@ const useFileUpload = ({
   const queryClient = useQueryClient();
 
   const { createDocumentMutation } = useDocument(userId);
-  const { mutateAsync } = createDocumentMutation;
+  const { mutateAsync: createDocument } = createDocumentMutation;
 
   const { dashboardOverview } = useDashboard(userId);
   const { refetch: refetchDashboard } = dashboardOverview;
@@ -66,7 +67,7 @@ const useFileUpload = ({
           file: uploadFile.file,
         };
 
-        await mutateAsync(documentData);
+        await createDocument(documentData);
         clearInterval(interval);
 
         setFiles((prev) =>
@@ -122,7 +123,7 @@ const useFileUpload = ({
     files,
     selectedFolder,
     userId,
-    mutateAsync,
+    createDocument,
     refetchDashboard,
     queryClient,
     setFiles,

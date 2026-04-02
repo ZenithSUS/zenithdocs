@@ -1,6 +1,7 @@
 import useFolder from "@/features/folder/useFolder";
 import useDocument from "@/features/documents/useDocument";
 import { useEffect, useRef } from "react";
+import { useDocumentByUserPage } from "@/features/documents/useDocumentByUserPage";
 
 const useFolderTab = (userId: string) => {
   const { foldersByUserPage } = useFolder();
@@ -12,9 +13,8 @@ const useFolderTab = (userId: string) => {
     isLoading: foldersLoading,
   } = foldersByUserPage(userId);
 
-  const { documentsByUserPage } = useDocument(userId);
   const { data: documentsData, isLoading: documentsLoading } =
-    documentsByUserPage;
+    useDocumentByUserPage(userId);
 
   // Intersection observer for infinite scroll
   const loadMoreRef = useRef<HTMLDivElement>(null);

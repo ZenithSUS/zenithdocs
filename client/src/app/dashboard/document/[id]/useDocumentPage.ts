@@ -7,6 +7,7 @@ import useSummary from "@/features/summary/useSummary";
 import useMousePosition from "@/features/ui/useMousePostion";
 import STATUS_META from "@/constants/status-meta";
 import useRetryStore from "@/store/useRetryStore";
+import { useDocumentById } from "@/features/documents/useDocumentById";
 
 const SUMMARIES_PER_PAGE = 3;
 
@@ -35,14 +36,13 @@ const useDocumentPage = () => {
   } = me;
 
   // ─── Document ─────────────────────────────────────────────────────────────
-  const { documentById } = useDocument(user?._id ?? "", documentId);
   const {
     data: document,
     isLoading: docLoading,
     refetch: refetchDocument,
     isError: docError,
     error: docErrorData,
-  } = documentById;
+  } = useDocumentById(documentId);
 
   // ─── Summaries ────────────────────────────────────────────────────────────
   const { summariesByDocumentPage } = useSummary(user?._id ?? "", documentId);

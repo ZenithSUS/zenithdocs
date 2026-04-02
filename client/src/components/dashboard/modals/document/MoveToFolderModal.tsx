@@ -46,7 +46,7 @@ const MoveToFolderModal = ({
     currentFolderId || "none",
   );
 
-  const { updateDocumentMutation } = useDocument(userId, "");
+  const { updateDocumentMutation } = useDocument(userId);
   const { mutateAsync: updateDoc, isPending } = updateDocumentMutation;
 
   const { foldersByUserPage } = useFolder();

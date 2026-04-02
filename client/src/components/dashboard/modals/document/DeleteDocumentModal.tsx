@@ -33,7 +33,7 @@ const DeleteDocumentModal = ({
   onOpenChange,
 }: DeleteDocumentModalProps) => {
   const queryClient = useQueryClient();
-  const { deleteDocumentMutation } = useDocument(userId, "");
+  const { deleteDocumentMutation } = useDocument(userId);
   const { mutateAsync: deleteDoc, isPending } = deleteDocumentMutation;
 
   const handleDelete = useCallback(async () => {
