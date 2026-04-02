@@ -1,17 +1,17 @@
-import useGlobalChat from "@/features/global-chat/useGlobalChat";
+import { useMemo } from "react";
+import { useGlobalChatInit } from "@/features/global-chat/useGlobalChatInit";
 import useGlobalMessage from "@/features/global-message/useGlobalMessage";
 import useAutoResizeTextarea from "@/features/ui/useAutoResizeArea";
-import { useMemo } from "react";
 import useGlobalMessageStream from "./hooks/useGlobalMessageStream";
 
 const useGlobalChatUI = (userId: string) => {
-  const { initGlobalChat } = useGlobalChat(userId);
   const {
     data: initChat,
     isLoading: initChatLoading,
     isError: initChatError,
     error: initChatErrorData,
-  } = initGlobalChat;
+  } = useGlobalChatInit(userId);
+
   const chatId = initChat?._id ?? "";
 
   const { globalMessagesByChatPage, deleteGlobalMessageMutation } =
