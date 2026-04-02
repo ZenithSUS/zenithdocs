@@ -1,12 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams } from "next/navigation";
-
-import useAuth from "@/features/auth/useAuth";
 import useMousePosition from "@/features/ui/useMousePostion";
 import STATUS_META from "@/constants/status-meta";
 import useRetryStore from "@/store/useRetryStore";
 import { useDocumentById } from "@/features/documents/useDocumentById";
 import { useSummaryByDocumentPage } from "@/features/summary/useSummaryByDocumentPage";
+import { useAuthMe } from "@/features/auth/useAuthMe";
 
 const SUMMARIES_PER_PAGE = 3;
 
@@ -25,14 +24,13 @@ const useDocumentPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   // ─── Auth ─────────────────────────────────────────────────────────────────
-  const { me } = useAuth();
   const {
     data: user,
     isLoading: userLoading,
     refetch: refetchUser,
     isError: userError,
     error: userErrorData,
-  } = me;
+  } = useAuthMe();
 
   // ─── Document ─────────────────────────────────────────────────────────────
   const {

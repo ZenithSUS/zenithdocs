@@ -1,8 +1,6 @@
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 
-import useAuth from "@/features/auth/useAuth";
-import useFolder from "@/features/folder/useFolder";
 import useMousePosition from "@/features/ui/useMousePostion";
 
 import { UploadFile } from "./upload.types";
@@ -10,6 +8,7 @@ import useFileDrop from "./useFileDrop";
 import useFileUpload from "./useFileUpload";
 import useRetryStore from "@/store/useRetryStore";
 import { useFolderByUserPage } from "@/features/folder/useFolderByUserPage";
+import { useAuthMe } from "@/features/auth/useAuthMe";
 
 const useUploadPage = () => {
   const router = useRouter();
@@ -22,14 +21,13 @@ const useUploadPage = () => {
   const [selectedFolder, setSelectedFolder] = useState("");
 
   // ─── Auth ─────────────────────────────────────────────────────────────────
-  const { me } = useAuth();
   const {
     data: user,
     isLoading: userLoading,
     refetch: refetchUser,
     isError: userError,
     error: userErrorData,
-  } = me;
+  } = useAuthMe();
 
   // ─── Folders ──────────────────────────────────────────────────────────────
   const { data: folders } = useFolderByUserPage(user?._id ?? "");

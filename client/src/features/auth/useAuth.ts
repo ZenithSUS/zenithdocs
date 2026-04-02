@@ -1,54 +1,15 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  getMe,
-  login,
-  LoginResponse,
-  logout,
-  register,
-  RegisterResponse,
-} from "@/features/auth/auth.api";
-import { authKeys } from "@/features/auth/auth.keys";
-import { AxiosError } from "@/types/api";
-import { AuthInput } from "@/types/input";
-import { User } from "@/types/user";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAuthLogin } from "./useAuthLogin";
+import { useAuthRegister } from "./useAuthRegister";
+import { useAuthLogout } from "./useAuthLogout";
 
 const useAuth = () => {
   const queryClient = useQueryClient();
 
-  // Login
-  const loginMutation = useMutation<LoginResponse, AxiosError, AuthInput>({
-    mutationFn: login,
-  });
-
-  // Register
-  const registerMutation = useMutation<RegisterResponse, AxiosError, AuthInput>(
-    {
-      mutationFn: register,
-      onSuccess: () =>
-        queryClient.invalidateQueries({ queryKey: authKeys.user() }),
-    },
-  );
-
-  // Me
-  const me = useQuery<User | null, AxiosError>({
-    queryKey: authKeys.user(),
-    queryFn: getMe,
-  });
-
-  // Logout
-  const logoutMutation = useMutation({
-    mutationKey: authKeys.logout(),
-    mutationFn: (id: string) => logout(id),
-    onSuccess: () => {
-      queryClient.removeQueries({ queryKey: authKeys.user() });
-    },
-  });
-
   return {
-    me,
-    loginMutation,
-    registerMutation,
-    logoutMutation,
+    loginMutation: useAuthLogin(),
+    logoutMutation: useAuthLogout(queryClient),
+    registerMutation: useAuthRegister(queryClient),
   };
 };
 

@@ -3,10 +3,6 @@
 import { useCallback, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 
-import useAuth from "@/features/auth/useAuth";
-import useChat from "@/features/chat/useChat";
-import useDocument from "@/features/documents/useDocument";
-import useMessage from "@/features/message/useMessage";
 import useMousePosition from "@/features/ui/useMousePostion";
 import useAutoResizeTextarea from "@/features/ui/useAutoResizeArea";
 import useDropdown from "@/features/ui/useDropdown";
@@ -18,6 +14,7 @@ import useRetryStore from "@/store/useRetryStore";
 import { useDocumentById } from "@/features/documents/useDocumentById";
 import { useChatInitDocument } from "@/features/chat/useChatInitDocument";
 import { useMessageByChatPage } from "@/features/message/useMessageByChatPage";
+import { useAuthMe } from "@/features/auth/useAuthMe";
 
 const useChatPage = () => {
   // ─── Route params ────────────────────────────────────────────────────────────
@@ -29,14 +26,13 @@ const useChatPage = () => {
   const pageRetries = retries["chat-page"] ?? 0;
 
   // ─── Auth ────────────────────────────────────────────────────────────────────
-  const { me } = useAuth();
   const {
     data: user,
     isLoading: userLoading,
     isError: userError,
     error: userErrorData,
     refetch: refetchUser,
-  } = me;
+  } = useAuthMe();
 
   // ─── Document + chat metadata ─────────────────────────────────────────────
 

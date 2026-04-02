@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import useAuthStore from "@/features/auth/auth.store";
-import useAuth from "@/features/auth/useAuth";
+import { useAuthMe } from "./useAuthMe";
 
 /**
  * Hydrates the auth store once at layout level.
@@ -10,8 +10,7 @@ import useAuth from "@/features/auth/useAuth";
 const useAuthHydration = () => {
   const { setAccessToken, setUserId, setEmail, email, userId, accessToken } =
     useAuthStore();
-  const { me } = useAuth();
-  const { data: user } = me;
+  const { data: user } = useAuthMe();
 
   // Restore token from localStorage on mount
   useEffect(() => {

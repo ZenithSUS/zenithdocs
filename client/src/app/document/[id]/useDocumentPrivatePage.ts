@@ -1,7 +1,5 @@
-import useAuth from "@/features/auth/useAuth";
-import useChat from "@/features/chat/useChat";
+import { useAuthMe } from "@/features/auth/useAuthMe";
 import { useChatInitDocument } from "@/features/chat/useChatInitDocument";
-import useDocumentShare from "@/features/document-share/useDocumentShare";
 import { useDocumentShareById } from "@/features/document-share/useDocumentShareById";
 import useMousePosition from "@/features/ui/useMousePostion";
 import useRetryStore from "@/store/useRetryStore";
@@ -21,14 +19,13 @@ const useDocumentPrivatePage = (shareId: string) => {
 
   const documentId = documentShare?.documentId._id ?? "";
 
-  const { me } = useAuth();
   const {
     data: user,
     isLoading: userLoading,
     isError: userError,
     error: userErrorData,
     refetch: refetchUser,
-  } = me;
+  } = useAuthMe();
 
   const { data: initChat, isLoading: initChatLoading } = useChatInitDocument(
     user?._id ?? "",

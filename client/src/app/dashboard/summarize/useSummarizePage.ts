@@ -3,7 +3,6 @@ import { useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import useAuth from "@/features/auth/useAuth";
 import useSummary from "@/features/summary/useSummary";
 import { useDashboardOverview } from "@/features/dashboard/useDashboardOverview";
 import useMousePosition from "@/features/ui/useMousePostion";
@@ -12,6 +11,7 @@ import { Summary, SummaryType } from "@/types/summary";
 import { AxiosError } from "@/types/api";
 import useRetryStore from "@/store/useRetryStore";
 import { useDocumentById } from "@/features/documents/useDocumentById";
+import { useAuthMe } from "@/features/auth/useAuthMe";
 
 const useSummarizePage = () => {
   const queryClient = useQueryClient();
@@ -31,14 +31,13 @@ const useSummarizePage = () => {
   const [tokenUsed, setTokenUsed] = useState(0);
 
   // ─── Auth ─────────────────────────────────────────────────────────────────
-  const { me } = useAuth();
   const {
     data: user,
     isLoading: userLoading,
     refetch: refetchUser,
     isError: userError,
     error: userErrorData,
-  } = me;
+  } = useAuthMe();
 
   // ─── Document ─────────────────────────────────────────────────────────────
 

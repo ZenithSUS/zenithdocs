@@ -1,5 +1,4 @@
-import useAuth from "@/features/auth/useAuth";
-import useDocument from "@/features/documents/useDocument";
+import { useAuthMe } from "@/features/auth/useAuthMe";
 import { useDocumentByUserPage } from "@/features/documents/useDocumentByUserPage";
 import useLearningSet from "@/features/learning-sets/useLearningSet";
 import useMousePosition from "@/features/ui/useMousePostion";
@@ -18,14 +17,13 @@ const useLearningSetPage = () => {
   const mousePos = useMousePosition();
 
   // ─── Auth ────────────────────────────────────────────────────────────────────
-  const { me } = useAuth();
   const {
     data: user,
     isLoading: userLoading,
     isError: userError,
     error: userErrorData,
     refetch: refetchUser,
-  } = me;
+  } = useAuthMe();
 
   // ─── Documents ───────────────────────────────────────────────────────────────
   const {

@@ -1,13 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
-import useAuth from "@/features/auth/useAuth";
 import { useDashboardOverview } from "@/features/dashboard/useDashboardOverview";
 import useMousePosition from "@/features/ui/useMousePostion";
-
 import { calcPct } from "@/utils/usage";
-
 import { NavItem } from "@/components/dashboard/Sidebar";
 import useRetryStore from "@/store/useRetryStore";
+import { useAuthMe } from "@/features/auth/useAuthMe";
 
 const useDashboardPage = () => {
   const [nav, setNav] = useState<NavItem>("overview");
@@ -19,14 +17,13 @@ const useDashboardPage = () => {
   const pageRetry = retries["dashboard-page"] ?? 0;
 
   // ─── Auth ────────────────────────────────────────────────────────────────
-  const { me } = useAuth();
   const {
     data: user,
     isLoading: userLoading,
     refetch: refetchUser,
     isError: userError,
     error: userErrorData,
-  } = me;
+  } = useAuthMe();
 
   // ─── Overview ────────────────────────────────────────────────────────────
 
