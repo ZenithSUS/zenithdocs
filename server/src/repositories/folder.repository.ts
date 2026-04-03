@@ -1,4 +1,4 @@
-import Folder, { IFolderInput } from "../models/Folder.js";
+import Folder, { IFolderInput } from "../models/folder.model.js";
 
 /**
  * Creates a new folder with the given data

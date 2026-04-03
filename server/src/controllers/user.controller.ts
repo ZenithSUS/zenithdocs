@@ -8,7 +8,7 @@ import {
   updateUserService,
 } from "../services/user.service.js";
 import { NextFunction, ParamsDictionary } from "express-serve-static-core";
-import { IUser } from "../models/User.js";
+import { IUser } from "../models/user.model.js";
 import AppError from "../utils/app-error.js";
 
 interface UserParams extends ParamsDictionary {

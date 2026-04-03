@@ -2,7 +2,7 @@ import Usage, {
   IUsage,
   IUsageInput,
   IUsagePopulated,
-} from "../models/Usage.js";
+} from "../models/usage.model.js";
 
 /**
  * Creates a new usage with the given data

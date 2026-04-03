@@ -1,5 +1,5 @@
 import { Schema, Types } from "mongoose";
-import Document, { IDocument } from "./Document.js";
+import Document, { IDocument } from "./document.model.js";
 import { mainDB } from "../config/db.js";
 
 export interface IFolder extends Document {

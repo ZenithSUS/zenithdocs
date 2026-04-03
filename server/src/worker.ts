@@ -1,8 +1,8 @@
 import connectDB from "./config/db.js";
 
-import "./models/User.js";
-import "./models/Document.js";
-import "./models/Folder.js";
+import "./models/user.model.js";
+import "./models/document.model.js";
+import "./models/folder.model.js";
 import "./queues/embedding.worker.js";
 
 import colors from "./utils/log-colors.js";

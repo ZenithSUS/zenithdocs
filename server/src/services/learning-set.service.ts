@@ -1,4 +1,4 @@
-import { ILearningSetInput } from "../models/LearningSet.js";
+import { ILearningSetInput } from "../models/learning-set.model.js";
 import { getDocumentById } from "../repositories/document.repository.js";
 import {
   createLearningSet,

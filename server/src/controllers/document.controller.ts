@@ -1,7 +1,7 @@
 import fs from "fs";
 import { promisify } from "util";
 import { Request, Response } from "express";
-import { IDocumentInput } from "../models/Document.js";
+import { IDocumentInput } from "../models/document.model.js";
 import {
   createDocumentService,
   deleteDocumentByIdService,

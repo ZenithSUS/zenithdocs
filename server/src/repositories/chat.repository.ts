@@ -1,5 +1,5 @@
 import { Types } from "mongoose";
-import Chat, { IChatInput, InitChatInput } from "../models/Chat.js";
+import Chat, { IChatInput, InitChatInput } from "../models/chat.model.js";
 
 /**
  * Creates a new chat document with the given data.

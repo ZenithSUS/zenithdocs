@@ -1,6 +1,6 @@
 import { Types } from "mongoose";
-import Document, { IDocumentInput } from "../models/Document.js";
-import Chat from "../models/Chat.js";
+import Document, { IDocumentInput } from "../models/document.model.js";
+import Chat from "../models/chat.model.js";
 
 /**
  * Creates a new document with the given data

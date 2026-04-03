@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import Summary, { ISummary, ISummaryInput } from "../models/Summary.js";
+import Summary, { ISummary, ISummaryInput } from "../models/summary.model.js";
 
 /**
  * Creates a new summary with the given data

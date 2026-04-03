@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import DocumentChunk, {
   IDocumentChunkInput,
   IDocumentChunkOutput,
-} from "../models/DocumentChunk.js";
+} from "../models/document-chunk.model.js";
 import colors from "../utils/log-colors.js";
 
 /**

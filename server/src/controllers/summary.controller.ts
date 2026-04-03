@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { ISummary } from "../models/Summary.js";
+import { ISummary } from "../models/summary.model.js";
 import {
   createSummaryService,
   deleteSummaryService,

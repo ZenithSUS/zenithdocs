@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
-import GlobalMessage, { IGlobalMessageInput } from "../models/GlobalMessage.js";
+import GlobalMessage, {
+  IGlobalMessageInput,
+} from "../models/global-message.model.js";
 
 /**
  * Creates a new global message document with the given data.

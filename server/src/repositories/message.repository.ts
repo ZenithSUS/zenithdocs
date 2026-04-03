@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import Message, { MessageInput } from "../models/Message.js";
+import Message, { MessageInput } from "../models/message.model.js";
 
 export const createMessage = async (data: MessageInput) => {
   const message = new Message(data);

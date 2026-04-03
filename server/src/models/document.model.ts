@@ -1,10 +1,10 @@
 import { Schema, Document, Types } from "mongoose";
 import { mainDB } from "../config/db.js";
-import Summary from "./Summary.js";
-import Chat from "./Chat.js";
-import DocumentShare from "./DocumentShare.js";
-import LearningSet from "./LearningSet.js";
-import Message from "./Message.js";
+import Summary from "./summary.model.js";
+import Chat from "./chat.model.js";
+import DocumentShare from "./document-share.model.js";
+import LearningSet from "./learning-set.model.js";
+import Message from "./message.model.js";
 
 export interface IDocument extends Document {
   title: string;

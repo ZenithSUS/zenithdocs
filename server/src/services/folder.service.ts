@@ -1,4 +1,4 @@
-import { IFolderInput } from "../models/Folder.js";
+import { IFolderInput } from "../models/folder.model.js";
 import {
   createFolder,
   deleteFolder,

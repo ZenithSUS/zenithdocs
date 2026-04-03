@@ -2,7 +2,7 @@ import { Types } from "mongoose";
 import DocumentShare, {
   IDocumentShare,
   IDocumentShareInput,
-} from "../models/DocumentShare.js";
+} from "../models/document-share.model.js";
 
 /**
  * Creates a new document share

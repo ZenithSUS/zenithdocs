@@ -12,7 +12,7 @@ import summarizeOldMessages from "../utils/summarize-message.js";
 import { updateGlobalChatSummary } from "../../../repositories/global-chat.repository.js";
 import generateSearchQueries from "../utils/generate-search-queries.js";
 import calculateGlobalConfidenceScore from "../utils/global-confidence-score.js";
-import { IDocumentChunkOutput } from "../../../models/DocumentChunk.js";
+import { IDocumentChunkOutput } from "../../../models/document-chunk.model.js";
 import { globalChatUserSchema } from "../../../schemas/global-chat.schema.js";
 import isZenithDocsQuestion from "../../../utils/zenithdocs-question.js";
 import redis from "../../../config/redis.js";

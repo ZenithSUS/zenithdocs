@@ -1,5 +1,5 @@
-import { IDocumentChunk } from "../../../models/DocumentChunk.js";
-import { ILearningItem } from "../../../models/LearningSet.js";
+import { IDocumentChunk } from "../../../models/document-chunk.model.js";
+import { ILearningItem } from "../../../models/learning-set.model.js";
 import { getDocumentChunksByDocumentId } from "../../../repositories/document-chunk.repository.js";
 import { getDocumentById } from "../../../repositories/document.repository.js";
 import AppError from "../../../utils/app-error.js";

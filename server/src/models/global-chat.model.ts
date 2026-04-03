@@ -1,6 +1,6 @@
 import { Document, Schema, Types } from "mongoose";
 import { mainDB } from "../config/db.js";
-import GlobalMessage from "./GlobalMessage.js";
+import GlobalMessage from "./global-message.model.js";
 
 export interface IGlobalChat extends Document {
   userId: Types.ObjectId;

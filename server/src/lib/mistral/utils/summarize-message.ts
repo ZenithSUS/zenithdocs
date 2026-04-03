@@ -1,4 +1,4 @@
-import { IMessage } from "../../../models/Message.js";
+import { IMessage } from "../../../models/message.model.js";
 import client from "../index.js";
 
 const summarizeOldMessages = async (messages: IMessage[]) => {

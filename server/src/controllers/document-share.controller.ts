@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { IDocumentShareInput } from "../models/DocumentShare.js";
+import { IDocumentShareInput } from "../models/document-share.model.js";
 import {
   createDocumentShareService,
   deleteDocumentShareService,

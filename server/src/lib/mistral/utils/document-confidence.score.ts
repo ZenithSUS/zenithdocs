@@ -1,4 +1,4 @@
-import { IDocumentChunkOutput } from "../../../models/DocumentChunk.js";
+import { IDocumentChunkOutput } from "../../../models/document-chunk.model.js";
 
 const calculateDocumentConfidenceScore = (
   chunks: IDocumentChunkOutput[],

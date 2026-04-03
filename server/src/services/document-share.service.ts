@@ -20,7 +20,7 @@ import {
   getDocumentSharesByUserPage,
   updateDocumentShareSchema,
 } from "../schemas/document-share.schema.js";
-import { IDocumentShareInput } from "../models/DocumentShare.js";
+import { IDocumentShareInput } from "../models/document-share.model.js";
 import redis from "../config/redis.js";
 import { Request } from "express";
 

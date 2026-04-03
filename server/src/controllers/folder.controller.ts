@@ -9,7 +9,7 @@ import {
   getFoldersByUserService,
   updateFolderService,
 } from "../services/folder.service.js";
-import { IFolder, IFolderInput } from "../models/Folder.js";
+import { IFolder, IFolderInput } from "../models/folder.model.js";
 import { ParamsDictionary } from "express-serve-static-core";
 
 interface FolderParams extends ParamsDictionary {

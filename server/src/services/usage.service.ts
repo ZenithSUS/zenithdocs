@@ -1,4 +1,4 @@
-import { IUsageInput } from "../models/Usage.js";
+import { IUsageInput } from "../models/usage.model.js";
 import {
   createUsage,
   getAllUsageAdmin,

@@ -1,5 +1,5 @@
 import config from "../config/env.js";
-import { IUser } from "../models/User.js";
+import { IUser } from "../models/user.model.js";
 import {
   createUser,
   getUserByEmail,

@@ -1,4 +1,4 @@
-import GlobalChat, { IGlobalChat } from "../models/GlobalChat.js";
+import GlobalChat, { IGlobalChat } from "../models/global-chat.model.js";
 
 /**
  * Creates a new global chat document with the given data.

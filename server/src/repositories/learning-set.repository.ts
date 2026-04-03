@@ -1,4 +1,6 @@
-import LearningSet, { ILearningSetInput } from "../models/LearningSet.js";
+import LearningSet, {
+  ILearningSetInput,
+} from "../models/learning-set.model.js";
 
 /**
  * Creates a new learning set based on the given data.
