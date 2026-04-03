@@ -59,8 +59,16 @@ export const loginService = async (
     },
   );
 
-  const device = req.headers["user-agent"];
-  const ip = req.ip ?? req.socket.remoteAddress ?? "unknown";
+  const device =
+    (req.headers["x-forwarded-user-agent"] as string) ||
+    req.headers["user-agent"] ||
+    "unknown";
+
+  const ip =
+    (req.headers["x-forwarded-for"] as string)?.split(",")[0].trim() ||
+    req.ip ||
+    req.socket.remoteAddress ||
+    "unknown";
 
   const expirationData =
     user.role === "admin"
@@ -106,8 +114,16 @@ export const oauthLoginService = async (user: IUser, req: Request) => {
     },
   );
 
-  const device = req.headers["user-agent"];
-  const ip = req.ip ?? req.socket.remoteAddress ?? "unknown";
+  const device =
+    (req.headers["x-forwarded-user-agent"] as string) ||
+    req.headers["user-agent"] ||
+    "unknown";
+
+  const ip =
+    (req.headers["x-forwarded-for"] as string)?.split(",")[0].trim() ||
+    req.ip ||
+    req.socket.remoteAddress ||
+    "unknown";
 
   const expirationData =
     user.role === "admin"
@@ -225,8 +241,16 @@ export const refreshAccessTokenService = async (
     },
   );
 
-  const device = req.headers["user-agent"];
-  const ip = req.ip ?? req.socket.remoteAddress ?? "unknown";
+  const device =
+    (req.headers["x-forwarded-user-agent"] as string) ||
+    req.headers["user-agent"] ||
+    "unknown";
+
+  const ip =
+    (req.headers["x-forwarded-for"] as string)?.split(",")[0].trim() ||
+    req.ip ||
+    req.socket.remoteAddress ||
+    "unknown";
 
   const expirationData =
     user.role === "admin"

@@ -61,6 +61,11 @@ async function handler(
       "Content-Type": "application/json",
       "x-api-key": API_KEY,
       ...(authorization && { Authorization: authorization }),
+      "x-fowarded-user-agent": req.headers.get("user-agent") ?? "unknown",
+      "x-fowarded-for":
+        req.headers.get("x-forwared-for") ??
+        req.headers.get("cf-connecting-ip") ??
+        "unknown",
     };
 
     console.log(`[Route Handler] ${req.method} /${path}`);
