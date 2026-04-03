@@ -15,10 +15,11 @@ function MCQCard({
 }: MCQCardProps) {
   const [selected, setSelected] = useState<string | null>(null);
 
-  const isCorrect = selected === learningItem.answer;
   const isAnswered = selected !== null;
 
   const handleSelect = (value: string) => {
+    const isCorrect = value === learningItem.answer;
+
     if (isStudying && setPoints) {
       setPoints(isCorrect ? 1 : 0);
     }
