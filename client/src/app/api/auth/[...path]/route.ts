@@ -57,12 +57,16 @@ async function handler(
       body = JSON.stringify({ refreshToken: refreshTokenCookie });
     }
 
+    const fowardedHeaders = {
+      "x-forwarded-user-agent": req.headers.get("user-agent") ?? "unknown",
+      "x-forwarded-for": req.headers.get("x-forwarded-for") ?? "unknown",
+    };
+
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
       "x-api-key": API_KEY,
       ...(authorization && { Authorization: authorization }),
-      "x-forwarded-user-agent": req.headers.get("user-agent") ?? "unknown",
-      "x-forwarded-for": req.headers.get("x-forwarded-for") ?? "unknown",
+      ...fowardedHeaders,
     };
 
     console.log(`[Route Handler] ${req.method} /${path}`);
@@ -93,15 +97,13 @@ async function handler(
       const refreshRes = await fetchBackend(
         `${BACKEND_URL}/auth/refresh`,
         "POST",
-        { "Content-Type": "application/json", "x-api-key": API_KEY },
+        {
+          "Content-Type": "application/json",
+          "x-api-key": API_KEY,
+          ...fowardedHeaders,
+        },
         JSON.stringify({ refreshToken: refreshTokenCookie }),
       );
-
-      console.log("[Route Handler] Headers being sent:", {
-        "user-agent": req.headers.get("user-agent"),
-        "x-forwarded-for": req.headers.get("x-forwarded-for"),
-        "cf-connecting-ip": req.headers.get("cf-connecting-ip"),
-      });
 
       if (refreshRes.ok) {
         const refreshData = await refreshRes.json();
