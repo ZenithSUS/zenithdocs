@@ -3,7 +3,6 @@ import fs from "fs/promises";
 import * as pdfParseModule from "pdf-parse-new";
 import colors from "../utils/log-colors.js";
 import extractWithMistralOCR from "./mistral/services/extract-text-ocr.js";
-import { getFolderById } from "../repositories/folder.repository.js";
 
 // Suppress pdf-parse/PDF.js internal logs
 const originalConsoleLog = console.log;
