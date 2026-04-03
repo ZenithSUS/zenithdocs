@@ -50,7 +50,7 @@ async function handler(
     let body = req.method !== "GET" ? await req.text() : undefined;
 
     if (
-      path === "auth/refresh" &&
+      (path === "auth/refresh" || path === "auth/logout") &&
       (!body || body === "{}") &&
       refreshTokenCookie
     ) {
@@ -98,6 +98,7 @@ async function handler(
       if (refreshRes.ok) {
         const refreshData = await refreshRes.json();
         const newAccessToken = refreshData.data?.accessToken;
+        const newRefreshToken = refreshData.data?.refreshToken;
 
         if (newAccessToken) {
           console.log(`[Route Handler] Token refreshed — retrying /${path}`);
@@ -111,7 +112,7 @@ async function handler(
           );
 
           const data = await backendRes.json();
-          const { refreshToken, ...safeData } = data.data ?? {};
+          const safeData = data.data ?? {};
           const res = NextResponse.json(
             { ...data, data: safeData },
             { status: backendRes.status },
@@ -119,8 +120,8 @@ async function handler(
 
           res.headers.set("x-access-token", newAccessToken);
 
-          if (refreshToken) {
-            res.cookies.set("refreshToken", refreshToken, {
+          if (newRefreshToken) {
+            res.cookies.set("refreshToken", newRefreshToken, {
               httpOnly: true,
               secure: true,
               sameSite: "strict",

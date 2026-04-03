@@ -33,8 +33,8 @@ export const getMe = async () => {
   return data.data;
 };
 
-export const logout = async (id: string) => {
-  const { data } = await authApi.post<Response>("/api/auth/logout", { id });
+export const logout = async () => {
+  const { data } = await authApi.post<Response>("/api/auth/logout");
 
   // If logout is successful, remove token
   if (data.success) {

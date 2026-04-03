@@ -7,7 +7,6 @@ export interface IUser extends Document {
   role: "user" | "admin";
   plan: "free" | "premium";
   tokenVersion: number;
-  refreshToken?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -39,10 +38,6 @@ const userSchema = new Schema<IUser>(
     tokenVersion: {
       type: Number,
       default: 0,
-    },
-    refreshToken: {
-      type: String,
-      required: false,
     },
   },
   { timestamps: true },

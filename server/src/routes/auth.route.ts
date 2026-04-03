@@ -19,7 +19,7 @@ router.post("/login", limiter("login"), loginController);
 
 router.post("/register", limiter("register"), registerUserController);
 
-router.post("/logout", limiter("logout"), logoutController);
+router.post("/logout", protect, limiter("logout"), logoutController);
 
 router.post("/refresh", limiter("refreshToken"), refreshAccessTokenController);
 

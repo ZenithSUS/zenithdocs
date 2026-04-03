@@ -23,7 +23,7 @@ export const loginController = async (
   try {
     const { email, password } = req.body;
 
-    const result = await loginService(email, password);
+    const result = await loginService(email, password, req);
 
     return res.status(200).json({
       success: true,
@@ -59,7 +59,7 @@ export const oauthLoginController = async (
       throw new AppError("User not found", 404);
     }
 
-    const result = await oauthLoginService(user);
+    const result = await oauthLoginService(user, req);
 
     const { accessToken, refreshToken } = result;
 
@@ -108,11 +108,13 @@ export const logoutController = async (
   next: NextFunction,
 ) => {
   try {
-    const { id }: { id: string } = req.body;
+    const { refreshToken } = req.body;
+    const userId = req.user.sub;
 
-    if (id) {
-      await logoutService(id);
-    }
+    console.log("Refresh Token", refreshToken);
+    console.log("User Id", userId);
+
+    await logoutService(userId, refreshToken);
 
     return res.status(200).json({
       success: true,
@@ -162,12 +164,13 @@ export const refreshAccessTokenController = async (
       throw new AppError("No refresh token provided", 401);
     }
 
-    const { accessToken } = await refreshAccessTokenService(refreshToken);
+    const { accessToken, refreshToken: newRefreshToken } =
+      await refreshAccessTokenService(refreshToken, req);
 
     return res.status(200).json({
       success: true,
       message: "Access token refreshed successfully",
-      data: { accessToken },
+      data: { accessToken, refreshToken: newRefreshToken },
     });
   } catch (error) {
     next(error);

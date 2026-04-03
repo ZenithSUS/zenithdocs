@@ -5,6 +5,7 @@ export interface IRefreshToken extends Document {
   userId: Types.ObjectId;
   token: string;
   device?: string;
+  ip?: string;
   createdAt: Date;
   expiresAt: Date;
 }
@@ -21,7 +22,11 @@ const refreshTokenSchema = new Schema<IRefreshToken>(
       required: true,
       unique: true,
     },
+
     device: {
+      type: String,
+    },
+    ip: {
       type: String,
     },
     expiresAt: {

@@ -48,7 +48,6 @@ function Header({ user, title, titleHighlight }: HeaderProps) {
         {/* Dropdown */}
         {options.isOpen && (
           <HeaderDropDown
-            userId={user?._id ?? ""}
             email={user?.email ?? ""}
             plan={user?.plan ?? ""}
             tokensUsed={overview?.tokensUsed ?? 0}

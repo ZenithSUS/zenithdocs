@@ -1,16 +1,23 @@
+import { Request } from "express";
 import config from "../config/env.js";
 import { IUser } from "../models/user.model.js";
 import {
+  createRefreshToken,
+  deleteTokenById,
+  deleteTokenByUserAndToken,
+  deleteTokensByUserId,
+  getRefreshToken,
+} from "../repositories/refresh-token.repository.js";
+import {
   createUser,
   getUserByEmail,
-  getUserRefreshToken,
-  revokeUserTokens,
-  updateUser,
+  getUserById,
 } from "../repositories/user.repository.js";
 import { authSchema, authUserIdSchema } from "../schemas/auth.schema.js";
 import AppError from "../utils/app-error.js";
 import { comparePassword, hashPassword } from "../utils/bcrypt-password.js";
 import jwt from "jsonwebtoken";
+import hashToken from "../utils/hash-token.js";
 
 /**
  * Login user
@@ -18,7 +25,11 @@ import jwt from "jsonwebtoken";
  * @param password - User password
  * @returns User if found, null otherwise
  */
-export const loginService = async (email: string, password: string) => {
+export const loginService = async (
+  email: string,
+  password: string,
+  req: Request,
+) => {
   const validated = authSchema.parse({ email, password });
 
   // Check if user exists
@@ -48,8 +59,22 @@ export const loginService = async (email: string, password: string) => {
     },
   );
 
-  // Update user refresh token
-  await updateUser(user._id.toString(), { refreshToken });
+  const device = req.headers["user-agent"];
+  const ip = req.ip ?? req.socket.remoteAddress ?? "unknown";
+
+  const expirationData =
+    user.role === "admin"
+      ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
+      : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days,
+
+  // Create user refresh token
+  await createRefreshToken({
+    userId: user._id,
+    token: hashToken(refreshToken),
+    device: device,
+    ip: ip,
+    expiresAt: expirationData,
+  });
 
   return {
     accessToken,
@@ -63,7 +88,7 @@ export const loginService = async (email: string, password: string) => {
  * @returns - Object containing access token and refresh token
  * @throws AppError - If user not found
  */
-export const oauthLoginService = async (user: IUser) => {
+export const oauthLoginService = async (user: IUser, req: Request) => {
   if (!user) throw new AppError("User not found", 404);
 
   // Generate access token and refresh token
@@ -81,8 +106,22 @@ export const oauthLoginService = async (user: IUser) => {
     },
   );
 
-  // Update user refresh token
-  await updateUser(user._id.toString(), { refreshToken });
+  const device = req.headers["user-agent"];
+  const ip = req.ip ?? req.socket.remoteAddress ?? "unknown";
+
+  const expirationData =
+    user.role === "admin"
+      ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
+      : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days,
+
+  // Create user refresh token
+  await createRefreshToken({
+    userId: user._id,
+    token: hashToken(refreshToken),
+    device: device,
+    ip: ip,
+    expiresAt: expirationData,
+  });
 
   return {
     accessToken,
@@ -117,12 +156,16 @@ export const registerService = async (data: Partial<IUser>) => {
  * @param {string} userId - User ID to log out
  * @returns {Promise<void>} Promise that resolves when the user is logged out
  */
-export const logoutService = async (userId: string) => {
+export const logoutService = async (userId: string, refreshToken: string) => {
   if (!userId) throw new AppError("User ID is required", 400);
 
   const validated = authUserIdSchema.parse({ userId });
 
-  await revokeUserTokens(validated.userId);
+  if (!refreshToken) throw new AppError("No refresh token provided", 400);
+
+  const hashed = hashToken(refreshToken);
+
+  await deleteTokenByUserAndToken(validated.userId, hashed);
 };
 
 /**
@@ -130,7 +173,10 @@ export const logoutService = async (userId: string) => {
  * @param refreshToken - Refresh token from cookie
  * @returns New access token
  */
-export const refreshAccessTokenService = async (refreshToken: string) => {
+export const refreshAccessTokenService = async (
+  refreshToken: string,
+  req: Request,
+) => {
   if (!refreshToken) throw new AppError("No refresh token provided", 401);
 
   // Verify the refresh token
@@ -145,15 +191,56 @@ export const refreshAccessTokenService = async (refreshToken: string) => {
   }
 
   // Check user exists and token matches what's stored in DB
-  const user = await getUserRefreshToken(decoded.userId);
+  const storedToken = await getRefreshToken(hashToken(refreshToken));
+
+  if (!storedToken) {
+    await deleteTokensByUserId(decoded.userId.toString());
+
+    throw new AppError(
+      "Suspicious activity detected. Please login again.",
+      401,
+    );
+  }
+
+  const user = await getUserById(decoded.userId.toString());
 
   if (!user) throw new AppError("User not found", 404);
 
   if (user.tokenVersion !== decoded.tokenVersion)
     throw new AppError("Token version mismatch", 401);
 
-  if (user.refreshToken !== refreshToken)
-    throw new AppError("Refresh token mismatch", 401);
+  if (storedToken.expiresAt < new Date())
+    throw new AppError("Refresh token expired", 401);
+
+  // Delete old refresh token
+
+  await deleteTokenById(storedToken._id.toString());
+
+  // Issue a new refresh token
+  const newRefreshToken = jwt.sign(
+    { userId: user._id, tokenVersion: user.tokenVersion },
+    config.jwt.refreshSecret,
+    {
+      expiresIn: user.role === "admin" ? "30d" : "7d",
+    },
+  );
+
+  const device = req.headers["user-agent"];
+  const ip = req.ip ?? req.socket.remoteAddress ?? "unknown";
+
+  const expirationData =
+    user.role === "admin"
+      ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
+      : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days,
+
+  // Create user refresh token
+  await createRefreshToken({
+    userId: user._id,
+    token: hashToken(newRefreshToken),
+    device: device,
+    ip: ip,
+    expiresAt: expirationData,
+  });
 
   // Issue a new access token
   const accessToken = jwt.sign(
@@ -162,5 +249,5 @@ export const refreshAccessTokenService = async (refreshToken: string) => {
     { expiresIn: user.role === "admin" ? "7d" : "1h" },
   );
 
-  return { accessToken };
+  return { accessToken, refreshToken: newRefreshToken };
 };

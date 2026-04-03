@@ -31,18 +31,7 @@ export const getUserById = async (id: string): Promise<IUser | null> => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return null;
   }
-  return await User.findById(id).select("-refreshToken -password").lean();
-};
-
-/**
- * Get a user by their refresh token
- * @param {string} userId - User ID
- * @returns {Promise<IUser | null>} User if found, null otherwise
- */
-export const getUserRefreshToken = async (
-  userId: string,
-): Promise<IUser | null> => {
-  return await User.findOne({ _id: userId }).select("-password").lean();
+  return await User.findById(id).select("-password").lean();
 };
 
 /**
@@ -51,9 +40,7 @@ export const getUserRefreshToken = async (
  * @returns User if found, null otherwise
  */
 export const getUserByEmail = async (email: string): Promise<IUser | null> => {
-  return await User.findOne({ email: email.toLowerCase() })
-    .select("-refreshToken")
-    .lean();
+  return await User.findOne({ email: email.toLowerCase() }).lean();
 };
 
 /**
@@ -66,7 +53,7 @@ export const getUserByEmail = async (email: string): Promise<IUser | null> => {
  */
 export const searchUsersByEmail = async (searchQuery: string) => {
   return await User.find({ email: { $regex: searchQuery, $options: "i" } })
-    .select("-refreshToken -password")
+    .select("-password")
     .limit(5)
     .lean();
 };
@@ -76,9 +63,7 @@ export const searchUsersByEmail = async (searchQuery: string) => {
  * @returns Array of users
  */
 export const getAllUsers = async (): Promise<IUser[]> => {
-  return await User.find()
-    .select("-refreshToken -tokenVersion -password")
-    .lean();
+  return await User.find().select("-tokenVersion -password").lean();
 };
 
 /**
@@ -98,7 +83,7 @@ export const updateUser = async (
   return await User.findByIdAndUpdate(id, data, {
     returnDocument: "after",
   })
-    .select("-refreshToken -tokenVersion -password")
+    .select("-tokenVersion -password")
     .lean();
 };
 
@@ -112,7 +97,7 @@ export const deleteUser = async (id: string): Promise<IUser | null> => {
     return null;
   }
   return await User.findByIdAndDelete(id)
-    .select("-refreshToken -tokenVersion -password")
+    .select("-tokenVersion -password")
     .lean();
 };
 
@@ -125,10 +110,7 @@ export const revokeUserTokens = async (id: string) => {
   if (!mongoose.Types.ObjectId.isValid(id)) return null;
   const user = await User.findByIdAndUpdate(
     id,
-    {
-      $inc: { tokenVersion: 1 },
-      $set: { refreshToken: null },
-    },
+    { $inc: { tokenVersion: 1 } },
     { returnDocument: "after" },
   );
   return user;

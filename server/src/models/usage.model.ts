@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, Types } from "mongoose";
+import { Schema, Document, Types } from "mongoose";
 import { mainDB } from "../config/db.js";
 
 export interface IUsage extends Document {

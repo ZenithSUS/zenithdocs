@@ -3,7 +3,6 @@ import LogoutModal from "./dashboard/modals/LogoutModal";
 import sizefmt from "@/helpers/size-format";
 
 interface HeaderDropDownProps {
-  userId: string;
   email: string;
   plan: string;
   tokensUsed: number;
@@ -15,7 +14,6 @@ interface HeaderDropDownProps {
 }
 
 function HeaderDropDown({
-  userId,
   email,
   plan,
   tokensUsed,
@@ -92,7 +90,7 @@ function HeaderDropDown({
 
       <div className="border-t border-white/6" />
 
-      <LogoutModal userId={userId} />
+      <LogoutModal />
     </div>
   );
 }

@@ -16,13 +16,8 @@ import { handleApiError } from "@/helpers/api-error";
 import { AxiosError } from "@/types/api";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
-import { toast } from "sonner";
 
-interface HeaderDropDownProps {
-  userId: string;
-}
-
-export function LogoutModal({ userId }: HeaderDropDownProps) {
+export function LogoutModal() {
   const router = useRouter();
 
   const { setUserId, setAccessToken } = useAuthStore();
@@ -31,7 +26,7 @@ export function LogoutModal({ userId }: HeaderDropDownProps) {
 
   const handleLogout = useCallback(async () => {
     try {
-      await logout(userId);
+      await logout();
       setUserId(null);
       setAccessToken(null);
       router.push("/login");
@@ -39,7 +34,7 @@ export function LogoutModal({ userId }: HeaderDropDownProps) {
       const err = error as AxiosError;
       handleApiError(err, "Failed to log out");
     }
-  }, [logout, userId, setUserId, setAccessToken, router]);
+  }, [logout, setUserId, setAccessToken, router]);
 
   return (
     <AlertDialog>

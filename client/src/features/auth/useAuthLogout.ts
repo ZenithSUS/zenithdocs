@@ -5,7 +5,7 @@ import { logout } from "./auth.api";
 export const useAuthLogout = (queryClient: QueryClient) =>
   useMutation({
     mutationKey: authKeys.logout(),
-    mutationFn: (id: string) => logout(id),
+    mutationFn: logout,
     onSuccess: () => {
       queryClient.removeQueries({ queryKey: authKeys.user() });
     },

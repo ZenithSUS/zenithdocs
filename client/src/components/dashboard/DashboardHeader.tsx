@@ -112,7 +112,6 @@ function DashboardHeader({
         <div className="relative" ref={options.ref}>
           {options.isOpen && (
             <HeaderDropDown
-              userId={userId}
               email={email}
               plan={plan}
               tokensUsed={tokensUsed}
