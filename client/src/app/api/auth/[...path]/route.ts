@@ -61,11 +61,8 @@ async function handler(
       "Content-Type": "application/json",
       "x-api-key": API_KEY,
       ...(authorization && { Authorization: authorization }),
-      "x-fowarded-user-agent": req.headers.get("user-agent") ?? "unknown",
-      "x-fowarded-for":
-        req.headers.get("x-forwared-for") ??
-        req.headers.get("cf-connecting-ip") ??
-        "unknown",
+      "x-forwarded-user-agent": req.headers.get("user-agent") ?? "unknown",
+      "x-forwarded-for": req.headers.get("x-forwarded-for") ?? "unknown",
     };
 
     console.log(`[Route Handler] ${req.method} /${path}`);
@@ -99,6 +96,12 @@ async function handler(
         { "Content-Type": "application/json", "x-api-key": API_KEY },
         JSON.stringify({ refreshToken: refreshTokenCookie }),
       );
+
+      console.log("[Route Handler] Headers being sent:", {
+        "user-agent": req.headers.get("user-agent"),
+        "x-forwarded-for": req.headers.get("x-forwarded-for"),
+        "cf-connecting-ip": req.headers.get("cf-connecting-ip"),
+      });
 
       if (refreshRes.ok) {
         const refreshData = await refreshRes.json();

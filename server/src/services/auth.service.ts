@@ -18,6 +18,7 @@ import AppError from "../utils/app-error.js";
 import { comparePassword, hashPassword } from "../utils/bcrypt-password.js";
 import jwt from "jsonwebtoken";
 import hashToken from "../utils/hash-token.js";
+import { extractRequestMeta } from "../utils/extract-request-meta.js";
 
 /**
  * Login user
@@ -59,16 +60,7 @@ export const loginService = async (
     },
   );
 
-  const device =
-    (req.headers["x-forwarded-user-agent"] as string) ||
-    req.headers["user-agent"] ||
-    "unknown";
-
-  const ip =
-    (req.headers["x-forwarded-for"] as string)?.split(",")[0].trim() ||
-    req.ip ||
-    req.socket.remoteAddress ||
-    "unknown";
+  const { ip, device } = extractRequestMeta(req);
 
   const expirationData =
     user.role === "admin"
@@ -114,16 +106,7 @@ export const oauthLoginService = async (user: IUser, req: Request) => {
     },
   );
 
-  const device =
-    (req.headers["x-forwarded-user-agent"] as string) ||
-    req.headers["user-agent"] ||
-    "unknown";
-
-  const ip =
-    (req.headers["x-forwarded-for"] as string)?.split(",")[0].trim() ||
-    req.ip ||
-    req.socket.remoteAddress ||
-    "unknown";
+  const { ip, device } = extractRequestMeta(req);
 
   const expirationData =
     user.role === "admin"
@@ -241,16 +224,7 @@ export const refreshAccessTokenService = async (
     },
   );
 
-  const device =
-    (req.headers["x-forwarded-user-agent"] as string) ||
-    req.headers["user-agent"] ||
-    "unknown";
-
-  const ip =
-    (req.headers["x-forwarded-for"] as string)?.split(",")[0].trim() ||
-    req.ip ||
-    req.socket.remoteAddress ||
-    "unknown";
+  const { ip, device } = extractRequestMeta(req);
 
   const expirationData =
     user.role === "admin"
