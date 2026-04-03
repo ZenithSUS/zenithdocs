@@ -1,7 +1,6 @@
 import { Request } from "express";
 
 export const extractRequestMeta = (req: Request) => {
-  console.log(req.headers);
   const device =
     (req.headers["x-forwarded-user-agent"] as string) ||
     req.headers["user-agent"] ||
