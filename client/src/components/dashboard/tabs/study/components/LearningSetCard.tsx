@@ -1,7 +1,7 @@
 "use client";
 
 import { LearningSet } from "@/types/learning-set";
-import { memo, useState } from "react";
+import { memo, MouseEventHandler, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { ArrowUpRight, BookOpen, HelpCircle, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -51,8 +51,9 @@ function LearningSetCard({ learningSet }: LearningSetCardProps) {
     addSuffix: true,
   });
 
-  const handleNavigate = () => {
+  const handleNavigate = (e: MouseEvent) => {
     if (isNavigating) return;
+    e.stopPropagation();
     setIsNavigating(true);
     router.push(`/dashboard/study/${learningSet._id}`);
   };
@@ -71,6 +72,7 @@ function LearningSetCard({ learningSet }: LearningSetCardProps) {
         rounded-xl p-4 cursor-pointer
         transition-all duration-200
       `}
+      onClick={() => router.push(`/dashboard/study/${learningSet._id}`)}
     >
       {/* Type icon + title */}
       <div className="flex items-center justify-between gap-3">
@@ -85,7 +87,7 @@ function LearningSetCard({ learningSet }: LearningSetCardProps) {
 
         <div className="flex items-center gap-2">
           <button
-            onClick={handleNavigate}
+            onClick={(e) => handleNavigate}
             className="p-1.5 rounded-lg text-white/30 hover:text-white/80 hover:bg-white/10 transition-all duration-200 opacity-0 group-hover:opacity-100 -translate-y-0.5 group-hover:translate-y-0"
             aria-label="Navigate to study session"
             disabled={isNavigating}

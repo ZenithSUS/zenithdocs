@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { useAuthMe } from "@/features/auth/useAuthMe";
 import { useLearningSetById } from "@/features/learning-sets/useLearningSetById";
 import useRetryStore from "@/store/useRetryStore";
@@ -6,6 +9,7 @@ import { useParams } from "next/navigation";
 const useStudyPage = () => {
   const params = useParams();
   const learningSetId = params?.id as string;
+  const [isStudying, setIsStudying] = useState(false);
 
   const { increment, retries } = useRetryStore();
   const pageRetry = retries["learning-set-page"] ?? 0;
@@ -61,6 +65,10 @@ const useStudyPage = () => {
     isLoadingLearningSet,
     isErrorLearningSet,
     errorLearningSet,
+
+    // UI
+    isStudying,
+    setIsStudying,
   };
 };
 

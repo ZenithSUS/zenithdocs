@@ -4,16 +4,23 @@ import { CheckCircle2, XCircle } from "lucide-react";
 
 interface TFCardProps {
   learningItem: LearningItem;
-  isReviewing?: boolean;
+  isStudying?: boolean;
   setPoints?: (points: number) => void;
 }
 
-function TFCard({ learningItem, isReviewing = false, setPoints }: TFCardProps) {
+function TFCard({ learningItem, isStudying = false, setPoints }: TFCardProps) {
   const [selected, setSelected] = useState<string | null>(null);
 
   const isAnswered = selected !== null;
   const isCorrect =
     selected?.toLowerCase() === learningItem.answer.toLowerCase();
+
+  const handleSelect = (value: string) => {
+    if (setPoints && isStudying) {
+      setPoints(isCorrect ? 1 : 0);
+    }
+    setSelected(value);
+  };
 
   if (!learningItem.question) return null;
 
@@ -50,7 +57,7 @@ function TFCard({ learningItem, isReviewing = false, setPoints }: TFCardProps) {
             <button
               key={option}
               disabled={isAnswered}
-              onClick={() => setSelected(option)}
+              onClick={() => handleSelect(option)}
               className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border text-sm font-medium transition-colors cursor-pointer disabled:cursor-default ${getStyle(option)}`}
             >
               {isAnswered && isRight && <CheckCircle2 className="w-4 h-4" />}
@@ -71,12 +78,14 @@ function TFCard({ learningItem, isReviewing = false, setPoints }: TFCardProps) {
               : `Incorrect. The answer is ${learningItem.answer}. `}
             {learningItem.explanation}
           </p>
-          <button
-            onClick={() => setSelected(null)}
-            className="text-xs text-primary hover:underline underline-offset-4 shrink-0"
-          >
-            Try again
-          </button>
+          {!isStudying && (
+            <button
+              onClick={() => setSelected(null)}
+              className="text-xs text-primary hover:underline underline-offset-4 shrink-0"
+            >
+              Try again
+            </button>
+          )}
         </div>
       )}
     </div>

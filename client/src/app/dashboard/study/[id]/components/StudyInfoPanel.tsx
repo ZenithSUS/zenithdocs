@@ -2,6 +2,7 @@ import { LearningSet } from "@/types/learning-set";
 import {
   BadgeQuestionMark,
   BookOpenCheck,
+  Brain,
   Grid2x2Plus,
   WalletCards,
 } from "lucide-react";
@@ -10,6 +11,7 @@ import { JSX } from "react";
 interface StudyInfoPanelProps {
   learningSet: LearningSet | null | undefined;
   totalItems: number;
+  setIsStudying: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const DIFFICULTY_STYLES: Record<string, string> = {
@@ -78,7 +80,11 @@ function ArcRing({ percent, color }: { percent: number; color: string }) {
 }
 const ARC_COLORS = ["var(--color-accent)", "#60a5fa", "#a78bfa", "#34d399"];
 
-function StudyInfoPanel({ learningSet, totalItems }: StudyInfoPanelProps) {
+function StudyInfoPanel({
+  learningSet,
+  totalItems,
+  setIsStudying,
+}: StudyInfoPanelProps) {
   if (!learningSet) return null;
 
   const difficulty = learningSet.difficulty ?? "easy";
@@ -196,6 +202,17 @@ function StudyInfoPanel({ learningSet, totalItems }: StudyInfoPanelProps) {
           </div>
         </div>
       )}
+
+      {/* ── ACTIONS ────────────────────────────────  */}
+      <div className="mt-6 pt-4 border-t border-border flex items-center gap-2">
+        <button
+          className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-primary border-none text-background rounded-sm cursor-pointer text-[12px] font-bold tracking-widest font-sans transition-all duration-200 hover:bg-[#e0b530] uppercase"
+          onClick={() => setIsStudying(true)}
+        >
+          <Brain />
+          Start Learning
+        </button>
+      </div>
 
       {/* ── FOOTER RULE ──────────────────────────────── */}
       <div className="mt-6 pt-4 border-t border-border flex items-center gap-2">

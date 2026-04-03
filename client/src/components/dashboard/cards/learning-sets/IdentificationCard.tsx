@@ -4,13 +4,13 @@ import { CheckCircle2, XCircle } from "lucide-react";
 
 interface IdentificationCardProps {
   learningItem: LearningItem;
-  isReviewing?: boolean;
+  isStudying?: boolean;
   setPoints?: (points: number) => void;
 }
 
 function IdentificationCard({
   learningItem,
-  isReviewing = false,
+  isStudying = false,
   setPoints,
 }: IdentificationCardProps) {
   const [input, setInput] = useState("");
@@ -22,7 +22,7 @@ function IdentificationCard({
   const handleSubmit = () => {
     if (!input.trim()) return;
 
-    if (setPoints) {
+    if (setPoints && isStudying) {
       setPoints(isCorrect ? 1 : 0);
     }
 
@@ -46,7 +46,7 @@ function IdentificationCard({
         {learningItem.question}
       </p>
 
-      <div className="flex gap-2">
+      <div className="flex flex-col md:flex-row gap-2">
         <input
           type="text"
           value={input}
@@ -72,7 +72,7 @@ function IdentificationCard({
             Check
           </button>
         ) : (
-          !isReviewing && (
+          !isStudying && (
             <button
               onClick={handleRetry}
               className="px-3 py-2 rounded-lg border border-border text-muted-foreground text-sm hover:text-text hover:border-primary/30 transition-colors cursor-pointer"

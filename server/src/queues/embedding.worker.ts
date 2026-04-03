@@ -86,10 +86,10 @@ export const embeddingWorker = new Worker(
   },
   {
     connection: bullMQConnection,
-    concurrency: 1,
+    concurrency: 5, // can process 5 jobs simultaneously safely
     lockDuration: 300000, // 5 min lock
     lockRenewTime: 60000, // renew every 1 min
-    stalledInterval: 60000, // check every 1 min
+    stalledInterval: 60000, // re-queue stalled jobs every 1 min
     skipVersionCheck: true,
   },
 );

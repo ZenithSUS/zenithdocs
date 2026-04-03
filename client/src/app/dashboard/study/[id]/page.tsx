@@ -6,20 +6,30 @@ import ErrorScreen from "@/components/ErrorScreen";
 import Header from "@/components/dashboard/Header";
 import StudyItems from "./components/StudyItems";
 import StudyInfoPanel from "./components/StudyInfoPanel";
+import StudyDocument from "./components/StudyDocument";
 
 function StudyPage() {
   const {
+    // Retry Functions
     pageRetry,
     retryUser,
     retryLearningSet,
+
+    // Users
     me,
     isLoadingMe,
     isErrorMe,
     errorMe,
+
+    // Learning Sets
     learningSet,
     isLoadingLearningSet,
     isErrorLearningSet,
     errorLearningSet,
+
+    // UI
+    isStudying,
+    setIsStudying,
   } = useStudy();
 
   if (isLoadingMe || isLoadingLearningSet) return <LoadingScreen />;
@@ -55,14 +65,26 @@ function StudyPage() {
       />
 
       <main className="mt-18.25 h-[calc(100vh-73px)] overflow-y-auto px-5 sm:px-8 md:px-12 pt-10 pb-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
-          <StudyInfoPanel
-            learningSet={learningSet}
-            totalItems={learningSet?.items?.length ?? 0}
-          />
+        {!isStudying ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
+            <StudyInfoPanel
+              learningSet={learningSet}
+              totalItems={learningSet?.items?.length ?? 0}
+              setIsStudying={setIsStudying}
+            />
 
-          <StudyItems learningItems={learningSet?.items ?? []} />
-        </div>
+            <StudyItems learningItems={learningSet?.items ?? []} />
+          </div>
+        ) : (
+          <div className="p-2">
+            <StudyDocument
+              learningType={learningSet?.type ?? "Unknown"}
+              learningItems={learningSet?.items ?? []}
+              isStudying={isStudying}
+              setIsStudying={setIsStudying}
+            />
+          </div>
+        )}
       </main>
     </div>
   );

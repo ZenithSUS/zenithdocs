@@ -4,13 +4,27 @@ import { CheckCircle2, XCircle } from "lucide-react";
 
 interface MCQCardProps {
   learningItem: LearningItem;
+  isStudying?: boolean;
+  setPoints?: (points: number) => void;
 }
 
-function MCQCard({ learningItem }: MCQCardProps) {
+function MCQCard({
+  learningItem,
+  isStudying = false,
+  setPoints,
+}: MCQCardProps) {
   const [selected, setSelected] = useState<string | null>(null);
 
   const isCorrect = selected === learningItem.answer;
   const isAnswered = selected !== null;
+
+  const handleSelect = (value: string) => {
+    if (isStudying && setPoints) {
+      setPoints(isCorrect ? 1 : 0);
+    }
+
+    setSelected(value);
+  };
 
   if (!learningItem.question || !learningItem.choices) return null;
 
@@ -46,7 +60,7 @@ function MCQCard({ learningItem }: MCQCardProps) {
             <button
               key={idx}
               disabled={isAnswered}
-              onClick={() => setSelected(choice)}
+              onClick={() => handleSelect(choice)}
               className={`flex items-center justify-between gap-2 w-full text-left px-3 py-2 rounded-lg border text-sm transition-colors cursor-pointer disabled:cursor-default ${style}`}
             >
               <span className="flex items-center gap-2">
@@ -72,7 +86,7 @@ function MCQCard({ learningItem }: MCQCardProps) {
         </p>
       )}
 
-      {isAnswered && (
+      {isAnswered && !isStudying && (
         <button
           onClick={() => setSelected(null)}
           className="self-end text-xs text-primary hover:underline underline-offset-4"
