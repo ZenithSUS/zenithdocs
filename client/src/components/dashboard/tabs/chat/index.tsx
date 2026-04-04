@@ -119,13 +119,11 @@ function ChatsTab({ userId }: ChatsTabProps) {
           className="flex items-center justify-center py-8"
         >
           {isFetchingNextDocumentPage ? (
-            <div className="flex items-center gap-2 text-[12px] text-text/40 font-sans">
-              <ThreeDot
-                color="#c9a227"
-                size="small"
-                text="Loading more conversations..."
-                textColor=""
-              />
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-sans text-primary tracking-wider">
+                Loading more conversations
+              </span>
+              <ThreeDot color="#c9a227" size="small" />
             </div>
           ) : (
             <button
