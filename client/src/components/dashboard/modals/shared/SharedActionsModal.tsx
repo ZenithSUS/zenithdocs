@@ -19,14 +19,13 @@ import {
 interface SharedActionsModalProps {
   dialogOpen: boolean;
   setDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  deleteDialogOpen: boolean;
-  setDeleteDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
   sharedDocument: DocumentShare;
   handleShareLinkCopy: () => void;
   handleEdit: () => void;
   handleToggleActive: () => void;
   handleNavigate: () => void;
   handleDelete: () => void;
+  isOwner: boolean;
   isActive: boolean;
   isExpired: boolean;
 }
@@ -34,14 +33,13 @@ interface SharedActionsModalProps {
 function SharedActionsModal({
   dialogOpen,
   setDialogOpen,
-  deleteDialogOpen,
-  setDeleteDialogOpen,
   sharedDocument,
   handleShareLinkCopy,
   handleEdit,
   handleToggleActive,
   handleNavigate,
   handleDelete,
+  isOwner,
   isActive,
   isExpired,
 }: SharedActionsModalProps) {
@@ -66,37 +64,40 @@ function SharedActionsModal({
         </DialogDescription>
 
         <div className="p-2">
-          <button
-            onClick={handleShareLinkCopy}
-            className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-white/70 hover:text-white hover:bg-white/8 active:bg-white/10 transition-colors text-sm"
-          >
-            <Share size={16} className="shrink-0" />
-            Copy share link
-          </button>
+          {isOwner && (
+            <>
+              <button
+                onClick={handleShareLinkCopy}
+                className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-white/70 hover:text-white hover:bg-white/8 active:bg-white/10 transition-colors text-sm"
+              >
+                <Share size={16} className="shrink-0" />
+                Copy share link
+              </button>
 
-          <button
-            onClick={() => handleEdit()}
-            className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-white/70 hover:text-white hover:bg-white/8 active:bg-white/10 transition-colors text-sm"
-          >
-            <Pencil size={16} className="shrink-0" />
-            Edit share settings
-          </button>
-
-          <button
-            onClick={() => handleToggleActive()}
-            className={`flex items-center gap-3 w-full px-4 py-3.5 rounded-xl transition-colors text-sm ${
-              isActive && !isExpired
-                ? "text-emerald-400 hover:bg-emerald-400/10 active:bg-emerald-400/15"
-                : "text-amber-400 hover:bg-amber-400/10 active:bg-amber-400/15"
-            }`}
-          >
-            {isActive && !isExpired ? (
-              <ShieldOff size={16} className="shrink-0" />
-            ) : (
-              <ShieldCheck size={16} className="shrink-0" />
-            )}
-            {isActive && !isExpired ? "Deactivate share" : "Activate share"}
-          </button>
+              <button
+                onClick={() => handleEdit()}
+                className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-white/70 hover:text-white hover:bg-white/8 active:bg-white/10 transition-colors text-sm"
+              >
+                <Pencil size={16} className="shrink-0" />
+                Edit share settings
+              </button>
+              <button
+                onClick={() => handleToggleActive()}
+                className={`flex items-center gap-3 w-full px-4 py-3.5 rounded-xl transition-colors text-sm ${
+                  isActive && !isExpired
+                    ? "text-emerald-400 hover:bg-emerald-400/10 active:bg-emerald-400/15"
+                    : "text-amber-400 hover:bg-amber-400/10 active:bg-amber-400/15"
+                }`}
+              >
+                {isActive && !isExpired ? (
+                  <ShieldOff size={16} className="shrink-0" />
+                ) : (
+                  <ShieldCheck size={16} className="shrink-0" />
+                )}
+                {isActive && !isExpired ? "Deactivate share" : "Activate share"}
+              </button>
+            </>
+          )}
 
           <button
             onClick={handleNavigate}
@@ -108,13 +109,15 @@ function SharedActionsModal({
 
           <div className="mx-2 my-1 h-px bg-white/[0.07]" />
 
-          <button
-            onClick={() => handleDelete()}
-            className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-red-400 hover:bg-red-400/10 active:bg-red-400/15 transition-colors text-sm"
-          >
-            <Trash2 size={16} className="shrink-0" />
-            Delete share
-          </button>
+          {isOwner && (
+            <button
+              onClick={() => handleDelete()}
+              className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-red-400 hover:bg-red-400/10 active:bg-red-400/15 transition-colors text-sm"
+            >
+              <Trash2 size={16} className="shrink-0" />
+              Delete share
+            </button>
+          )}
         </div>
 
         <div className="h-2" />

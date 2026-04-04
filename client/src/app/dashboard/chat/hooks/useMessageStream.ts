@@ -1,7 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 
 import useChat from "@/features/chat/useChat";
 import {
@@ -11,6 +10,8 @@ import {
 import { Message } from "@/types/message";
 import messageKeys from "@/features/message/message.keys";
 import documentKeys from "@/features/documents/document.keys";
+import { AxiosError } from "@/types/api";
+import { handleApiError } from "@/helpers/api-error";
 
 export interface MessageFormValues {
   message: string;
@@ -113,8 +114,9 @@ const useMessageStream = ({
         queryClient.invalidateQueries({
           queryKey: documentKeys.byUserWithChatPage(userId),
         });
-      } catch {
-        toast.error("Error sending message");
+      } catch (error) {
+        const err = error as AxiosError;
+        handleApiError(err, "Error sending message. Please try again later.");
         removeMessageFromCache(
           queryClient,
           messageKeys.byChat(chatId),

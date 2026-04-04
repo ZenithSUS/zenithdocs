@@ -34,11 +34,9 @@ import { handleApiError, handleFormError } from "@/helpers/api-error";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AxiosError } from "@/types/api";
 import {
-  BookA,
   CalendarIcon,
   Globe2,
   Lock,
-  PenIcon,
   PlusIcon,
   TrashIcon,
   X,
@@ -49,7 +47,7 @@ import { toast } from "sonner";
 import { UserSearchCombobox } from "../../tabs/document/components/UserSearchComboBox";
 import { DocumentShareInfo } from "@/types/doc";
 
-const permissionEnum = z.enum(["read", "write"], {
+const permissionEnum = z.enum(["read"], {
   error: () => ({ message: "Select a permission" }),
 });
 
@@ -107,35 +105,6 @@ interface ShareDocumentModalProps {
 function FieldError({ message }: { message?: string }) {
   if (!message) return null;
   return <p className="mt-1 text-[11px] text-red-400">{message}</p>;
-}
-
-function PermissionSelect({
-  value,
-  onChange,
-}: {
-  value: string | undefined;
-  onChange: (val: string) => void;
-}) {
-  return (
-    <Select onValueChange={onChange} value={value ?? ""}>
-      <SelectTrigger className="w-full bg-white/4 border border-white/12 text-text/70 font-sans text-[12px]">
-        <SelectValue placeholder="Permission" />
-      </SelectTrigger>
-      <SelectContent
-        position="popper"
-        sideOffset={4}
-        defaultValue={"read"}
-        className="bg-background"
-      >
-        <SelectItem value="read" className="font-sans text-[12px]">
-          <BookA className="mr-2" color="#c9a227" /> Read
-        </SelectItem>
-        <SelectItem value="write" className="font-sans text-[12px]">
-          <PenIcon className="mr-2" color="#c9a227" /> Write
-        </SelectItem>
-      </SelectContent>
-    </Select>
-  );
 }
 
 function ShareDocumentModal({
@@ -434,28 +403,6 @@ function ShareDocumentModal({
                 </Field>
               </div>
 
-              {/* Public permission */}
-              {shareType === "public" && (
-                <div className="grid grid-cols-2 gap-4">
-                  <Field>
-                    <Label className="text-text/70 text-[12px]">
-                      Public permission
-                    </Label>
-                    <Controller
-                      control={control}
-                      name="publicPermission"
-                      render={({ field }) => (
-                        <PermissionSelect
-                          value={field.value}
-                          onChange={field.onChange}
-                        />
-                      )}
-                    />
-                    <FieldError message={errors.publicPermission?.message} />
-                  </Field>
-                </div>
-              )}
-
               {/* Options */}
               <div className="grid grid-cols-2 gap-4">
                 <Field>
@@ -489,8 +436,15 @@ function ShareDocumentModal({
                     {fields.map((field, index) => (
                       <div
                         key={field.id}
-                        className="grid grid-cols-[1fr_120px_32px] gap-2 items-start"
+                        className="grid grid-cols-[1fr_32px] gap-2 items-start"
                       >
+                        {/* Hidden permission field — always "read" */}
+                        <input
+                          type="hidden"
+                          {...register(`allowedUsers.${index}.permission`)}
+                          value="read"
+                        />
+
                         <div>
                           <Controller
                             control={control}
@@ -510,24 +464,6 @@ function ShareDocumentModal({
                           <FieldError
                             message={
                               errors.allowedUsers?.[index]?.userId?.message
-                            }
-                          />
-                        </div>
-
-                        <div>
-                          <Controller
-                            control={control}
-                            name={`allowedUsers.${index}.permission`}
-                            render={({ field: permField }) => (
-                              <PermissionSelect
-                                value={permField.value}
-                                onChange={permField.onChange}
-                              />
-                            )}
-                          />
-                          <FieldError
-                            message={
-                              errors.allowedUsers?.[index]?.permission?.message
                             }
                           />
                         </div>

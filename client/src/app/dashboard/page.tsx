@@ -11,7 +11,7 @@ import ErrorScreen from "@/components/ErrorScreen";
 import useDashboardPage from "./useDashboard";
 import DocumentsLoadingSkeleton from "@/components/dashboard/tabs/document/components/DocumentsLoadingSkeleton";
 import FolderLoadingSkeletion from "@/components/dashboard/tabs/folder/components/FolderLoadingSkeletion";
-import DocumentChatLoading from "@/components/dashboard/tabs/chat/DocumentChatLoading";
+import DocumentChatLoading from "@/components/dashboard/tabs/chat/components/DocumentChatLoading";
 import SharedDocumentLoading from "@/components/dashboard/tabs/shared/components/SharedDocumentLoading";
 import GlobalChat from "@/components/dashboard/globalchat";
 import { Zap } from "lucide-react";

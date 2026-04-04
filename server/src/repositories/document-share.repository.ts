@@ -72,7 +72,10 @@ export const getDocumentSharesByUserIdPaginated = async (
   const offest = (page - 1) * limit;
 
   const documentShares = await DocumentShare.find({
-    ownerId: new Types.ObjectId(userId),
+    $or: [
+      { ownerId: new Types.ObjectId(userId) },
+      { "allowedUsers.userId": new Types.ObjectId(userId) },
+    ],
   })
     .skip(offest)
     .limit(limit)
@@ -138,6 +141,27 @@ export const getDocumentShareById = async (id: string) => {
       "allowedUsers._id": 0,
     })
     .lean();
+};
+
+/**
+ * Retrieves document shares belonging to a user or an allowed user and a document
+ *
+ * @param {string} userId - User ID
+ * @param {string} documentId - Document ID
+ *
+ * @returns {Promise<DocumentShare[]>} Document shares if found, empty array otherwise
+ */
+export const getDocumentShareByUserAndDocumentId = async (
+  userId: string,
+  documentId: string,
+) => {
+  return await DocumentShare.find({
+    documentId,
+    $or: [
+      { ownerId: new Types.ObjectId(userId) },
+      { "allowedUsers.userId": new Types.ObjectId(userId) },
+    ],
+  });
 };
 
 /**

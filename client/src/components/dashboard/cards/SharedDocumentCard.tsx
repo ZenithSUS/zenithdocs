@@ -26,12 +26,14 @@ import DeleteSharedModal from "../modals/shared/DeleteShareModal";
 import EditShareDocumentModal from "../modals/shared/EditSharedModal";
 
 interface SharedDocumentCardProps {
+  userId: string;
   sharedDocument: DocumentShare;
   onToggleActive?: (id: string, current: boolean) => void;
   isTogglePending?: boolean;
 }
 
 function SharedDocumentCard({
+  userId,
   sharedDocument,
   onToggleActive,
   isTogglePending = false,
@@ -43,6 +45,8 @@ function SharedDocumentCard({
 
   const isPublic = sharedDocument.type === "public";
   const isActive = sharedDocument.isActive;
+
+  const isOwner = sharedDocument.ownerId._id === userId;
 
   const documentInfo = {
     ...sharedDocument.documentId,
@@ -137,10 +141,9 @@ function SharedDocumentCard({
     <>
       {dialogOpen && (
         <SharedActionsModal
+          isOwner={isOwner}
           dialogOpen={dialogOpen}
           setDialogOpen={setDialogOpen}
-          deleteDialogOpen={deleteDialogOpen}
-          setDeleteDialogOpen={setDeleteDialogOpen}
           sharedDocument={sharedDocument}
           handleShareLinkCopy={handleShareLinkCopy}
           handleEdit={handleEdit}
@@ -206,53 +209,59 @@ function SharedDocumentCard({
             <div className="flex items-center gap-1 shrink-0">
               {/* Tablet + desktop hover action icons (lg and above) */}
               <div className="hidden lg:flex items-center gap-1">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleShareLinkCopy();
-                  }}
-                  className="p-1.5 rounded-lg text-white/30 hover:text-white/80 hover:bg-white/10 transition-all duration-200 opacity-0 group-hover:opacity-100 -translate-y-0.5 group-hover:translate-y-0"
-                  aria-label="Copy share link"
-                  title="Copy share link"
-                >
-                  <Share size={14} />
-                </button>
+                {isOwner && (
+                  <>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleShareLinkCopy();
+                      }}
+                      className="p-1.5 rounded-lg text-white/30 hover:text-white/80 hover:bg-white/10 transition-all duration-200 opacity-0 group-hover:opacity-100 -translate-y-0.5 group-hover:translate-y-0"
+                      aria-label="Copy share link"
+                      title="Copy share link"
+                    >
+                      <Share size={14} />
+                    </button>
 
-                <button
-                  onClick={handleEdit}
-                  className="p-1.5 rounded-lg text-white/30 hover:text-white/80 hover:bg-white/10 transition-all duration-200 opacity-0 group-hover:opacity-100 -translate-y-0.5 group-hover:translate-y-0"
-                  aria-label="Edit share settings"
-                  title="Edit share settings"
-                >
-                  <Pencil size={14} />
-                </button>
+                    <button
+                      onClick={handleEdit}
+                      className="p-1.5 rounded-lg text-white/30 hover:text-white/80 hover:bg-white/10 transition-all duration-200 opacity-0 group-hover:opacity-100 -translate-y-0.5 group-hover:translate-y-0"
+                      aria-label="Edit share settings"
+                      title="Edit share settings"
+                    >
+                      <Pencil size={14} />
+                    </button>
 
-                <button
-                  onClick={handleToggleActive}
-                  className={`p-1.5 rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100 -translate-y-0.5 group-hover:translate-y-0 disabled:cursor-not-allowed ${
-                    isActive && !isExpired
-                      ? "text-emerald-400/60 hover:text-emerald-400 hover:bg-emerald-400/10"
-                      : "text-red-400/60 hover:text-red-400 hover:bg-red-400/10"
-                  }`}
-                  aria-label={isActive ? "Deactivate share" : "Activate share"}
-                  title={isActive ? "Deactivate share" : "Activate share"}
-                  disabled={isExpired || isTogglePending}
-                >
-                  {isActive && !isExpired ? (
-                    <ShieldCheck size={14} />
-                  ) : (
-                    <ShieldOff size={14} />
-                  )}
-                </button>
+                    <button
+                      onClick={handleToggleActive}
+                      className={`p-1.5 rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100 -translate-y-0.5 group-hover:translate-y-0 disabled:cursor-not-allowed ${
+                        isActive && !isExpired
+                          ? "text-emerald-400/60 hover:text-emerald-400 hover:bg-emerald-400/10"
+                          : "text-red-400/60 hover:text-red-400 hover:bg-red-400/10"
+                      }`}
+                      aria-label={
+                        isActive ? "Deactivate share" : "Activate share"
+                      }
+                      title={isActive ? "Deactivate share" : "Activate share"}
+                      disabled={isExpired || isTogglePending}
+                    >
+                      {isActive && !isExpired ? (
+                        <ShieldCheck size={14} />
+                      ) : (
+                        <ShieldOff size={14} />
+                      )}
+                    </button>
 
-                <button
-                  onClick={handleDelete}
-                  className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-400/10 transition-all duration-200 opacity-0 group-hover:opacity-100 -translate-y-0.5 group-hover:translate-y-0"
-                  aria-label="Delete share"
-                  title="Delete share"
-                >
-                  <Trash2 size={14} />
-                </button>
+                    <button
+                      onClick={handleDelete}
+                      className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-400/10 transition-all duration-200 opacity-0 group-hover:opacity-100 -translate-y-0.5 group-hover:translate-y-0"
+                      aria-label="Delete share"
+                      title="Delete share"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </>
+                )}
 
                 <button
                   onClick={(e) => {

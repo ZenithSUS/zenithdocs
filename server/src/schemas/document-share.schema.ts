@@ -1,24 +1,30 @@
 import { z } from "zod";
 import { objectId, paginationFields } from "../utils/zod.utils.js";
 
+// Base schema for creating a share
 const createDocumentShareBaseSchema = z.object({
   documentId: objectId,
   ownerId: objectId,
   type: z.enum(["public", "private"]),
+
+  // Private users who can access
   allowedUsers: z
     .array(
       z.object({
         userId: objectId,
-        permission: z.enum(["read", "write"]),
+        permission: z.literal("read"), // only read
       }),
     )
     .optional(),
-  publicPermission: z.enum(["read", "write"]).optional(),
+
+  // Public share permission (only read)
+  publicPermission: z.literal("read").optional(),
+
   allowDownload: z.boolean().optional(),
-  allowEdit: z.boolean().optional(),
   expiresAt: z.date().optional(),
 });
 
+// Creation validation
 export const createDocumentShareSchema =
   createDocumentShareBaseSchema.superRefine((data, ctx) => {
     if (data.type === "private") {
@@ -57,6 +63,7 @@ export const createDocumentShareSchema =
     }
   });
 
+// Schemas for fetching/updating/deleting shares
 export const getDocumentShareByTokenSchema = z.object({
   token: z.string().min(1, { message: "Invalid token" }),
 });
@@ -80,11 +87,10 @@ export const updateDocumentShareSchema = createDocumentShareBaseSchema
     expiresAt: z.preprocess((val) => {
       if (!val) return undefined;
       const str = val as string;
-      // If no Z or offset, append Manila offset so it's parsed as local time
       const withOffset =
         str.endsWith("Z") || /[+-]\d{2}:\d{2}$/.test(str)
           ? str
-          : `${str}+08:00`; // ← force Manila timezone
+          : `${str}+08:00`; // Manila timezone
       const date = new Date(withOffset);
       return isNaN(date.getTime()) ? undefined : date;
     }, z.date().optional()),

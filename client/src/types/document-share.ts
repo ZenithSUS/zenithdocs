@@ -14,13 +14,13 @@ export interface DocumentShare {
   };
   type: "public" | "private";
   shareToken?: string;
-  publicPermission?: "read" | "write";
+  publicPermission?: "read";
   allowedUsers?: {
     userId: {
       _id: string;
       email: string;
     };
-    permission: "read" | "write";
+    permission: "read";
   }[];
   isActive: boolean;
   expiresAt?: Date;
@@ -35,10 +35,10 @@ export interface DocumentShareInput {
   documentId: string;
   ownerId: string;
   type: "public" | "private";
-  publicPermission?: "read" | "write";
+  publicPermission?: "read";
   allowedUsers?: {
     userId: string;
-    permission: "read" | "write";
+    permission: "read";
   }[];
   allowDownload?: boolean;
   expiresAt?: string | null;

@@ -51,11 +51,21 @@ function SharedTab({ userId, setNav }: SharedTabProps) {
 
   return (
     <div className="space-y-5">
-      <h2>Your Shared Documents</h2>
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="text-[24px] font-serif text-text/90">
+          Shared Documents
+        </h2>
+
+        <p className="text-[12px] text-text/50 font-sans">
+          {allSharedDocuments.length}{" "}
+          {allSharedDocuments.length === 1 ? "Document" : "Documents"}
+        </p>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
         {allSharedDocuments.map((sharedDocument) => (
           <SharedDocumentCard
             key={sharedDocument._id}
+            userId={userId}
             sharedDocument={sharedDocument}
             onToggleActive={handleToggleActive}
             isTogglePending={isUpdatePending}
@@ -71,8 +81,6 @@ function SharedTab({ userId, setNav }: SharedTabProps) {
         fetchNextPage={fetchNextPage}
         fetchPreviousPage={fetchPreviousPage}
       />
-
-      {/* <h2>Document Shared with you</h2> */}
     </div>
   );
 }

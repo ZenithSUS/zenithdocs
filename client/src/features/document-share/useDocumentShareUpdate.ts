@@ -35,7 +35,7 @@ export const useDocumentShareUpdate = (
       if (!existing) return { previousDocumentShares };
 
       const resolveAllowedUsers = (
-        incoming: { userId: string; permission: "read" | "write" }[],
+        incoming: { userId: string; permission: "read" }[],
         existing: DocumentShare["allowedUsers"],
       ): NonNullable<DocumentShare["allowedUsers"]> =>
         incoming.map((u) => ({

@@ -9,12 +9,12 @@ export interface IDocumentShare extends Document {
 
   // public access
   shareToken?: string;
-  publicPermission?: "read" | "write";
+  publicPermission?: "read";
 
   // private access
   allowedUsers?: {
     userId: Types.ObjectId;
-    permission: "read" | "write";
+    permission: "read";
   }[];
 
   isActive: boolean;
@@ -34,10 +34,10 @@ export interface IDocumentShareInput {
   ownerId: string;
   type: "public" | "private";
   shareToken?: string;
-  publicPermission?: "read" | "write";
+  publicPermission?: "read";
   allowedUsers?: {
     userId: string;
-    permission: "read" | "write";
+    permission: "read";
   }[];
   isActive: boolean;
   expiresAt?: Date;
@@ -66,7 +66,7 @@ const documentShareSchema = new Schema<IDocumentShare>(
     },
     publicPermission: {
       type: String,
-      enum: ["read", "write"],
+      enum: ["read"],
       default: "read",
     },
     allowedUsers: [
@@ -78,7 +78,7 @@ const documentShareSchema = new Schema<IDocumentShare>(
         },
         permission: {
           type: String,
-          enum: ["read", "write"],
+          enum: ["read"],
           required: true,
         },
       },
@@ -105,6 +105,7 @@ const documentShareSchema = new Schema<IDocumentShare>(
   { timestamps: true },
 );
 
+// Indexes remain for efficient lookups
 documentShareSchema.index({ documentId: 1, ownerId: 1 }, { unique: true });
 documentShareSchema.index({ shareToken: 1 }, { unique: true, sparse: true });
 documentShareSchema.index(

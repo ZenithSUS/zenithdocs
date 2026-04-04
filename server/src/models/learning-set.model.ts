@@ -56,62 +56,59 @@ export interface ILearningSetInput {
   source?: "ai" | "manual";
 }
 
-const learningItemSchema = new Schema<ILearningItem>(
-  {
-    type: {
-      type: String,
-      enum: ["mcq", "tf", "identification", "flashcard"],
-      required: true,
-    },
+const learningItemSchema = new Schema<ILearningItem>({
+  type: {
+    type: String,
+    enum: ["mcq", "tf", "identification", "flashcard"],
+    required: true,
+  },
 
-    question: {
-      type: String,
-      trim: true,
-    },
+  question: {
+    type: String,
+    trim: true,
+  },
 
-    choices: {
-      type: [String],
-      validate: {
-        validator: function (this: ILearningItem, value: string[]) {
-          if (this.type === "mcq") {
-            return Array.isArray(value) && value.length >= 2;
-          }
-          return true;
-        },
-        message: "MCQ must have at least 2 choices",
+  choices: {
+    type: [String],
+    validate: {
+      validator: function (this: ILearningItem, value: string[]) {
+        if (this.type === "mcq") {
+          return Array.isArray(value) && value.length >= 2;
+        }
+        return true;
       },
-    },
-
-    answer: {
-      type: String,
-      required: true,
-      validate: {
-        validator: function (value: string) {
-          const item = this as any as ILearningItem;
-
-          if (item.type === "mcq" && Array.isArray(item.choices)) {
-            return item.choices.includes(value);
-          }
-          return true;
-        },
-        message: "Answer must be one of the choices",
-      },
-    },
-
-    explanation: {
-      type: String,
-    },
-
-    // flashcard
-    front: {
-      type: String,
-    },
-    back: {
-      type: String,
+      message: "MCQ must have at least 2 choices",
     },
   },
-  { _id: false },
-);
+
+  answer: {
+    type: String,
+    required: true,
+    validate: {
+      validator: function (value: string) {
+        const item = this as any as ILearningItem;
+
+        if (item.type === "mcq" && Array.isArray(item.choices)) {
+          return item.choices.includes(value);
+        }
+        return true;
+      },
+      message: "Answer must be one of the choices",
+    },
+  },
+
+  explanation: {
+    type: String,
+  },
+
+  // flashcard
+  front: {
+    type: String,
+  },
+  back: {
+    type: String,
+  },
+});
 
 const learningSetSchema = new Schema<ILearningSet>(
   {

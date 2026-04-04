@@ -4,8 +4,8 @@ import { FolderOpen } from "lucide-react";
 import ChatCard from "@/components/dashboard/cards/ChatCard";
 import useChatTab from "./useChatTab";
 import { ThreeDot } from "react-loading-indicators";
-import DocumentChatLoading from "./DocumentChatLoading";
-import EmptyDocumentChats from "./EmptyDocumentChats";
+import DocumentChatLoading from "./components/DocumentChatLoading";
+import EmptyDocumentChats from "./components/EmptyDocumentChats";
 
 interface ChatsTabProps {
   userId: string;
