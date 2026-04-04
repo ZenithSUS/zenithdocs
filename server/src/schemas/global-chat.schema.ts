@@ -12,5 +12,8 @@ export const globalChatAuthSchema = z.object({
 
 export const globalChatUserSchema = z.object({
   userId: objectId,
-  question: z.string().min(1, "Question is required."),
+  question: z
+    .string()
+    .min(1, "Question is required.")
+    .max(1000, "Question is too long."),
 });

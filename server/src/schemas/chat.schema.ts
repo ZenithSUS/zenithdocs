@@ -17,7 +17,10 @@ export const streamDocumentChatSchema = z.object({
 });
 
 export const streamPublicDocumentChatSchema = z.object({
-  question: z.string().min(1, "Question is required."),
+  question: z
+    .string()
+    .min(1, "Question is required.")
+    .max(1000, "Question is too long."),
   shareToken: z.string().min(1, "Share token is required."),
 });
 
