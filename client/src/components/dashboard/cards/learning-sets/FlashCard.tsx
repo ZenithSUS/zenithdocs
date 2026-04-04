@@ -25,7 +25,7 @@ function FlashCard({
   const handlePoints = (points: number, result: "correct" | "incorrect") => {
     if (answeredRef.current) return;
     answeredRef.current = true;
-    console.log(result);
+
     if (setPoints && isStudying) {
       setAnswered(result);
       setPoints(points);

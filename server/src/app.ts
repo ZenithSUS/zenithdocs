@@ -9,7 +9,6 @@ import compression from "compression";
 import path from "path";
 import favicon from "serve-favicon";
 import { fileURLToPath } from "url";
-import MongoStore from "connect-mongo";
 
 // Middlewares
 import requestLogger from "./middlewares/request-logger.middleware.js";
@@ -33,7 +32,6 @@ import documentShareRouter from "./routes/document-share.route.js";
 import learningSetRouter from "./routes/learning-set.route.js";
 
 // Passport
-import session from "express-session";
 import passport from "./config/passport.js";
 
 // Config
@@ -80,21 +78,7 @@ app.use((req, res, next) => {
 app.use(requestLogger);
 app.use(express.static(path.join(__dirname, "public")));
 app.use(favicon(path.join(__dirname, "public", "favicon.ico")));
-app.use(
-  session({
-    store: MongoStore.create({
-      mongoUrl: config.database.mongoURI,
-      dbName: "zenithdocs",
-      collectionName: "sessions",
-    }),
-    secret: config.session.secret,
-    resave: false,
-    saveUninitialized: false,
-    cookie: { secure: config.nodeEnv === "production" },
-  }),
-);
 app.use(passport.initialize());
-app.use(passport.session());
 
 // Health Check
 app.get("/health", (_, res) =>
