@@ -9,6 +9,7 @@ import { useAuthMe } from "@/features/auth/useAuthMe";
 
 const useDashboardPage = () => {
   const [nav, setNav] = useState<NavItem>("overview");
+  const [chatBotOpen, setChatBotOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filterFolder, setFilterFolder] = useState<string>("all");
   const mainRef = useRef<HTMLElement>(null);
@@ -97,6 +98,10 @@ const useDashboardPage = () => {
     setSidebarOpen,
     mainRef,
     mousePos,
+
+    // UI
+    chatBotOpen,
+    setChatBotOpen,
 
     // Overview
     overview,

@@ -9,7 +9,9 @@ import { useParams } from "next/navigation";
 const useStudyPage = () => {
   const params = useParams();
   const learningSetId = params?.id as string;
+
   const [isStudying, setIsStudying] = useState(false);
+  const [chatBotOpen, setChatBotOpen] = useState(false);
 
   const { increment, retries } = useRetryStore();
   const pageRetry = retries["learning-set-page"] ?? 0;
@@ -69,6 +71,8 @@ const useStudyPage = () => {
     // UI
     isStudying,
     setIsStudying,
+    chatBotOpen,
+    setChatBotOpen,
   };
 };
 

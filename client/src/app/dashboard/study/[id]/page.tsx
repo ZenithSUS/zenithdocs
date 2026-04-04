@@ -7,6 +7,7 @@ import Header from "@/components/dashboard/Header";
 import StudyItems from "./components/StudyItems";
 import StudyInfoPanel from "./components/StudyInfoPanel";
 import StudyDocument from "./components/StudyDocument";
+import GlobalChatUI from "@/components/dashboard/GlobalChatUI";
 
 function StudyPage() {
   const {
@@ -30,6 +31,8 @@ function StudyPage() {
     // UI
     isStudying,
     setIsStudying,
+    chatBotOpen,
+    setChatBotOpen,
   } = useStudy();
 
   if (isLoadingMe || isLoadingLearningSet) return <LoadingScreen />;
@@ -58,6 +61,12 @@ function StudyPage() {
 
   return (
     <div className="h-screen flex flex-col bg-background text-text relative">
+      <GlobalChatUI
+        user={me ?? null}
+        chatBotOpen={chatBotOpen}
+        setChatBotOpen={setChatBotOpen}
+      />
+
       <Header
         user={me}
         title="STUDY"

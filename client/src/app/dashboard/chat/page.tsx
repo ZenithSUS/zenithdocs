@@ -6,7 +6,6 @@ import { ChevronLeft, Sparkles, Zap } from "lucide-react";
 import CursorGlow from "@/components/CursorGlow";
 import ErrorScreen from "@/components/ErrorScreen";
 import useChatPage from "./useChatPage";
-import GlobalChat from "@/components/dashboard/globalchat";
 import ChatHeader from "./components/ChatHeader";
 import MessageSkeleton from "../../../components/skeleton/MessageSkeleton";
 import EmptyStateMessage from "./components/EmptyStateMessage";
@@ -16,11 +15,9 @@ import MessageInputArea from "./components/MessageInputArea";
 import LoadMoreMessageButton from "./components/LoadMoreMessageButton";
 import FullPageSpinner from "./components/FullPageSpinner";
 import DocumentViewer from "./components/DocumentViewerWrapper";
+import GlobalChatUI from "@/components/dashboard/GlobalChatUI";
 
 function DocumentChatContent() {
-  const [chatBotOpen, setChatBotOpen] = useState(false);
-  const [panelOpen, setPanelOpen] = useState(false);
-
   const {
     // Auth
     user,
@@ -61,6 +58,10 @@ function DocumentChatContent() {
     // UI
     mousePos,
     options,
+    chatBotOpen,
+    setChatBotOpen,
+    panelOpen,
+    setPanelOpen,
 
     // Refs
     textareaRef,
@@ -126,20 +127,12 @@ function DocumentChatContent() {
     <div className="h-screen bg-background text-text font-serif flex flex-col overflow-hidden relative">
       <CursorGlow mousePos={mousePos} />
 
-      {chatBotOpen ? (
-        <div className="fixed bottom-5 right-5 z-50">
-          <GlobalChat user={user ?? null} setIsOpen={setChatBotOpen} />
-        </div>
-      ) : (
-        <div className="bg-background rounded-full p-2 border border-primary fixed bottom-5 right-5 z-50 hover:bg-primary/10 hover:scale-105 transition-transform">
-          <Zap
-            onClick={() => setChatBotOpen(true)}
-            className="cursor-pointer hover:scale-105 transition-transform"
-            size={20}
-            strokeWidth={2}
-          />
-        </div>
-      )}
+      {/* Global chat UI */}
+      <GlobalChatUI
+        user={user ?? null}
+        chatBotOpen={chatBotOpen}
+        setChatBotOpen={setChatBotOpen}
+      />
 
       {/* Background grid */}
       <div

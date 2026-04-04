@@ -27,7 +27,7 @@ function StudyTab({ userId }: StudyTabProps) {
     return <LearningSetSkeletion />;
   }
 
-  if (!isLearningSetsError) {
+  if (isLearningSetsError) {
     return (
       <LearningSetError
         refetchLearningSets={refetchLearningSets}

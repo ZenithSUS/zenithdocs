@@ -5,7 +5,7 @@ import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import DashboardTabLoading from "@/components/dashboard/DashBoardTabLoading";
 import DashBoardSidebar from "@/components/dashboard/Sidebar";
 
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense } from "react";
 import DashboardLoading from "@/components/LoadingScreen";
 import ErrorScreen from "@/components/ErrorScreen";
 import useDashboardPage from "./useDashboard";
@@ -15,8 +15,7 @@ import FolderLoadingSkeletion from "@/components/dashboard/tabs/folder/component
 import SummaryCardSkeleton from "@/components/dashboard/skeleton/SummaryCardSkeleton";
 import DocumentChatLoading from "@/components/dashboard/tabs/chat/components/DocumentChatLoading";
 import SharedDocumentLoading from "@/components/dashboard/tabs/shared/components/SharedDocumentLoading";
-import GlobalChat from "@/components/dashboard/globalchat";
-import { Zap } from "lucide-react";
+import GlobalChatUI from "@/components/dashboard/GlobalChatUI";
 
 // Lazy-load dashboard tab components for code splitting
 const OverViewTab = lazy(() => import("@/components/dashboard/tabs/overview"));
@@ -31,8 +30,6 @@ const SharedTab = lazy(() => import("@/components/dashboard/tabs/shared"));
 const CURRENT_MONTH = new Date().toISOString().slice(0, 7); // YYYY-MM
 
 export default function DashboardPage() {
-  const [chatBotOpen, setChatBotOpen] = useState(false);
-
   const {
     // Auth
     user,
@@ -50,6 +47,10 @@ export default function DashboardPage() {
     setSidebarOpen,
     mainRef,
     mousePos,
+
+    // UI
+    chatBotOpen,
+    setChatBotOpen,
 
     // Overview
     overview,
@@ -88,20 +89,11 @@ export default function DashboardPage() {
       <CursorGlow mousePos={mousePos} />
 
       {/* Global ChatBot */}
-      {chatBotOpen ? (
-        <div className="fixed bottom-5 right-5 z-50">
-          <GlobalChat user={user ?? null} setIsOpen={setChatBotOpen} />
-        </div>
-      ) : (
-        <div className="bg-background rounded-full p-2 border border-primary fixed bottom-5 right-5 z-50 hover:bg-primary/10 hover:scale-105 transition-transform">
-          <Zap
-            onClick={() => setChatBotOpen(true)}
-            className="cursor-pointer hover:scale-105 transition-transform"
-            size={20}
-            strokeWidth={2}
-          />
-        </div>
-      )}
+      <GlobalChatUI
+        user={user ?? null}
+        chatBotOpen={chatBotOpen}
+        setChatBotOpen={setChatBotOpen}
+      />
 
       {/* ── SIDEBAR ────────────────────────────────────────────────────────── */}
       {/* Mobile overlay */}

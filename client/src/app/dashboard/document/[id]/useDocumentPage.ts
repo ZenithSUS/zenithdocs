@@ -18,6 +18,7 @@ const useDocumentPage = () => {
 
   // ─── UI state ─────────────────────────────────────────────────────────────
   const mousePos = useMousePosition();
+  const [chatBotOpen, setChatBotOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"details" | "summaries">(
     "details",
   );
@@ -160,6 +161,8 @@ const useDocumentPage = () => {
 
     // UI
     mousePos,
+    chatBotOpen,
+    setChatBotOpen,
   };
 };
 

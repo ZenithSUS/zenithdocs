@@ -20,19 +20,19 @@ const UsageSnapshot = ({
   const stats = [
     {
       label: "Documents This Month",
-      value: documentsThisMonth,
+      value: documentsThisMonth ?? "...",
       icon: "▣",
       sub: `${documentsThisMonth} uploaded`,
     },
     {
       label: "Tokens This Month",
-      value: sizefmt.num(tokensUsed),
+      value: sizefmt.num(tokensUsed) ?? "...",
       icon: "◉",
       sub: `${tokenPct}% of limit`,
     },
     {
       label: "Tokens Remaining",
-      value: sizefmt.num(remainingTokens),
+      value: sizefmt.num(remainingTokens) ?? "...",
       icon: "◈",
       sub: `Resets on ${nextMonthLabel}`,
     },

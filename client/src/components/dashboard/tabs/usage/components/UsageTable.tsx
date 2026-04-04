@@ -12,7 +12,6 @@ interface Props {
 }
 
 const UsageTable = ({ usage, currentMonth }: Props) => {
-  // Reverse once so newest month is first in the table
   const rows = [...usage].reverse().slice(0, 6);
 
   return (
@@ -30,7 +29,6 @@ const UsageTable = ({ usage, currentMonth }: Props) => {
       </div>
 
       {rows.map((u, idx) => {
-        // rows[idx + 1] is the previous month in the reversed list — correct
         const prev = rows[idx + 1];
         const trend = prev ? u.tokensUsed - prev.tokensUsed : 0;
         const isCurrent = u.month === currentMonth;

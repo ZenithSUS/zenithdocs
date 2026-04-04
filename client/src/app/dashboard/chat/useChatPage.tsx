@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import useMousePosition from "@/features/ui/useMousePostion";
@@ -20,6 +20,10 @@ const useChatPage = () => {
   // ─── Route params ────────────────────────────────────────────────────────────
   const searchParams = useSearchParams();
   const docId = searchParams.get("doc") ?? "";
+
+  // ─── UI States ────────────────────────────────────────────────────────────
+  const [chatBotOpen, setChatBotOpen] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(false);
 
   // ─── Retry store ────────────────────────────────────────────────────────────────────
   const { retries, increment } = useRetryStore();
@@ -155,6 +159,10 @@ const useChatPage = () => {
     options,
     textareaRef,
     messagesEndRef,
+    chatBotOpen,
+    setChatBotOpen,
+    panelOpen,
+    setPanelOpen,
   };
 };
 
