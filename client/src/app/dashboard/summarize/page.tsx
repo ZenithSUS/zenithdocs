@@ -1,8 +1,7 @@
 "use client";
 
-import { Suspense, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Lightbulb, Sparkles, XCircle, Zap } from "lucide-react";
+import { Suspense } from "react";
+import { Lightbulb, Sparkles, XCircle } from "lucide-react";
 
 import CursorGlow from "@/components/CursorGlow";
 import FileIcon from "@/components/FileIcon";
@@ -13,13 +12,12 @@ import sizefmt from "@/helpers/size-format";
 import useSummarizePage from "./useSummarizePage";
 import SummaryTypeSelector from "./components/SummaryTypeSelector";
 import SummaryResult from "./components/SummaryResult";
-import GlobalChat from "@/components/dashboard/globalchat";
+import GlobalChatUI from "@/components/dashboard/GlobalChatUI";
+import SummaryDocumentNotFound from "./components/SummaryDocumentNotFound";
+import Header from "@/components/dashboard/Header";
 
 // ─── Page content ─────────────────────────────────────────────────────────────
 function SummarizePageContent() {
-  const router = useRouter();
-  const [chatBotOpen, setChatBotOpen] = useState(false);
-
   const {
     // Auth
     user,
@@ -53,6 +51,8 @@ function SummarizePageContent() {
 
     // UI
     mousePos,
+    chatBotOpen,
+    setChatBotOpen,
 
     // Handlers
     handleGenerate,
@@ -84,61 +84,22 @@ function SummarizePageContent() {
   if (userLoading || docLoading) return <LoadingScreen />;
 
   if (!document) {
-    return (
-      <div className="min-h-screen bg-[#111111] text-[#F5F5F5] flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-5xl mb-4">404</div>
-          <h2 className="text-xl font-normal mb-2 font-serif">
-            Document not found
-          </h2>
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="mt-4 px-6 py-2.5 bg-primary text-background text-[12px] font-bold tracking-widest font-sans rounded-sm hover:bg-[#e0b530] transition-colors"
-          >
-            BACK TO DASHBOARD
-          </button>
-        </div>
-      </div>
-    );
+    return <SummaryDocumentNotFound />;
   }
-
-  // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div className="h-screen overflow-y-auto bg-[#111111] text-[#F5F5F5] font-serif">
       <CursorGlow mousePos={mousePos} />
 
-      {/* Chatbot button */}
-      {chatBotOpen ? (
-        <div className="fixed bottom-5 right-5 z-50">
-          <GlobalChat user={user ?? null} setIsOpen={setChatBotOpen} />
-        </div>
-      ) : (
-        <div className="bg-background rounded-full p-2 border border-primary fixed bottom-5 right-5 z-50 hover:bg-primary/10 hover:scale-105 transition-transform">
-          <Zap
-            onClick={() => setChatBotOpen(true)}
-            className="cursor-pointer hover:scale-105 transition-transform"
-            size={20}
-            strokeWidth={2}
-          />
-        </div>
-      )}
+      {/* Global Chat UI */}
+      <GlobalChatUI
+        user={user ?? null}
+        chatBotOpen={chatBotOpen}
+        setChatBotOpen={setChatBotOpen}
+      />
 
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-45 px-5 sm:px-8 md:px-12 py-5 bg-[#111111]/92 backdrop-blur-xl border-b border-[#C9A227]/12">
-        <div className="flex items-center gap-4 max-w-5xl mx-auto">
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="text-[#F5F5F5]/50 hover:text-[#C9A227] transition-colors duration-200 flex items-center gap-1.5 text-[11px] tracking-widest font-sans"
-          >
-            ← BACK
-          </button>
-          <div className="h-4 w-px bg-[#F5F5F5]/10" />
-          <h1 className="text-[15px] font-bold tracking-[0.08em] font-serif">
-            DOCUMENT <span className="text-[#C9A227]">SUMMARIZE</span>
-          </h1>
-        </div>
-      </header>
+      <Header user={user ?? null} title="Document" titleHighlight="Summarize" />
 
       <main className="pt-24 pb-16 px-5 sm:px-8 md:px-12 max-w-5xl mx-auto">
         {/* Document info */}

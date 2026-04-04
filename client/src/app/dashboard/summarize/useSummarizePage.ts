@@ -23,6 +23,7 @@ const useSummarizePage = () => {
 
   // ─── UI state ─────────────────────────────────────────────────────────────
   const mousePos = useMousePosition();
+  const [chatBotOpen, setChatBotOpen] = useState(false);
   const [selectedType, setSelectedType] = useState<SummaryType>("short");
   const [generatedSummary, setGeneratedSummary] = useState("");
   const [additionalDetails, setAdditionalDetails] = useState<
@@ -161,6 +162,8 @@ const useSummarizePage = () => {
 
     // UI
     mousePos,
+    chatBotOpen,
+    setChatBotOpen,
 
     // Handlers
     handleGenerate,

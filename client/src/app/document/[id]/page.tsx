@@ -5,24 +5,20 @@ import DocumentSharedViewer from "@/components/document-share/DocumentSharedView
 import DocumentPrivateChat from "@/components/document-share/DocumentPrivateChat";
 import LoadingScreen from "@/components/LoadingScreen";
 import CursorGlow from "@/components/CursorGlow";
-import { useParams } from "next/navigation";
 import useDocumentPrivatePage from "./useDocumentPrivatePage";
-import { useState } from "react";
+
 import GlobalChat from "@/components/dashboard/globalchat";
 import { Zap, FileText, MessageSquare } from "lucide-react";
 import ErrorScreen from "@/components/ErrorScreen";
 
-type ActiveTab = "viewer" | "chat";
-
 export default function DocumentPrivatePage() {
-  const params = useParams();
-  const shareId = params?.id as string;
-  const [chatBotOpen, setChatBotOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<ActiveTab>("viewer");
-
   const {
-    // Mouse
+    // UI
     mousePos,
+    chatBotOpen,
+    setChatBotOpen,
+    activeTab,
+    setActiveTab,
 
     // Document
     documentInfo,
@@ -45,7 +41,7 @@ export default function DocumentPrivatePage() {
     pageRetries,
     retryUser,
     retryPrivateShare,
-  } = useDocumentPrivatePage(shareId);
+  } = useDocumentPrivatePage();
 
   if (userError) {
     return (

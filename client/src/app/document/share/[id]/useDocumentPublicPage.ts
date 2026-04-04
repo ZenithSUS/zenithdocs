@@ -2,11 +2,15 @@ import useDocumentShare from "@/features/document-share/useDocumentShare";
 import { useDocumentShareByToken } from "@/features/document-share/useDocumentShareByToken";
 import useMousePosition from "@/features/ui/useMousePostion";
 import useRetryStore from "@/store/useRetryStore";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+
+type ActiveTab = "viewer" | "chat";
 
 const useDocumentPublicPage = (shareToken: string) => {
   const { retries, increment } = useRetryStore();
   const pageRetries = retries["document-public"] ?? 0;
+
+  const [activeTab, setActiveTab] = useState<ActiveTab>("viewer");
 
   const {
     data: documentShare,
@@ -37,6 +41,10 @@ const useDocumentPublicPage = (shareToken: string) => {
   return {
     // Mouse
     mousePos,
+
+    // Tabs
+    activeTab,
+    setActiveTab,
 
     // Document
     documentInfo,

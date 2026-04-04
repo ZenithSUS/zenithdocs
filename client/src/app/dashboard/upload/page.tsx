@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import CursorGlow from "@/components/CursorGlow";
 import LoadingScreen from "@/components/LoadingScreen";
 import ErrorScreen from "@/components/ErrorScreen";
@@ -10,15 +9,11 @@ import FolderSelect from "./components/FolderSelect";
 import DropZone from "./components/DropZone";
 import FileList from "./components/FileList";
 import UploadActions from "./components/UploadActions";
-import GlobalChat from "@/components/dashboard/globalchat";
-import { Zap } from "lucide-react";
 import { useState } from "react";
 import Header from "@/components/dashboard/Header";
+import GlobalChatUI from "@/components/dashboard/GlobalChatUI";
 
 export default function UploadPage() {
-  const router = useRouter();
-  const [chatBotOpen, setChatBotOpen] = useState(false);
-
   const {
     // Auth
     user,
@@ -30,6 +25,8 @@ export default function UploadPage() {
     mousePos,
     isDragging,
     fileInputRef,
+    chatBotOpen,
+    setChatBotOpen,
 
     // Folders
     allFolders,
@@ -77,21 +74,12 @@ export default function UploadPage() {
     <div className="h-screen bg-background overflow-hidden text-text font-serif">
       <CursorGlow mousePos={mousePos} />
 
-      {/* Chatbot button */}
-      {chatBotOpen ? (
-        <div className="fixed bottom-5 right-5 z-50">
-          <GlobalChat user={user ?? null} setIsOpen={setChatBotOpen} />
-        </div>
-      ) : (
-        <div className="bg-background rounded-full p-2 border border-primary fixed bottom-5 right-5 z-50 hover:bg-primary/10 hover:scale-105 transition-transform">
-          <Zap
-            onClick={() => setChatBotOpen(true)}
-            className="cursor-pointer hover:scale-105 transition-transform"
-            size={20}
-            strokeWidth={2}
-          />
-        </div>
-      )}
+      {/* Global Chat UI */}
+      <GlobalChatUI
+        user={user ?? null}
+        chatBotOpen={chatBotOpen}
+        setChatBotOpen={setChatBotOpen}
+      />
 
       {/* Header */}
       <Header user={user} title="Upload" titleHighlight="Files" />

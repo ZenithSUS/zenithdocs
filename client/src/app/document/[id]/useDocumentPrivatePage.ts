@@ -3,9 +3,17 @@ import { useChatInitDocument } from "@/features/chat/useChatInitDocument";
 import { useDocumentShareById } from "@/features/document-share/useDocumentShareById";
 import useMousePosition from "@/features/ui/useMousePostion";
 import useRetryStore from "@/store/useRetryStore";
-import { useMemo } from "react";
+import { useParams } from "next/navigation";
+import { useMemo, useState } from "react";
 
-const useDocumentPrivatePage = (shareId: string) => {
+type ActiveTab = "viewer" | "chat";
+
+const useDocumentPrivatePage = () => {
+  const params = useParams();
+  const shareId = params?.id as string;
+  const [chatBotOpen, setChatBotOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<ActiveTab>("viewer");
+
   const { retries, increment } = useRetryStore();
   const pageRetries = retries["document-private"] ?? 0;
 
@@ -62,8 +70,12 @@ const useDocumentPrivatePage = (shareId: string) => {
   };
 
   return {
-    // Mouse
+    // UI
     mousePos,
+    chatBotOpen,
+    setChatBotOpen,
+    activeTab,
+    setActiveTab,
 
     // Document Share
     documentInfo,

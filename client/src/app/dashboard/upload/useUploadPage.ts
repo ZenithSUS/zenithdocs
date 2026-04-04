@@ -17,6 +17,7 @@ const useUploadPage = () => {
   const { retries, increment } = useRetryStore();
   const pageRetries = retries["upload-page"] ?? 0;
 
+  const [chatBotOpen, setChatBotOpen] = useState(false);
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [selectedFolder, setSelectedFolder] = useState("");
 
@@ -73,6 +74,8 @@ const useUploadPage = () => {
 
     // UI
     mousePos,
+    chatBotOpen,
+    setChatBotOpen,
 
     // Folders
     allFolders,

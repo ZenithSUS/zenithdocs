@@ -9,19 +9,18 @@ import DocumentSharedViewer from "@/components/document-share/DocumentSharedView
 import ErrorScreen from "@/components/ErrorScreen";
 import DocumentPublicChat from "@/components/document-share/DocumentPublicChat";
 import { FileText, MessageSquare } from "lucide-react";
-import { useState } from "react";
-
-type ActiveTab = "viewer" | "chat";
 
 function DocumentPublicPage() {
   const params = useParams();
   const token = params?.id as string;
 
-  const [activeTab, setActiveTab] = useState<ActiveTab>("viewer");
-
   const {
     // Mouse
     mousePos,
+
+    // Tabs
+    activeTab,
+    setActiveTab,
 
     // Document
     documentInfo,
