@@ -5,6 +5,8 @@ import documentKeys from "./document.keys";
 import { deleteDocumentById } from "./document.api";
 import { removeInfiniteDocument } from "./document.cache";
 import { DocumentsInfiniteData, MutationContext } from "./useDocument";
+import { removeRelatedLearningSetByDocumentIdCache } from "../learning-sets/learning-set.cache";
+import learningSetKeys from "../learning-sets/learning-set.keys";
 
 export const useDocumentDelete = (
   queryClient: QueryClient,
@@ -26,6 +28,12 @@ export const useDocumentDelete = (
       removeInfiniteDocument(
         queryClient,
         documentKeys.byUserPage(userId, documentLimit),
+        id,
+      );
+
+      removeRelatedLearningSetByDocumentIdCache(
+        queryClient,
+        learningSetKeys.byUser(userId),
         id,
       );
 

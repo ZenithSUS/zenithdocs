@@ -1,4 +1,3 @@
-import fetchLimits from "@/constants/fetch-limits";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCreateLearningSet } from "./useLearningSetCreate";
 import { useUpdateLearningSet } from "./useLearningSetUpdate";
@@ -20,21 +19,13 @@ export type UpdateVariables = {
   data: Partial<LearningSet>;
 };
 
-const useLearningSet = (userId: string) => {
+const useLearningSet = (userId: string, page: number) => {
   const queryClient = useQueryClient();
 
   return {
     createLearningSetMutation: useCreateLearningSet(queryClient, userId),
-    updateLearningSetMutation: useUpdateLearningSet(
-      queryClient,
-      userId,
-      fetchLimits.learningSets,
-    ),
-    deleteLearningSetMutation: useDeleteLearningSet(
-      queryClient,
-      userId,
-      fetchLimits.learningSets,
-    ),
+    updateLearningSetMutation: useUpdateLearningSet(queryClient, userId, page),
+    deleteLearningSetMutation: useDeleteLearningSet(queryClient, userId, page),
   };
 };
 

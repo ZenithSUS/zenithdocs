@@ -9,7 +9,7 @@ export const createLearningSetRequestSchema = z.object({
     .enum(["general", "mcq", "tf", "identification", "flashcard"])
     .default("general"),
   difficulty: z.enum(["easy", "medium", "hard"]),
-  title: z.string().optional(),
+  title: z.string().max(100, "Title is too long").optional(),
   role: z.enum(["user", "admin"]),
 });
 

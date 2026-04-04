@@ -13,6 +13,7 @@ import DIFFICULTIES from "../constants/difficulties";
 import SET_TYPES from "../constants/set-types";
 import ITEM_TYPES from "../constants/item-types";
 import SectionLabel from "./SectionLabel";
+import { ThreeDot } from "react-loading-indicators";
 
 type SetType = LearningSetInput["type"];
 type ItemType = LearningSetInput["itemType"];
@@ -132,7 +133,8 @@ function LearningSetConfig({
         {documentsHasNextPage && (
           <button
             onClick={fetchNextDocumentsPage}
-            className="text-xs text-amber-400/70 hover:text-amber-400 transition-colors flex items-center gap-1 mx-auto mt-1"
+            disabled={createLearningSetMutation.isPending}
+            className="text-xs text-amber-400/70 hover:text-amber-400 transition-colors flex items-center gap-1 mx-auto mt-1 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ChevronDown className="w-3.5 h-3.5" />
             Load more
@@ -255,11 +257,16 @@ function LearningSetConfig({
           `}
         >
           <Sparkles className="w-4 h-4" />
-          {createLearningSetMutation.isPending
-            ? "Generating…"
-            : canGenerate
-              ? `Generate ${SET_TYPES.find((t) => t.value === setType)?.label}`
-              : "Select a document to continue"}
+          {createLearningSetMutation.isPending ? (
+            <>
+              <span>Generating</span>
+              <ThreeDot size="small" color="white" />
+            </>
+          ) : canGenerate ? (
+            `Generate ${SET_TYPES.find((t) => t.value === setType)?.label}`
+          ) : (
+            "Select a document to continue"
+          )}
         </button>
 
         {selectedDoc && (

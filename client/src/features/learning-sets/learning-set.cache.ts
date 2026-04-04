@@ -69,6 +69,8 @@ export const removeLearningSetCache = (
     );
     const newTotal = oldData.pagination.total - 1;
 
+    if (!hasItem) return oldData;
+
     return {
       ...oldData,
       pagination: {
@@ -81,4 +83,37 @@ export const removeLearningSetCache = (
         : oldData.learningSets,
     };
   });
+};
+
+export const removeRelatedLearningSetByDocumentIdCache = (
+  queryClient: QueryClient,
+  querykey: readonly unknown[],
+  deletedDocumentId: string,
+) => {
+  queryClient.setQueriesData<LearningSetPage>(
+    { queryKey: querykey },
+    (oldData) => {
+      if (!oldData) return oldData;
+
+      const removedCount = oldData.learningSets.filter(
+        (d) => d.documentId === deletedDocumentId,
+      ).length;
+
+      if (removedCount === 0) return oldData;
+
+      const newTotal = Math.max(oldData.pagination.total - removedCount, 0);
+
+      return {
+        ...oldData,
+        pagination: {
+          ...oldData.pagination,
+          total: newTotal,
+          totalPages: Math.ceil(newTotal / oldData.pagination.limit),
+        },
+        learningSets: oldData.learningSets.filter(
+          (d) => d.documentId !== deletedDocumentId,
+        ),
+      };
+    },
+  );
 };

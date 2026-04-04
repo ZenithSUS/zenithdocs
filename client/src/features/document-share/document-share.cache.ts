@@ -61,6 +61,8 @@ export const removeDocumentShareCache = (
     const hasItem = oldData.documentShares.some((d) => d._id === deletedId);
     const newTotal = oldData.pagination.total - 1;
 
+    if (!hasItem) return oldData;
+
     return {
       ...oldData,
       pagination: {

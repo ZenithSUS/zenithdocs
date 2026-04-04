@@ -17,6 +17,20 @@ export interface IUserScore extends Document {
   }[];
 }
 
+export interface IUserScoreInput {
+  userId: string;
+  learningSetId: string;
+  score: number;
+  total: number;
+  correct: number;
+  completedAt?: Date;
+  history: {
+    itemId: string;
+    answeredAt: Date;
+    correct: boolean;
+  }[];
+}
+
 const userScoreSchema = new Schema<IUserScore>(
   {
     userId: {

@@ -36,7 +36,7 @@ function Header({ user, title, titleHighlight }: HeaderProps) {
           </span>
         </button>
 
-        <div className="h-5 w-px bg-[#C9A227]/12" />
+        <div className="h-5 w-px bg-primary" />
 
         <h1 className="text-lg font-bold tracking-wide font-serif truncate uppercase">
           {title} <span className="text-primary">{titleHighlight}</span>

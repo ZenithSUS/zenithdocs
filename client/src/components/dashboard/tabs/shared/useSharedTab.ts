@@ -39,7 +39,9 @@ const useSharedTab = (userId: string) => {
         id: sharedDocumentId,
         data: { isActive },
       });
-      toast.success("Shared document updated successfully.");
+      toast.success(
+        `Document share ${isActive ? "activated" : "deactivated"}.`,
+      );
     } catch (error) {
       const err = error as AxiosError;
       handleApiError(

@@ -9,18 +9,18 @@ import { removeLearningSetCache } from "./learning-set.cache";
 export const useDeleteLearningSet = (
   queryClient: QueryClient,
   userId: string,
-  learningSetLimit: number,
+  page: number,
 ) =>
   useMutation<LearningSet, AxiosError, string, MutationContext>({
     mutationKey: learningSetKeys.delete(),
     mutationFn: (id) => deleteLearningSet(id),
     onMutate: async (deletedId) => {
       await queryClient.cancelQueries({
-        queryKey: learningSetKeys.byUserPage(userId, learningSetLimit),
+        queryKey: learningSetKeys.byUserPage(userId, page),
       });
 
       const previousLearningSets = queryClient.getQueryData<LearningSetPage>(
-        learningSetKeys.byUserPage(userId, learningSetLimit),
+        learningSetKeys.byUserPage(userId, page),
       );
 
       removeLearningSetCache(
@@ -39,9 +39,11 @@ export const useDeleteLearningSet = (
       }
     },
     onSuccess: (deletedLearningSet) => {
-      queryClient.invalidateQueries({
-        queryKey: learningSetKeys.byUser(userId),
-      });
+      removeLearningSetCache(
+        queryClient,
+        learningSetKeys.byUserPage(userId, page),
+        deletedLearningSet._id,
+      );
 
       queryClient.removeQueries({
         queryKey: learningSetKeys.byId(deletedLearningSet._id),
