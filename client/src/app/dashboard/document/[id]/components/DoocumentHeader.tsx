@@ -1,11 +1,11 @@
 import { ArrowLeft, MessageCircle, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-interface DocumentParentHeaderProps {
+interface DocumentHeaderProps {
   documentId: string;
 }
 
-function DocumentParentHeader({ documentId }: DocumentParentHeaderProps) {
+function DocumentHeader({ documentId }: DocumentHeaderProps) {
   const router = useRouter();
 
   return (
@@ -48,4 +48,4 @@ function DocumentParentHeader({ documentId }: DocumentParentHeaderProps) {
   );
 }
 
-export default DocumentParentHeader;
+export default DocumentHeader;

@@ -5,12 +5,12 @@ import LoadingScreen from "@/components/LoadingScreen";
 import ErrorScreen from "@/components/ErrorScreen";
 
 import useDocumentPage from "./useDocumentPage";
-import DocumentHeader from "./components/DocumentHeader";
+import DocumentInfo from "./components/DocumentInfo";
 import DocumentTabs from "./components/DocumentTabs";
 import DocumentDetailsTab from "./components/DocumentDetailsTab";
 import DocumentSummariesTab from "./components/DocumentSummariesTab";
 import GlobalChatUI from "@/components/dashboard/GlobalChatUI";
-import DocumentParentHeader from "./components/DoocumentParentHeader";
+import DocumentHeader from "./components/DoocumentHeader";
 import DocumentNotFound from "./components/DocumentNotFound";
 
 export default function DocumentViewPage() {
@@ -96,11 +96,11 @@ export default function DocumentViewPage() {
       />
 
       {/* Header */}
-      <DocumentParentHeader documentId={documentId} />
+      <DocumentHeader documentId={documentId} />
 
       {/* Main */}
       <main className="pt-24 pb-12 px-5 sm:px-8 md:px-12 max-w-5xl mx-auto">
-        <DocumentHeader
+        <DocumentInfo
           documentId={documentId}
           document={document}
           folder={folder}

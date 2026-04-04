@@ -27,7 +27,7 @@ const DocumentSummariesTab = ({
 
   if (summaries.length === 0) {
     return (
-      <div className="bg-[rgba(31,41,55,0.4)] border border-[#C9A227]/12 rounded-lg p-8 text-center">
+      <div className="bg-white/8 border border-[#C9A227]/12 rounded-lg p-8 text-center">
         <Sparkles size={36} className="mx-auto mb-3 text-[#C9A227]/40" />
         <p className="text-[14px] text-text/50 font-sans mb-4">
           No summaries generated yet for this document.

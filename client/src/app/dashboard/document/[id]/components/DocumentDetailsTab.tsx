@@ -50,7 +50,7 @@ const DetailRow = ({
 );
 
 const DocumentDetailsTab = ({ document, folder, statusMeta }: Props) => (
-  <div className="bg-[rgba(31,41,55,0.4)] border border-[#C9A227]/12 rounded-lg p-6 sm:p-8">
+  <div className="bg-white/8 border border-[#C9A227]/12 rounded-lg p-6 sm:p-8">
     <h3 className="text-[11px] tracking-[0.15em] text-[#C9A227] mb-6 font-sans flex items-center gap-2">
       <FileText size={13} />
       DOCUMENT INFORMATION

@@ -37,16 +37,11 @@ interface Props {
   statusMeta: StatusMeta;
 }
 
-const DocumentHeader = ({
-  documentId,
-  document,
-  folder,
-  statusMeta,
-}: Props) => {
+const DocumentInfo = ({ documentId, document, folder, statusMeta }: Props) => {
   const router = useRouter();
 
   return (
-    <div className="bg-[rgba(31,41,55,0.4)] border border-[#C9A227]/18 rounded-lg p-6 sm:p-8 mb-8">
+    <div className="bg-white/8 border border-[#C9A227]/18 rounded-lg p-6 sm:p-8 mb-8">
       {/* Title row */}
       <div className="flex items-start gap-4 mb-6">
         <div className="text-4xl">
@@ -96,7 +91,7 @@ const DocumentHeader = ({
               href={document.fileUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-4 py-2 bg-white/5 border border-white/10 text-[#F5F5F5]/70 rounded-sm text-[11px] tracking-widest font-sans hover:bg-white/8 transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 bg-green-500 border border-white/10 font-bold text-black rounded-sm text-[11px] tracking-widest font-sans hover:bg-white/8 transition-colors"
             >
               <Download size={12} />
               DOWNLOAD
@@ -124,4 +119,4 @@ const DocumentHeader = ({
   );
 };
 
-export default DocumentHeader;
+export default DocumentInfo;
