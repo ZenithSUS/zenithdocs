@@ -10,7 +10,9 @@ import DashboardLoading from "@/components/LoadingScreen";
 import ErrorScreen from "@/components/ErrorScreen";
 import useDashboardPage from "./useDashboard";
 import DocumentsLoadingSkeleton from "@/components/dashboard/tabs/document/components/DocumentsLoadingSkeleton";
+import LearningSetSkeletion from "@/components/dashboard/tabs/study/components/LearningSetSkeleton";
 import FolderLoadingSkeletion from "@/components/dashboard/tabs/folder/components/FolderLoadingSkeletion";
+import SummaryCardSkeleton from "@/components/dashboard/skeleton/SummaryCardSkeleton";
 import DocumentChatLoading from "@/components/dashboard/tabs/chat/components/DocumentChatLoading";
 import SharedDocumentLoading from "@/components/dashboard/tabs/shared/components/SharedDocumentLoading";
 import GlobalChat from "@/components/dashboard/globalchat";
@@ -182,14 +184,14 @@ export default function DashboardPage() {
 
           {/* ═══ STUDIES ═════════════════════════════════════════════════════ */}
           {nav === "studies" && (
-            <Suspense fallback={<DashboardTabLoading />}>
+            <Suspense fallback={<LearningSetSkeletion />}>
               <StudyTab userId={user?._id ?? ""} />
             </Suspense>
           )}
 
           {/* ══ SUMMARIES ═════════════════════════════════════════════════════ */}
           {nav === "summaries" && (
-            <Suspense fallback={<DashboardTabLoading />}>
+            <Suspense fallback={<SummaryCardSkeleton />}>
               <SummaryTab userId={user?._id ?? ""} />
             </Suspense>
           )}

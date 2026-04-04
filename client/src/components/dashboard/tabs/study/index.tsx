@@ -1,4 +1,6 @@
 import LearningSetCard from "./components/LearningSetCard";
+import LearningSetError from "./components/LearningSetError";
+import LearningSetSkeletion from "./components/LearningSetSkeleton";
 import PageControls from "./components/PageControls";
 import useStudyTab from "./useStudyTab";
 
@@ -20,6 +22,19 @@ function StudyTab({ userId }: StudyTabProps) {
     fetchNextLearningSetPage: fetchNextPage,
     fetchPreviousLearningSetPage: fetchPreviousPage,
   } = useStudyTab(userId);
+
+  if (isLearningSetsLoading) {
+    return <LearningSetSkeletion />;
+  }
+
+  if (!isLearningSetsError) {
+    return (
+      <LearningSetError
+        refetchLearningSets={refetchLearningSets}
+        error={learningSetsError}
+      />
+    );
+  }
 
   return (
     <div className="space-y-5">

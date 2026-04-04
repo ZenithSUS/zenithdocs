@@ -1,17 +1,17 @@
 import { AxiosError } from "@/types/api";
 import { AlertCircle } from "lucide-react";
 
-interface SharedDocumentErrorProps {
-  refetchSharedDocuments: () => void;
+interface LearningSetErrorProps {
+  refetchLearningSets: () => void;
   error: AxiosError | null;
 }
 
-function SharedDocumentError({
-  refetchSharedDocuments,
+function LearningSetError({
+  refetchLearningSets,
   error,
-}: SharedDocumentErrorProps) {
+}: LearningSetErrorProps) {
   const errorMessage =
-    error?.response?.data?.message || "Failed to load shared documents";
+    error?.response?.data?.message || "Failed to load learning sets";
 
   return (
     <div className="border border-red-500/20  rounded-lg px-6 py-8 text-center">
@@ -19,7 +19,7 @@ function SharedDocumentError({
         <AlertCircle color="red" className="w-12 h-12 mb-3" />
 
         <h3 className="text-[18px] font-serif text-text/80 mb-2">
-          Unable to Load Shared Documents
+          Unable to Load Learning Sets
         </h3>
 
         <p className="text-[12px] text-text/50 font-sans max-w-md mx-auto leading-relaxed mb-4">
@@ -43,13 +43,14 @@ function SharedDocumentError({
         </div>
       </div>
 
-      <div className="flex items-center justify-center gap-2">
+      <div className="flex items-center justify-center gap-3">
         <button
-          onClick={refetchSharedDocuments}
+          onClick={refetchLearningSets}
           className="px-6 py-2 bg-primary text-background text-[11px] font-bold tracking-wider font-sans rounded-sm hover:bg-[#e0b530] hover:-translate-y-0.5 transition-all duration-200"
         >
           TRY AGAIN
         </button>
+
         <button
           onClick={() => window.location.reload()}
           className="px-6 py-2 bg-white/5 text-white/50 text-[11px] font-bold tracking-wider font-sans rounded-sm hover:bg-white/10 hover:-translate-y-0.5 transition-all duration-200"
@@ -75,4 +76,4 @@ function SharedDocumentError({
   );
 }
 
-export default SharedDocumentError;
+export default LearningSetError;

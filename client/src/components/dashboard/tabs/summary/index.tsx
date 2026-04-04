@@ -25,15 +25,7 @@ const SummaryTab = ({ userId }: Props) => {
 
   // ─── Loading ───────────────────────────────────────────────────────────────
   if (isLoading) {
-    return (
-      <div className="space-y-5">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <SummaryCardSkeleton key={i} />
-          ))}
-        </div>
-      </div>
-    );
+    return <SummaryCardSkeleton />;
   }
 
   // ─── Empty ─────────────────────────────────────────────────────────────────
