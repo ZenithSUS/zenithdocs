@@ -111,9 +111,6 @@ export const logoutController = async (
     const { refreshToken } = req.body;
     const userId = req.user.sub;
 
-    console.log("Refresh Token", refreshToken);
-    console.log("User Id", userId);
-
     await logoutService(userId, refreshToken);
 
     return res.status(200).json({
