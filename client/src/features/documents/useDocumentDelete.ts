@@ -41,6 +41,12 @@ export const useDocumentDelete = (
         id,
       );
 
+      removeRelatedInfiniteSummaryByDocumentIdFromCache(
+        queryClient,
+        summaryKeys.byDocumentPage(userId, fetchLimits.summary),
+        id,
+      );
+
       removeRelatedLearningSetByDocumentIdCache(
         queryClient,
         learningSetKeys.byUser(userId),
