@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import useSummary from "@/features/summary/useSummary";
 import { useDashboardOverview } from "@/features/dashboard/useDashboardOverview";
 import useMousePosition from "@/features/ui/useMousePostion";
-import usageKeys from "@/features/usage/usage.key";
+import usageKeys from "@/features/usage/usage.keys";
 import { Summary, SummaryType } from "@/types/summary";
 import { AxiosError } from "@/types/api";
 import useRetryStore from "@/store/useRetryStore";

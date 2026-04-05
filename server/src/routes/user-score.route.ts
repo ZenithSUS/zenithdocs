@@ -19,7 +19,7 @@ router.get(
 );
 
 router.get(
-  "/user/:userId/learning-sets/:learningSetId",
+  "/user/:userId/learning-set/:learningSetId",
   protect,
   limiter("getUserScoreByUserAndLearningSetId"),
   getUserScoreByUserAndLearningSetIdController,

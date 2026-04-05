@@ -1,7 +1,7 @@
 import { AxiosError } from "@/types/api";
 import { Usage } from "@/types/usage";
 import { useQuery } from "@tanstack/react-query";
-import usageKeys from "./usage.key";
+import usageKeys from "./usage.keys";
 import { fetchLastSixMonthsUsageByUser } from "./usage.api";
 
 export const useUsageByUserSixMonths = (userId: string, month: string) =>

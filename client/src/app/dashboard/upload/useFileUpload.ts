@@ -4,7 +4,7 @@ import { toast } from "sonner";
 
 import useDocument from "@/features/documents/useDocument";
 import { useDashboardOverview } from "@/features/dashboard/useDashboardOverview";
-import usageKeys from "@/features/usage/usage.key";
+import usageKeys from "@/features/usage/usage.keys";
 import documentKeys from "@/features/documents/document.keys";
 
 import { AxiosError } from "@/types/api";
