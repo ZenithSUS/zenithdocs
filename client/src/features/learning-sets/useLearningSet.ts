@@ -19,7 +19,7 @@ export type UpdateVariables = {
   data: Partial<LearningSet>;
 };
 
-const useLearningSet = (userId: string, page: number) => {
+const useLearningSet = (userId: string, page: number = 1) => {
   const queryClient = useQueryClient();
 
   return {
