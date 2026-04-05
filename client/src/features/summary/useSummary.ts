@@ -1,12 +1,6 @@
-import {
-  InfiniteData,
-  useInfiniteQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
-import summaryKeys from "./summary.keys";
-import { fetchSummaryByDocumentPaginated } from "./summary.api";
+import { InfiniteData, useQueryClient } from "@tanstack/react-query";
 import { Summary } from "@/types/summary";
-import { AxiosError, ResponseWithPagedData } from "@/types/api";
+import { ResponseWithPagedData } from "@/types/api";
 
 import { useSummaryCreate } from "./useSummaryCreate";
 import fetchLimits from "@/constants/fetch-limits";
