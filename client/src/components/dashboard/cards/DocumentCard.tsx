@@ -1,5 +1,4 @@
 import STATUS_META from "@/constants/status-meta";
-import { NavItem } from "../Sidebar";
 import FileIcon from "@/components/FileIcon";
 import sizefmt from "@/helpers/size-format";
 import Doc from "@/types/doc";

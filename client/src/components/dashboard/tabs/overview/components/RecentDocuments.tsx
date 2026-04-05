@@ -1,9 +1,9 @@
 import DocumentCard from "@/components/dashboard/cards/DocumentCard";
 import DocumentCardSkeleton from "@/components/dashboard/skeleton/DocumentCardSkeleton";
-import { DashboardOverview } from "@/types/dashboard";
+import Doc from "@/types/doc";
 
 interface Props {
-  recentDocuments: DashboardOverview["recentDocuments"] | undefined;
+  recentDocuments: Doc[];
   overviewLoading: boolean;
   onViewAll: () => void;
 }
