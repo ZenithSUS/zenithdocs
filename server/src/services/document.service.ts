@@ -15,10 +15,7 @@ import {
   incrementUsage,
   updateUsageMonthByUser,
 } from "../repositories/usage.repository.js";
-import {
-  deleteFileFromCloudinary,
-  downloadFileFromCloudinary,
-} from "../lib/cloudinary.service.js";
+import { deleteFileFromCloudinary } from "../lib/cloudinary.service.js";
 import colors from "../utils/log-colors.js";
 import {
   deleteDocumentChunksByDocumentId,
@@ -32,7 +29,7 @@ import {
   updateDocumentSchema,
 } from "../schemas/document.schema.js";
 import { userTokenSchema } from "../utils/zod.utils.js";
-import mimeTypeMap from "../constants/mine-types.js";
+import subtypePrefixMap from "../constants/subtype-prefix.js";
 
 /**
  * Creates a new document with the given data
@@ -114,9 +111,15 @@ export const reprocessDocumentService = async (
     await deleteDocumentChunksByDocumentId(docId);
   }
 
-  const mimeType = mimeTypeMap[document.fileType];
-  if (!mimeType) {
-    throw new AppError("File type not supported", 400);
+  const storedSubtype = document.fileType;
+  const prefix = subtypePrefixMap[storedSubtype];
+  const fullMime = `${prefix}/${storedSubtype}`;
+
+  if (!fullMime) throw new AppError("Invalid file type", 400);
+
+  // Remove existing document chunks
+  if (documentChunks.length > 0) {
+    await deleteDocumentChunksByDocumentId(docId);
   }
 
   await embeddingQueue.add(
@@ -125,7 +128,7 @@ export const reprocessDocumentService = async (
       documentId: docId,
       userId: currentUserId,
       publicId: document.publicId,
-      mimeType,
+      mimeType: fullMime,
       fileUrl: document.fileUrl,
     },
     {

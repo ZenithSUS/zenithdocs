@@ -15,6 +15,7 @@ export type DocumentWithChatPage = ResponseWithPagedData<
 >["data"];
 
 export type DocumentsInfiniteData = InfiniteData<DocumentPage>;
+export type DocumentsWithChatInfiniteData = InfiniteData<DocumentWithChatPage>;
 
 export type UpdateVariables = {
   id: string;

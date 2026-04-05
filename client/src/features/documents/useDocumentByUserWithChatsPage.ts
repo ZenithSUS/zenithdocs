@@ -1,5 +1,8 @@
 import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
-import { DocumentWithChatPage } from "./useDocument";
+import {
+  DocumentsWithChatInfiniteData,
+  DocumentWithChatPage,
+} from "./useDocument";
 import { AxiosError } from "@/types/api";
 import documentKeys from "./document.keys";
 import { fetchDocumentByUserWithChatsPaginated } from "./document.api";
@@ -9,7 +12,7 @@ export const useDocumentByUserWithChatsPage = (userId: string) =>
   useInfiniteQuery<
     DocumentWithChatPage,
     AxiosError,
-    InfiniteData<DocumentWithChatPage>,
+    DocumentsWithChatInfiniteData,
     ReturnType<typeof documentKeys.byUserWithChatPage>,
     number
   >({

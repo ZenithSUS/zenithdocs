@@ -62,3 +62,28 @@ export const removeInfiniteSummary = (
     };
   });
 };
+
+export const removeRelatedInfiniteSummaryByDocumentIdFromCache = (
+  queryClient: QueryClient,
+  queryKey: readonly unknown[],
+  deletedId: string,
+) => {
+  console.log("removeRelatedInfiniteSummaryByDocumentIdFromCache");
+  queryClient.setQueryData<SummaryByUserInfiniteData>(queryKey, (oldData) => {
+    if (!oldData) return oldData;
+
+    return {
+      ...oldData,
+      pages: oldData.pages.map((page) => ({
+        ...page,
+        summaries: page.summaries.filter((summary) => {
+          const documentId =
+            typeof summary.document === "object"
+              ? summary.document._id
+              : summary.document;
+          return documentId !== deletedId;
+        }),
+      })),
+    };
+  });
+};

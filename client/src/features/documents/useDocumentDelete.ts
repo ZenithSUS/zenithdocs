@@ -7,6 +7,10 @@ import { removeInfiniteDocument } from "./document.cache";
 import { DocumentsInfiniteData, MutationContext } from "./useDocument";
 import { removeRelatedLearningSetByDocumentIdCache } from "../learning-sets/learning-set.cache";
 import learningSetKeys from "../learning-sets/learning-set.keys";
+import { removeRelatedChatByDocumentIdFromCache } from "./document.cache";
+import { removeRelatedInfiniteSummaryByDocumentIdFromCache } from "../summary/summary.cache";
+import summaryKeys from "../summary/summary.keys";
+import fetchLimits from "@/constants/fetch-limits";
 
 export const useDocumentDelete = (
   queryClient: QueryClient,
@@ -31,9 +35,21 @@ export const useDocumentDelete = (
         id,
       );
 
+      removeRelatedInfiniteSummaryByDocumentIdFromCache(
+        queryClient,
+        summaryKeys.byUserPage(userId, fetchLimits.summary),
+        id,
+      );
+
       removeRelatedLearningSetByDocumentIdCache(
         queryClient,
         learningSetKeys.byUser(userId),
+        id,
+      );
+
+      removeRelatedChatByDocumentIdFromCache(
+        queryClient,
+        documentKeys.byUserWithChatPage(userId),
         id,
       );
 

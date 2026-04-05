@@ -1,6 +1,10 @@
 import Doc from "@/types/doc";
 import { QueryClient } from "@tanstack/react-query";
-import { DocumentsInfiniteData } from "./useDocument";
+import {
+  DocumentsInfiniteData,
+  DocumentsWithChatInfiniteData,
+} from "./useDocument";
+import { ChatPage } from "../chat/useChat";
 
 export const addInfiniteDocument = (
   queryClient: QueryClient,
@@ -116,4 +120,25 @@ export const removeDocumentFolderInfiniteDocument = (
       }),
     };
   });
+};
+
+export const removeRelatedChatByDocumentIdFromCache = (
+  queryClient: QueryClient,
+  queryKey: readonly unknown[],
+  deletedId: string,
+) => {
+  queryClient.setQueryData<DocumentsWithChatInfiniteData>(
+    queryKey,
+    (oldData) => {
+      if (!oldData) return oldData;
+
+      return {
+        ...oldData,
+        pages: oldData.pages.map((page) => ({
+          ...page,
+          documents: page.documents.filter((doc) => doc._id !== deletedId),
+        })),
+      };
+    },
+  );
 };
