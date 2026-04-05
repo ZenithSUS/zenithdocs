@@ -1,5 +1,6 @@
 import { Summary } from "@/types/summary";
 import { Usage } from "./usage";
+import Doc from "./doc";
 
 export type DashboardOverview = {
   totalDocuments: number;
@@ -14,11 +15,6 @@ export type DashboardOverview = {
   completedDocuments: number;
   documentsUploaded: number;
   processingDocuments: number;
-  recentDocuments: (Summary & {
-    folder?: {
-      _id: string;
-      title: string;
-    } | null;
-  })[];
+  recentDocuments: Doc[];
   recentSummary: Summary[];
 };

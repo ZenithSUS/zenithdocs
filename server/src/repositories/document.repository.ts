@@ -253,7 +253,11 @@ export const getDocumentsByUserWithChatsPaginated = async (
  */
 export const getRecentDocumentsByUser = async (userId: string) => {
   return await Document.find({ user: userId })
-    .populate({ path: "folder", select: "_id name type" })
+    .select("-rawText")
+    .populate({
+      path: "folder",
+      select: "_id name",
+    })
     .sort({ createdAt: -1 })
     .limit(5)
     .lean();

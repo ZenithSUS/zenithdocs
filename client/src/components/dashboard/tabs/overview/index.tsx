@@ -41,7 +41,7 @@ const OverviewTab = ({
 
     <div className="grid grid-cols-1 xl:grid-cols-5 gap-4 sm:gap-6">
       <RecentDocuments
-        recentDocuments={overview?.recentDocuments}
+        recentDocuments={overview?.recentDocuments ?? []}
         overviewLoading={overviewLoading}
         onViewAll={() => setNav("documents")}
       />
