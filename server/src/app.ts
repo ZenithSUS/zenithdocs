@@ -30,6 +30,7 @@ import globalChatRouter from "./routes/global-chat.route.js";
 import globalMessageRouter from "./routes/global-message.route.js";
 import documentShareRouter from "./routes/document-share.route.js";
 import learningSetRouter from "./routes/learning-set.route.js";
+import userScoreRouter from "./routes/user-score.route.js";
 
 // Passport
 import passport from "./config/passport.js";
@@ -117,6 +118,7 @@ app.use("/api/global-chats", requireApiKey, globalChatRouter);
 app.use("/api/global-messages", requireApiKey, globalMessageRouter);
 app.use("/api/document-shares", requireApiKey, documentShareRouter);
 app.use("/api/learning-sets", requireApiKey, learningSetRouter);
+app.use("/api/user-scores", requireApiKey, userScoreRouter);
 
 // Error Handlers
 app.use(notFound);

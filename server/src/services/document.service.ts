@@ -1,4 +1,4 @@
-import { IDocument, IDocumentInput } from "../models/document.model.js";
+import { IDocumentInput } from "../models/document.model.js";
 import {
   createDocument,
   deleteDocumentById,

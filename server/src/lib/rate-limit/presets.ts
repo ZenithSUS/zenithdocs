@@ -148,4 +148,17 @@ export const rateLimiters = {
     "1 m",
     "getLearningSetsByUserIdPaginated",
   ),
+
+  // User Score Write
+  createUserScore: createLimiter(10, "1 m", "createUserScore"),
+  updateUserScore: createLimiter(10, "1 m", "updateUserScore"),
+  deleteUserScore: createLimiter(5, "1 m", "deleteUserScore"),
+
+  // User Score Read
+  getUserScoreById: createLimiter(15, "1 m", "getUserScoreById"),
+  getUserScoreByUserAndLearningSetId: createLimiter(
+    15,
+    "1 m",
+    "getUserScoreByUserAndLearningSetId",
+  ),
 };

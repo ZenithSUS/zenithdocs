@@ -8,7 +8,15 @@ export const createUserScore = async (data: IUserScoreInput) => {
   return userScore;
 };
 
-export const getUserScore = async (userId: string, learningSetId: string) => {
+export const getUserScoreById = async (id: string) => {
+  const userScore = await UserScore.findById(id).lean<IUserScore>();
+  return userScore;
+};
+
+export const getUserScoreByUserAndLearningSetId = async (
+  userId: string,
+  learningSetId: string,
+) => {
   const userScore = await UserScore.findOne({
     userId,
     learningSetId,
@@ -18,12 +26,11 @@ export const getUserScore = async (userId: string, learningSetId: string) => {
 };
 
 export const updateUserScore = async (
-  userId: string,
-  learningSetId: string,
+  id: string,
   data: Partial<IUserScoreInput>,
 ) => {
-  const userScore = await UserScore.findOneAndUpdate(
-    { userId, learningSetId },
+  const userScore = await UserScore.findByIdAndUpdate(
+    id,
     { $set: data },
     { returnDocument: "after" },
   ).lean<IUserScore>();
@@ -31,12 +38,8 @@ export const updateUserScore = async (
   return userScore;
 };
 
-export const deleteUserScore = async (
-  userId: string,
-  learningSetId: string,
-) => {
-  return await UserScore.findOneAndDelete({
-    userId,
-    learningSetId,
-  }).lean<IUserScore>();
+export const deleteUserScore = async (id: string) => {
+  const userScore = await UserScore.findByIdAndDelete(id).lean<IUserScore>();
+
+  return userScore;
 };
