@@ -1,5 +1,5 @@
 import LearningSetCard from "./components/LearningSetCard";
-import LearningSetError from "./components/LearningSetError";
+import FetchError from "../../FetchError";
 import LearningSetSkeletion from "./components/LearningSetSkeleton";
 import PageControls from "./components/PageControls";
 import useStudyTab from "./useStudyTab";
@@ -29,8 +29,9 @@ function StudyTab({ userId }: StudyTabProps) {
 
   if (isLearningSetsError) {
     return (
-      <LearningSetError
-        refetchLearningSets={refetchLearningSets}
+      <FetchError
+        errorTitleMessage="Unable to get learning sets"
+        refetch={refetchLearningSets}
         error={learningSetsError}
       />
     );

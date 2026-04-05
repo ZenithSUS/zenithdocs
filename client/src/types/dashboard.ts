@@ -1,4 +1,3 @@
-import Doc from "@/types/doc";
 import { Summary } from "@/types/summary";
 import { Usage } from "./usage";
 
@@ -15,7 +14,7 @@ export type DashboardOverview = {
   completedDocuments: number;
   documentsUploaded: number;
   processingDocuments: number;
-  recentDocuments: (Doc & {
+  recentDocuments: (Summary & {
     folder?: {
       _id: string;
       title: string;

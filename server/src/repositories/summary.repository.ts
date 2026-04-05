@@ -175,6 +175,10 @@ export const getAllTotalEachSummaryTypesByUser = async (userId: string) => {
  */
 export const getRecentSummaryByUser = async (userId: string) => {
   return await Summary.find({ user: userId })
+    .populate({
+      path: "document",
+      select: "_id title fileType fileSize",
+    })
     .sort({ createdAt: -1 })
     .limit(6)
     .lean();

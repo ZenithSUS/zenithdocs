@@ -1,9 +1,8 @@
 import { NavItem } from "../../Sidebar";
 import SharedDocumentCard from "../../cards/SharedDocumentCard";
-import SharedDocumentSkeletonCard from "../../skeleton/SharedDocumentSkeletonCard";
 import PageControls from "./components/PageControls";
 import SharedDocumentEmpty from "./components/SharedDocumentEmpty";
-import SharedDocumentError from "./components/SharedDocumentError";
+import FetchError from "../../FetchError";
 import SharedDocumentLoading from "./components/SharedDocumentLoading";
 import useSharedTab from "./useSharedTab";
 
@@ -38,8 +37,9 @@ function SharedTab({ userId, setNav }: SharedTabProps) {
 
   if (sharedDocumentError) {
     return (
-      <SharedDocumentError
-        refetchSharedDocuments={refetchSharedDocuments}
+      <FetchError
+        errorTitleMessage="Unable to get shared documents"
+        refetch={refetchSharedDocuments}
         error={sharedDocumentErrorData}
       />
     );

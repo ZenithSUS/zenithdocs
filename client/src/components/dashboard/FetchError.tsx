@@ -1,25 +1,22 @@
 import { AxiosError } from "@/types/api";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, LightbulbIcon } from "lucide-react";
 
-interface LearningSetErrorProps {
-  refetchLearningSets: () => void;
+interface FetchErrorProps {
+  errorTitleMessage?: string;
+  refetch: () => void;
   error: AxiosError | null;
 }
 
-function LearningSetError({
-  refetchLearningSets,
-  error,
-}: LearningSetErrorProps) {
-  const errorMessage =
-    error?.response?.data?.message || "Failed to load learning sets";
+function FetchError({ errorTitleMessage, refetch, error }: FetchErrorProps) {
+  const errorMessage = error?.response?.data?.message ?? "Failed to load data";
 
   return (
-    <div className="border border-red-500/20  rounded-lg px-6 py-8 text-center">
+    <div className="border border-red-500/20 rounded-lg px-6 py-8 text-center">
       <div className="flex flex-col items-center justify-center">
         <AlertCircle color="red" className="w-12 h-12 mb-3" />
 
         <h3 className="text-[18px] font-serif text-text/80 mb-2">
-          Unable to Load Learning Sets
+          {errorTitleMessage || "Unable to Load Data"}
         </h3>
 
         <p className="text-[12px] text-text/50 font-sans max-w-md mx-auto leading-relaxed mb-4">
@@ -33,7 +30,7 @@ function LearningSetError({
           <AlertCircle className="w-4 h-4" color="red" />
 
           <div className="text-left flex-1">
-            <p className="text-[10px] tracking-[0.12em] text-red-400/70 mb-1 font-sans">
+            <p className="text-[10px] tracking-[0.12em] text-red-500 font-bold mb-1 font-sans">
               ERROR DETAILS
             </p>
             <p className="text-[11px] text-text/60 font-sans leading-[1.6]">
@@ -45,7 +42,7 @@ function LearningSetError({
 
       <div className="flex items-center justify-center gap-3">
         <button
-          onClick={refetchLearningSets}
+          onClick={refetch}
           className="px-6 py-2 bg-primary text-background text-[11px] font-bold tracking-wider font-sans rounded-sm hover:bg-[#e0b530] hover:-translate-y-0.5 transition-all duration-200"
         >
           TRY AGAIN
@@ -53,7 +50,7 @@ function LearningSetError({
 
         <button
           onClick={() => window.location.reload()}
-          className="px-6 py-2 bg-white/5 text-white/50 text-[11px] font-bold tracking-wider font-sans rounded-sm hover:bg-white/10 hover:-translate-y-0.5 transition-all duration-200"
+          className="px-6 py-2 bg-white/5 text-[11px] font-bold tracking-wider font-sans rounded-sm hover:bg-white/10 hover:-translate-y-0.5 transition-all duration-200"
         >
           REFRESH PAGE
         </button>
@@ -62,7 +59,7 @@ function LearningSetError({
       {/* Help text */}
       <div className="mt-5 p-3 bg-white/5 border border-white/10 rounded-lg max-w-lg mx-auto">
         <div className="flex items-start gap-2">
-          <span className="text-[#C9A227] text-sm shrink-0 mt-0.5">💡</span>
+          <LightbulbIcon className="w-4 h-4 text-primary" />
           <div className="text-left flex-1">
             <p className="text-[11px] text-text/60 font-sans leading-[1.6]">
               <strong className="text-text/80">Still having issues?</strong> Try
@@ -76,4 +73,4 @@ function LearningSetError({
   );
 }
 
-export default LearningSetError;
+export default FetchError;
