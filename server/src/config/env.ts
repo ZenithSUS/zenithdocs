@@ -1,5 +1,7 @@
 import "dotenv/config";
 
+const isDev = process.env.NODE_ENV === "development";
+
 const config = {
   nodeEnv: process.env.NODE_ENV || "development",
   server: {
@@ -40,11 +42,13 @@ const config = {
     apiSecret: process.env.CLOUDINARY_API_SECRET || "",
   },
   redis: {
-    host: process.env.REDIS_HOST || "",
-    bullmqHost: process.env.REDIS_BULLMQ_HOST || "",
-    port: Number(process.env.REDIS_PORT),
-    username: process.env.REDIS_USERNAME || "",
-    password: process.env.REDIS_PASSWORD || "",
+    host: isDev ? process.env.REDIS_HOST_DEV : process.env.REDIS_HOST || "",
+    bullmqHost: isDev
+      ? process.env.REDIS_BULLMQ_HOST_DEV
+      : process.env.REDIS_BULLMQ_HOST || "",
+    port: Number(isDev ? process.env.REDIS_PORT_DEV : process.env.REDIS_PORT),
+    username: isDev ? "" : process.env.REDIS_USERNAME || "",
+    password: isDev ? "" : process.env.REDIS_PASSWORD || "",
   },
   google: {
     clientId: process.env.GOOGLE_CLIENT_ID || "",
@@ -71,13 +75,25 @@ const requiredEnvVars = [
   "BACKEND_URL",
   "CLIENT_URL_DEV",
   "CLIENT_URL",
+];
+
+const requiredProdVars = [
   "REDIS_HOST",
+  "REDIS_BULLMQ_HOST",
   "REDIS_PORT",
   "REDIS_USERNAME",
   "REDIS_PASSWORD",
 ];
 
-requiredEnvVars.forEach((envVar) => {
+const requiredDevVars = [
+  "REDIS_HOST_DEV",
+  "REDIS_BULLMQ_HOST_DEV",
+  "REDIS_PORT_DEV",
+];
+
+const envSpecificVars = isDev ? requiredDevVars : requiredProdVars;
+
+[...requiredEnvVars, ...envSpecificVars].forEach((envVar) => {
   if (!process.env[envVar]) {
     throw new Error(`Missing environment variable: ${envVar}`);
   }

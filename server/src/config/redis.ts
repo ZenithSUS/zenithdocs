@@ -5,12 +5,12 @@ import colors from "../utils/log-colors.js";
 const redis = new Redis({
   host: config.redis.bullmqHost,
   port: config.redis.port,
-  username: config.redis.username,
-  password: config.redis.password,
+  ...(config.redis.username && { username: config.redis.username }),
+  ...(config.redis.password && { password: config.redis.password }),
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
   retryStrategy: (times) => {
-    const delay = Math.min(times, 50 * 2000);
+    const delay = Math.min(times * 50, 2000);
     return delay;
   },
   reconnectOnError: (err) => {
