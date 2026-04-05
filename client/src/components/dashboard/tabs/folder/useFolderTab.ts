@@ -9,10 +9,18 @@ const useFolderTab = (userId: string) => {
     hasNextPage: hasNextFolderPage,
     isFetchingNextPage: isFetchingNextFolderPage,
     isLoading: foldersLoading,
+    isError: foldersError,
+    error: foldersErrorData,
+    refetch: refetchFolders,
   } = useFolderByUserPage(userId);
 
-  const { data: documentsData, isLoading: documentsLoading } =
-    useDocumentByUserPage(userId);
+  const {
+    data: documentsData,
+    isLoading: documentsLoading,
+    isError: documentsError,
+    error: documentsErrorData,
+    refetch: refetchDocuments,
+  } = useDocumentByUserPage(userId);
 
   // Intersection observer for infinite scroll
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -61,6 +69,13 @@ const useFolderTab = (userId: string) => {
   // Helper to get unfiled documents
   const unfiledDocs = allDocuments.filter((d) => !d.folder);
 
+  const refetchFoldersAndDocuments = () => {
+    refetchFolders().then(() => refetchDocuments());
+  };
+
+  const isFolderTabError = foldersError || documentsError;
+  const foldersTabError = foldersErrorData || documentsErrorData;
+
   return {
     // Loading states
     foldersLoading,
@@ -73,6 +88,13 @@ const useFolderTab = (userId: string) => {
     // States
     hasNextFolderPage,
     isFetchingNextFolderPage,
+
+    // Errors
+    isFolderTabError,
+    foldersTabError,
+
+    // Refetch
+    refetchFoldersAndDocuments,
 
     // Actions
     getDocsForFolder,

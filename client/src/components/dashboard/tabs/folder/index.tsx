@@ -1,16 +1,14 @@
 "use client";
 
-import { NavItem } from "@/components/dashboard/Sidebar";
 import { ThreeDot } from "react-loading-indicators";
-
+import { NavItem } from "@/components/dashboard/Sidebar";
 import NewFolderModal from "@/components/dashboard/modals/folder/NewFolderModal";
 import FolderCard from "@/components/dashboard/cards/FolderCard";
-
 import FolderLoadingSkeletion from "@/components/dashboard/tabs/folder/components/FolderLoadingSkeletion";
 import UnifiedDocumentsCard from "@/components/dashboard/tabs/folder/components/UnifiedDocumentsCard";
 import NoFolderCard from "@/components/dashboard/tabs/folder/components/NoFolderCard";
-
 import useFolderTab from "@/components/dashboard/tabs/folder/useFolderTab";
+import FetchError from "../../FetchError";
 
 interface FolderTabProps {
   userId: string;
@@ -38,6 +36,13 @@ function FolderTab({
     hasNextFolderPage,
     isFetchingNextFolderPage,
 
+    // Errors
+    isFolderTabError,
+    foldersTabError,
+
+    // Refetch
+    refetchFoldersAndDocuments,
+
     // Actions
     getDocsForFolder,
     fetchNextFolderPage,
@@ -51,12 +56,20 @@ function FolderTab({
     setNav("documents");
   };
 
-  // Loading state
   if (foldersLoading || documentsLoading) {
     return <FolderLoadingSkeletion />;
   }
 
-  // Empty state
+  if (isFolderTabError) {
+    return (
+      <FetchError
+        errorTitleMessage="Unable to get folders"
+        refetch={refetchFoldersAndDocuments}
+        error={foldersTabError}
+      />
+    );
+  }
+
   if (allFolders.length === 0 && unfiledDocs.length === 0) {
     return <NoFolderCard userId={userId} onRefresh={onRefresh || (() => {})} />;
   }
