@@ -2,6 +2,7 @@ import LearningSetCard from "./components/LearningSetCard";
 import FetchError from "../../FetchError";
 import LearningSetSkeletion from "./components/LearningSetSkeleton";
 import PageControls from "./components/PageControls";
+import LearningSetEmpty from "./components/LearningSetEmpty";
 import useStudyTab from "./useStudyTab";
 
 interface StudyTabProps {
@@ -35,6 +36,10 @@ function StudyTab({ userId }: StudyTabProps) {
         error={learningSetsError}
       />
     );
+  }
+
+  if (allLearningSets.length === 0) {
+    return <LearningSetEmpty />;
   }
 
   return (
