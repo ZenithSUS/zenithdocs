@@ -4,15 +4,16 @@ import { QueryClient, useMutation } from "@tanstack/react-query";
 import { updateUserScoreCache } from "./user-score.cache";
 import { updateUserScore } from "./user-score.api";
 import userScoreKeys from "./user-score.keys";
+import { UpdateVariables } from "./useUserScore";
 
 export const useUserScoreUpdate = (
   queryClient: QueryClient,
   userId: string,
   learningSetId: string,
 ) =>
-  useMutation<UserScore, AxiosError, Partial<UserScoreInput>>({
+  useMutation<UserScore, AxiosError, UpdateVariables>({
     mutationKey: userScoreKeys.update(),
-    mutationFn: (data) => updateUserScore(userId, data),
+    mutationFn: ({ id, data }) => updateUserScore(id, data),
     onSuccess: (updatedUserScore) => {
       updateUserScoreCache(
         queryClient,

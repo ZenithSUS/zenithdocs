@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { LearningItem } from "@/types/learning-set";
 import { CheckCircle2, XCircle } from "lucide-react";
+import { HandleSetPointsProps } from "@/app/dashboard/study/[id]/components/StudyDocument";
 
 interface MCQCardProps {
   learningItem: LearningItem;
   isStudying?: boolean;
-  setPoints?: (points: number) => void;
+  setPoints?: (answerInfo: HandleSetPointsProps) => void;
 }
 
 function MCQCard({
@@ -21,7 +22,12 @@ function MCQCard({
     const isCorrect = value === learningItem.answer;
 
     if (isStudying && setPoints) {
-      setPoints(isCorrect ? 1 : 0);
+      setPoints({
+        points: isCorrect ? 1 : 0,
+        itemId: learningItem._id,
+        correct: isCorrect,
+        answeredAt: new Date(),
+      });
     }
 
     setSelected(value);

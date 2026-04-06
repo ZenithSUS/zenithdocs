@@ -3,11 +3,12 @@ import FlashCard from "@/components/dashboard/cards/learning-sets/FlashCard";
 import IdentificationCard from "@/components/dashboard/cards/learning-sets/IdentificationCard";
 import MCQCard from "@/components/dashboard/cards/learning-sets/MCQCard";
 import TFCard from "@/components/dashboard/cards/learning-sets/TFCard";
+import { HandleSetPointsProps } from "@/app/dashboard/study/[id]/components/StudyDocument";
 
 interface GeneratedLearningCardProps {
   learningItem: LearningItem;
   isStudying?: boolean;
-  setPoints?: (points: number) => void;
+  setPoints?: (answerInfo: HandleSetPointsProps) => void;
 }
 
 function GeneratedLearningCard({

@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { LearningItem } from "@/types/learning-set";
 import { CheckCircle2, XCircle } from "lucide-react";
+import { HandleSetPointsProps } from "@/app/dashboard/study/[id]/components/StudyDocument";
 
 interface TFCardProps {
   learningItem: LearningItem;
   isStudying?: boolean;
-  setPoints?: (points: number) => void;
+  setPoints?: (answerInfo: HandleSetPointsProps) => void;
 }
 
 function TFCard({ learningItem, isStudying = false, setPoints }: TFCardProps) {
@@ -17,7 +18,12 @@ function TFCard({ learningItem, isStudying = false, setPoints }: TFCardProps) {
 
   const handleSelect = (value: string) => {
     if (setPoints && isStudying) {
-      setPoints(isCorrect ? 1 : 0);
+      setPoints({
+        points: isCorrect ? 1 : 0,
+        itemId: learningItem._id,
+        correct: value.toLowerCase() === learningItem.answer.toLowerCase(),
+        answeredAt: new Date(),
+      });
     }
     setSelected(value);
   };

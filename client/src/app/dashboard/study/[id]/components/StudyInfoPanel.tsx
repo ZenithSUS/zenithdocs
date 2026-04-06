@@ -1,4 +1,5 @@
 import { LearningSet } from "@/types/learning-set";
+import { UserScore } from "@/types/user-score";
 import {
   BadgeQuestionMark,
   BookOpenCheck,
@@ -9,6 +10,7 @@ import {
 import { JSX } from "react";
 
 interface StudyInfoPanelProps {
+  userScore?: UserScore;
   learningSet: LearningSet | null | undefined;
   totalItems: number;
   setIsStudying: React.Dispatch<React.SetStateAction<boolean>>;
@@ -84,6 +86,7 @@ function StudyInfoPanel({
   learningSet,
   totalItems,
   setIsStudying,
+  userScore,
 }: StudyInfoPanelProps) {
   if (!learningSet) return null;
 
@@ -93,6 +96,13 @@ function StudyInfoPanel({
     "en-US",
     { year: "numeric", month: "long", day: "numeric" },
   );
+
+  const correctCount = userScore?.correct ?? 0;
+  const incorrectCount = userScore ? userScore?.total - correctCount : 0;
+
+  const scorePercentage = userScore
+    ? Math.round((userScore.score / userScore.total) * 100)
+    : 0;
 
   const breakdownItems = (["mcq", "tf", "identification", "flashcard"] as const)
     .map((itemType, i) => ({
@@ -114,7 +124,7 @@ function StudyInfoPanel({
   return (
     <div className="flex flex-col pb-4 px-4">
       {/* ── MASTHEAD ─────────────────────────────────── */}
-      <div className="border-b border-border pb-5 mb-5">
+      <div className="border-b border-primary pb-5 mb-5">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <p className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted mb-2">
@@ -150,23 +160,48 @@ function StudyInfoPanel({
         {[
           { label: "Total Items", value: totalItems },
           { label: "Format", value: TYPE_LABELS[type] ?? type },
-          { label: "Created", value: createdAt, full: true },
+          { label: "Created", value: createdAt, full: false },
         ].map(({ label, value, full }) => (
           <div
             key={label}
-            className={`flex flex-col gap-0.5 border-l-2 border-accent/40 pl-3 ${full ? "col-span-2" : ""}`}
+            className={`flex flex-col gap-0.5 border-l-2 border-primary pl-3 ${full ? "col-span-2" : ""}`}
           >
-            <dt className="text-[10px] uppercase tracking-[0.18em] font-semibold text-muted">
+            <dt className="text-[10px] uppercase tracking-[0.18em] font-semibold">
               {label}
             </dt>
             <dd className="text-sm font-bold text-text">{value}</dd>
           </div>
         ))}
+        {/* User Score */}
+        <div className="flex flex-col gap-0.5 border-l-2 border-primary pl-3">
+          <dt className="text-[10px] uppercase tracking-[0.18em] font-semibold">
+            Your Score
+          </dt>
+          {userScore ? (
+            <dd className="text-sm font-bold text-text">{scorePercentage}%</dd>
+          ) : (
+            <dd className="text-sm font-bold text-text">Not started</dd>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-2 border-l border-primary pl-3">
+          <dt className="text-[10px] uppercase tracking-[0.18em] font-semibold">
+            Correct Answers
+          </dt>
+          <dd className="text-sm font-bold text-text">{correctCount}</dd>
+        </div>
+
+        <div className="flex flex-col gap-2 border-l border-primary pl-3">
+          <dt className="text-[10px] uppercase tracking-[0.18em] font-semibold">
+            Incorrect Answers
+          </dt>
+          <dd className="text-sm font-bold text-text">{incorrectCount}</dd>
+        </div>
       </dl>
 
       {/* ── BREAKDOWN ────────────────────────────────── */}
       {breakdownItems.length > 0 && (
-        <div className="border-t border-border pt-5">
+        <div className="border-t border-primary pt-5">
           <p className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted mb-4">
             Item Breakdown
           </p>
@@ -204,7 +239,7 @@ function StudyInfoPanel({
       )}
 
       {/* ── ACTIONS ────────────────────────────────  */}
-      <div className="mt-6 pt-4 border-t border-border flex items-center gap-2">
+      <div className="mt-6 pt-4 border-t border-primary flex items-center gap-2">
         <button
           className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-primary border-none text-background rounded-sm cursor-pointer text-[12px] font-bold tracking-widest font-sans transition-all duration-200 hover:bg-[#e0b530] uppercase"
           onClick={() => setIsStudying(true)}
@@ -215,7 +250,7 @@ function StudyInfoPanel({
       </div>
 
       {/* ── FOOTER RULE ──────────────────────────────── */}
-      <div className="mt-6 pt-4 border-t border-border flex items-center gap-2">
+      <div className="mt-6 pt-4 border-t border-primary flex items-center gap-2">
         <div className="h-px flex-1 bg-border" />
         <span className="text-[9px] tracking-[0.25em] uppercase text-muted/50 font-semibold">
           End of Info

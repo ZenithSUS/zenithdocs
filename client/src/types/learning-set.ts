@@ -1,4 +1,5 @@
 export interface LearningItem {
+  _id: string;
   type: "mcq" | "tf" | "identification" | "flashcard";
   question?: string;
   choices?: string[];

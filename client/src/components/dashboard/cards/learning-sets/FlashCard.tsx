@@ -1,11 +1,12 @@
 import { memo, useRef, useState } from "react";
 import { LearningItem } from "@/types/learning-set";
 import { Check, X } from "lucide-react";
+import { HandleSetPointsProps } from "@/app/dashboard/study/[id]/components/StudyDocument";
 
 interface FlashCardProps {
   learningItem: LearningItem;
   isStudying?: boolean;
-  setPoints?: (points: number) => void;
+  setPoints?: (answerInfo: HandleSetPointsProps) => void;
 }
 
 function FlashCard({
@@ -28,7 +29,12 @@ function FlashCard({
 
     if (setPoints && isStudying) {
       setAnswered(result);
-      setPoints(points);
+      setPoints({
+        points,
+        itemId: learningItem._id,
+        correct: result === "correct",
+        answeredAt: new Date(),
+      });
     }
   };
 

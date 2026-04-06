@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { LearningItem } from "@/types/learning-set";
 import { CheckCircle2, XCircle } from "lucide-react";
+import { HandleSetPointsProps } from "@/app/dashboard/study/[id]/components/StudyDocument";
 
 interface IdentificationCardProps {
   learningItem: LearningItem;
   isStudying?: boolean;
-  setPoints?: (points: number) => void;
+  setPoints?: (answerInfo: HandleSetPointsProps) => void;
 }
 
 function IdentificationCard({
@@ -23,7 +24,12 @@ function IdentificationCard({
     if (!input.trim()) return;
 
     if (setPoints && isStudying) {
-      setPoints(isCorrect ? 1 : 0);
+      setPoints({
+        points: isCorrect ? 1 : 0,
+        itemId: learningItem._id,
+        correct: isCorrect,
+        answeredAt: new Date(),
+      });
     }
 
     setSubmitted(true);

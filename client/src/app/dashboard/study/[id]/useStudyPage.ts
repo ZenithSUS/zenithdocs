@@ -6,6 +6,7 @@ import { useLearningSetById } from "@/features/learning-sets/useLearningSetById"
 import useRetryStore from "@/store/useRetryStore";
 import { useParams } from "next/navigation";
 import { useUserScoreByUserAndLearningSet } from "@/features/user-score/useUserScoreByUserAndLearningSet";
+import useUserScore from "@/features/user-score/useUserScore";
 
 const useStudyPage = () => {
   const params = useParams();
@@ -40,6 +41,12 @@ const useStudyPage = () => {
     isError: isErrorUserScore,
     refetch: refetchUserScore,
   } = useUserScoreByUserAndLearningSet(me?._id ?? "", learningSetId);
+
+  const {
+    createUserScoreMutation,
+    deleteUserScoreMutation,
+    updateUserScoreMutation,
+  } = useUserScore(me?._id ?? "", learningSetId);
 
   const retryUser = () => {
     increment("learning-set-page");
@@ -92,6 +99,11 @@ const useStudyPage = () => {
     isLoadingUserScore,
     isErrorUserScore,
     errorUserScore,
+
+    // Mutations
+    createUserScoreMutation,
+    updateUserScoreMutation,
+    deleteUserScoreMutation,
 
     // UI
     isStudying,

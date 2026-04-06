@@ -1,66 +1,78 @@
 import GeneratedLearningCard from "@/components/dashboard/cards/learning-sets/GeneratedLearningCard";
+import { AxiosError } from "@/types/api";
 import { LearningItem } from "@/types/learning-set";
+import { UserScore, UserScoreInput } from "@/types/user-score";
+import { UseMutationResult } from "@tanstack/react-query";
 import { ArrowLeft, RotateCcw } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
 import { ThreeDot } from "react-loading-indicators";
+import useStudyDocumentScreen from "../hooks/useStudyDocumentScreen";
+import { UpdateVariables } from "@/features/user-score/useUserScore";
 
 interface StudyDocumentProps {
+  userId: string;
+  learningSetId: string;
+  userScoreId: string;
   learningType: "quiz" | "reviewer" | "flashcard" | "Unknown";
   learningItems: LearningItem[];
   isStudying: boolean;
   setIsStudying: React.Dispatch<React.SetStateAction<boolean>>;
+  currentUserScore: number;
+  createUserScoreMutation: UseMutationResult<
+    UserScore,
+    AxiosError,
+    UserScoreInput,
+    unknown
+  >;
+  updateUserScoreMutation: UseMutationResult<
+    UserScore,
+    AxiosError,
+    UpdateVariables,
+    unknown
+  >;
+}
+
+export interface HandleSetPointsProps {
+  points: number;
+  itemId: string;
+  answeredAt: Date;
+  correct: boolean;
 }
 
 function StudyDocument({
+  userId,
+  learningSetId,
+  userScoreId,
   learningType,
   learningItems,
   isStudying,
   setIsStudying,
+  currentUserScore,
+  createUserScoreMutation,
+  updateUserScoreMutation,
 }: StudyDocumentProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [points, setPoints] = useState(0);
-  const [items, setItems] = useState<LearningItem[]>([]);
-  const [finished, setFinished] = useState(false);
-  const [showNext, setShowNext] = useState(false);
-  const hasAnswered = useRef(false);
+  const {
+    // States
+    total,
+    percentage,
+    points,
+    items,
+    finished,
+    currentIndex,
+    showNext,
 
-  useEffect(() => {
-    const shuffled = [...learningItems].sort(() => Math.random() - 0.5);
-    setItems(shuffled);
-    setCurrentIndex(0);
-    setPoints(0);
-    setFinished(false);
-    setShowNext(false);
-    hasAnswered.current = false;
-  }, [learningItems]);
-
-  const handleSetPoints = (pts: number) => {
-    if (hasAnswered.current) return;
-    hasAnswered.current = true;
-    setPoints((prev) => prev + pts);
-    setShowNext(true);
-  };
-
-  const handleNext = () => {
-    const next = currentIndex + 1;
-    if (next >= items.length) {
-      setFinished(true);
-      return;
-    }
-    setCurrentIndex(next);
-    setShowNext(false);
-    hasAnswered.current = false;
-  };
-
-  const handleRestart = () => {
-    const shuffled = [...learningItems].sort(() => Math.random() - 0.5);
-    setItems(shuffled);
-    setCurrentIndex(0);
-    setPoints(0);
-    setFinished(false);
-    setShowNext(false);
-    hasAnswered.current = false;
-  };
+    // Handlers
+    handleSetPoints,
+    handleNext,
+    handleRestart,
+  } = useStudyDocumentScreen({
+    userId,
+    learningSetId,
+    userScoreId,
+    learningItems,
+    currentUserScore,
+    createUserScoreMutation,
+    updateUserScoreMutation,
+  });
 
   if (items.length === 0)
     return (
@@ -73,9 +85,6 @@ function StudyDocument({
         </div>
       </div>
     );
-
-  const total = items.length;
-  const percentage = Math.round((points / total) * 100);
 
   if (finished) {
     return (

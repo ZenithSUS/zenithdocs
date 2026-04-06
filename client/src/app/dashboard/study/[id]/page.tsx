@@ -28,6 +28,17 @@ function StudyPage() {
     isErrorLearningSet,
     errorLearningSet,
 
+    // Score
+    userScore,
+    isLoadingUserScore,
+    isErrorUserScore,
+    errorUserScore,
+
+    // Mutations
+    createUserScoreMutation,
+    updateUserScoreMutation,
+    deleteUserScoreMutation,
+
     // UI
     isStudying,
     setIsStudying,
@@ -35,7 +46,8 @@ function StudyPage() {
     setChatBotOpen,
   } = useStudy();
 
-  if (isLoadingMe || isLoadingLearningSet) return <LoadingScreen />;
+  if (isLoadingMe || isLoadingLearningSet || isLoadingUserScore)
+    return <LoadingScreen />;
 
   if (isErrorMe) {
     return (
@@ -55,6 +67,17 @@ function StudyPage() {
         onRetry={retryLearningSet}
         retries={pageRetry}
         messageErrorTitle="Learning Set Error"
+      />
+    );
+  }
+
+  if (isErrorUserScore) {
+    return (
+      <ErrorScreen
+        error={errorUserScore}
+        onRetry={retryUser}
+        retries={pageRetry}
+        messageErrorTitle="User Score Error"
       />
     );
   }
@@ -80,6 +103,7 @@ function StudyPage() {
               learningSet={learningSet}
               totalItems={learningSet?.items?.length ?? 0}
               setIsStudying={setIsStudying}
+              userScore={userScore}
             />
 
             <StudyItems learningItems={learningSet?.items ?? []} />
@@ -87,10 +111,16 @@ function StudyPage() {
         ) : (
           <div className="p-2">
             <StudyDocument
+              userId={me?._id ?? ""}
+              learningSetId={learningSet?._id ?? ""}
+              userScoreId={userScore?._id ?? ""}
               learningType={learningSet?.type ?? "Unknown"}
               learningItems={learningSet?.items ?? []}
               isStudying={isStudying}
               setIsStudying={setIsStudying}
+              createUserScoreMutation={createUserScoreMutation}
+              updateUserScoreMutation={updateUserScoreMutation}
+              currentUserScore={userScore?.score ?? 0}
             />
           </div>
         )}
