@@ -512,7 +512,7 @@ function ShareDocumentModal({
             <Button
               type="submit"
               disabled={isPending}
-              className="font-sans text-[12px]"
+              className="font-sans text-[12px] text-black"
             >
               {isPending ? "Sharing…" : "Share document"}
             </Button>

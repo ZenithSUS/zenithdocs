@@ -42,11 +42,10 @@ const useStudyPage = () => {
     refetch: refetchUserScore,
   } = useUserScoreByUserAndLearningSet(me?._id ?? "", learningSetId);
 
-  const {
-    createUserScoreMutation,
-    deleteUserScoreMutation,
-    updateUserScoreMutation,
-  } = useUserScore(me?._id ?? "", learningSetId);
+  const { createUserScoreMutation, updateUserScoreMutation } = useUserScore(
+    me?._id ?? "",
+    learningSetId,
+  );
 
   const retryUser = () => {
     increment("learning-set-page");
@@ -103,7 +102,6 @@ const useStudyPage = () => {
     // Mutations
     createUserScoreMutation,
     updateUserScoreMutation,
-    deleteUserScoreMutation,
 
     // UI
     isStudying,

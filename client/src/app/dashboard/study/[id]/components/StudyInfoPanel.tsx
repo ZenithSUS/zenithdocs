@@ -1,3 +1,5 @@
+import DeleteUserScoreModal from "@/components/dashboard/modals/study/DeleteUserScoreModal";
+import { Button } from "@/components/ui/button";
 import { LearningSet } from "@/types/learning-set";
 import { UserScore } from "@/types/user-score";
 import {
@@ -10,6 +12,7 @@ import {
 import { JSX } from "react";
 
 interface StudyInfoPanelProps {
+  userId: string;
   userScore?: UserScore;
   learningSet: LearningSet | null | undefined;
   totalItems: number;
@@ -83,6 +86,7 @@ function ArcRing({ percent, color }: { percent: number; color: string }) {
 const ARC_COLORS = ["var(--color-accent)", "#60a5fa", "#a78bfa", "#34d399"];
 
 function StudyInfoPanel({
+  userId,
   learningSet,
   totalItems,
   setIsStudying,
@@ -184,14 +188,14 @@ function StudyInfoPanel({
           )}
         </div>
 
-        <div className="flex flex-col gap-2 border-l border-primary pl-3">
+        <div className="flex flex-col gap-2 border-l-2 border-primary pl-3">
           <dt className="text-[10px] uppercase tracking-[0.18em] font-semibold">
             Correct Answers
           </dt>
           <dd className="text-sm font-bold text-text">{correctCount}</dd>
         </div>
 
-        <div className="flex flex-col gap-2 border-l border-primary pl-3">
+        <div className="flex flex-col gap-2 border-l-2 border-primary pl-3">
           <dt className="text-[10px] uppercase tracking-[0.18em] font-semibold">
             Incorrect Answers
           </dt>
@@ -239,14 +243,24 @@ function StudyInfoPanel({
       )}
 
       {/* ── ACTIONS ────────────────────────────────  */}
-      <div className="mt-6 pt-4 border-t border-primary flex items-center gap-2">
-        <button
-          className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-primary border-none text-background rounded-sm cursor-pointer text-[12px] font-bold tracking-widest font-sans transition-all duration-200 hover:bg-[#e0b530] uppercase"
+      <div className="mt-6 pt-4 border-t border-primary flex gap-2">
+        <Button
+          className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-primary border-none text-black rounded-sm cursor-pointer text-xs font-bold tracking-widest font-sans transition-all duration-200 hover:text-white hover:bg-primary/80 uppercase"
           onClick={() => setIsStudying(true)}
         >
           <Brain />
           Start Learning
-        </button>
+        </Button>
+
+        {/* Delete User Score if it exists */}
+        {userScore && (
+          <DeleteUserScoreModal
+            id={userScore._id}
+            userId={userId}
+            learningSetId={learningSet._id}
+            title={learningSet.title}
+          />
+        )}
       </div>
 
       {/* ── FOOTER RULE ──────────────────────────────── */}

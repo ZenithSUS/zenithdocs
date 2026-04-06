@@ -128,7 +128,7 @@ const MoveToFolderModal = ({
           </DialogClose>
           <Button
             onClick={handleMove}
-            className="flex-1 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 font-sans tracking-wider font-bold bg-primary text-background hover:bg-[#e0b530]"
+            className="flex-1 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 font-sans tracking-wider font-bold bg-primary text-background text-black"
             disabled={isPending || selectedFolder === currentFolderId}
           >
             {isPending ? "Moving..." : "Move"}

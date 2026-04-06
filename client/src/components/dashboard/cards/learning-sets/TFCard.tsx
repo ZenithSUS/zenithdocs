@@ -19,7 +19,8 @@ function TFCard({ learningItem, isStudying = false, setPoints }: TFCardProps) {
   const handleSelect = (value: string) => {
     if (setPoints && isStudying) {
       setPoints({
-        points: isCorrect ? 1 : 0,
+        points:
+          value.toLowerCase() === learningItem.answer.toLowerCase() ? 1 : 0,
         itemId: learningItem._id,
         correct: value.toLowerCase() === learningItem.answer.toLowerCase(),
         answeredAt: new Date(),

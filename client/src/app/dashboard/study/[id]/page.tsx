@@ -37,7 +37,6 @@ function StudyPage() {
     // Mutations
     createUserScoreMutation,
     updateUserScoreMutation,
-    deleteUserScoreMutation,
 
     // UI
     isStudying,
@@ -100,6 +99,7 @@ function StudyPage() {
         {!isStudying ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
             <StudyInfoPanel
+              userId={me?._id ?? ""}
               learningSet={learningSet}
               totalItems={learningSet?.items?.length ?? 0}
               setIsStudying={setIsStudying}

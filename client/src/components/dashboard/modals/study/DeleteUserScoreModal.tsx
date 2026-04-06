@@ -1,5 +1,3 @@
-"use client";
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,60 +9,59 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { dashboardKeys } from "@/features/dashboard/dashboard.keys";
-import useSummary from "@/features/summary/useSummary";
+import { Button } from "@/components/ui/button";
+import useUserScore from "@/features/user-score/useUserScore";
 import { handleApiError } from "@/helpers/api-error";
 import { AxiosError } from "@/types/api";
-import { useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
 import { useCallback } from "react";
 import { toast } from "sonner";
 
-interface DeleteSummaryModalProps {
+interface DeleteUserScoreModalProps {
+  id: string;
   userId: string;
-  summaryId: string;
-  documentId: string;
+  learningSetId: string;
+  title: string | undefined;
 }
 
-function DeleteSummaryModal({
+function DeleteUserScoreModal({
+  id,
   userId,
-  summaryId,
-  documentId,
-}: DeleteSummaryModalProps) {
-  const queryClient = useQueryClient();
-  const { deleteSummaryMutation } = useSummary(userId, documentId);
-  const { mutateAsync: deleteSummary } = deleteSummaryMutation;
+  learningSetId,
+  title,
+}: DeleteUserScoreModalProps) {
+  const { deleteUserScoreMutation } = useUserScore(userId, learningSetId);
 
   const handleDelete = useCallback(async () => {
     try {
-      await deleteSummary(summaryId);
-      await queryClient.refetchQueries({
-        queryKey: dashboardKeys.overview(),
-      });
-      toast.success("Summary deleted successfully!");
+      await deleteUserScoreMutation.mutateAsync(id);
+      toast.success("User score reset successfully!");
     } catch (error) {
       const err = error as AxiosError;
-      handleApiError(err, "Error deleting summary");
+      handleApiError(err, "Error deleting user score");
     }
-  }, [deleteSummary, summaryId]);
+  }, [deleteUserScoreMutation, id]);
 
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Trash2 size={20} className="text-red-600 cursor-pointer" />
+        <Button className="flex items-center gap-2 py-2.5 rounded-sm cursor-pointer tracking-widest font-semibold hover:text-black bg-red-500 hover:bg-red-500/90 text-xs font-sans transition-all duration-200 uppercase">
+          <Trash2 size={20} />
+          Reset Score
+        </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete your
-            summary.
+            This action cannot be undone. This will reset the user score of{" "}
+            {title ?? "this learning set"}.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction onClick={handleDelete} className="text-black">
-            Delete
+            Reset Score
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -72,4 +69,4 @@ function DeleteSummaryModal({
   );
 }
 
-export default DeleteSummaryModal;
+export default DeleteUserScoreModal;

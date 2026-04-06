@@ -67,7 +67,7 @@ function DeleteSharedModal({
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction
-            className="flex-1 cursor-pointer font-sans tracking-wider font-bold bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+            className="flex-1 cursor-pointer font-sans tracking-wider font-bold text-black disabled:opacity-50"
             onClick={handleDeleteSharedDocument}
             disabled={isDeleting}
           >

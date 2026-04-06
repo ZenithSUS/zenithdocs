@@ -128,9 +128,9 @@ function RenameLearningSetModal({
             <Button
               type="submit"
               disabled={isUpdating}
-              className="cursor-pointer"
+              className="cursor-pointer text-black"
             >
-              {isUpdating ? "Updating..." : "Update"}
+              {isUpdating ? "Renaming..." : "Rename"}
             </Button>
           </DialogFooter>
         </form>

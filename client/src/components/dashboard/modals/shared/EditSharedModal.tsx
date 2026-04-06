@@ -544,7 +544,7 @@ function EditShareDocumentModal({
             <Button
               type="submit"
               disabled={isPending}
-              className="font-sans text-[12px]"
+              className="font-sans text-black text-[12px]"
             >
               {isPending ? "Editing..." : "Edit shared document"}
             </Button>

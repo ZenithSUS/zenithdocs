@@ -26,7 +26,7 @@ export const updateUserScoreCache = (
 
 export const removeUserScoreCache = (
   queryClient: QueryClient,
-  queryKey: readonly unknown[],
+  ...queryKeys: readonly (readonly unknown[])[]
 ) => {
-  queryClient.removeQueries({ queryKey });
+  queryKeys.forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
 };

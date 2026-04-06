@@ -102,7 +102,7 @@ function RenameFolderModal({
               <Button
                 type="submit"
                 disabled={formState.isSubmitting}
-                className="flex-1 sm:flex-none"
+                className="flex-1 sm:flex-none text-black"
               >
                 {formState.isSubmitting ? "Renaming..." : "Rename"}
               </Button>

@@ -80,7 +80,11 @@ function DeleteLearningSetModal({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-          <AlertDialogAction disabled={isDeleting} onClick={handleDelete}>
+          <AlertDialogAction
+            disabled={isDeleting}
+            onClick={handleDelete}
+            className="text-black"
+          >
             {isDeleting ? "Deleting..." : "Delete"}
           </AlertDialogAction>
         </AlertDialogFooter>

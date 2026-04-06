@@ -114,7 +114,7 @@ const NewFolderModal = ({
               className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 text-black sm:flex-none flex-1"
               disabled={isPending}
             >
-              Create
+              {isPending ? "Creating..." : "Create"}
             </Button>
             <DialogClose asChild>
               <Button

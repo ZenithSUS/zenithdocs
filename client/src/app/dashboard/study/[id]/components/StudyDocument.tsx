@@ -175,8 +175,11 @@ function StudyDocument({
       />
 
       {showNext && (
-        <button className="btn btn-primary w-full" onClick={handleNext}>
-          {currentIndex + 1 >= total ? "See Results" : "Next →"}
+        <button
+          className="bg-primary w-full font-bold uppercase p-2 rounded-md text-black cursor-pointer hover:text-white hover:bg-primary/80 transition-colors duration-200"
+          onClick={handleNext}
+        >
+          {currentIndex + 1 >= total ? "See Results" : "Next Question"}
         </button>
       )}
     </div>

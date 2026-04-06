@@ -79,7 +79,7 @@ const DeleteDocumentModal = ({
           </DialogClose>
           <Button
             onClick={handleDelete}
-            className="flex-1 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 font-sans tracking-wider font-bold bg-red-500 hover:bg-red-600"
+            className="flex-1 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 font-sans tracking-wider font-bold text-black"
             disabled={isPending}
           >
             {isPending ? "Deleting..." : "Delete"}
