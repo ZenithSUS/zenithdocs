@@ -9,14 +9,22 @@ import { Router } from "express";
 import protect from "../middlewares/protect.middleware.js";
 import authorizeSelfOrAdmin from "../middlewares/authorize-self-or-admin.middleware.js";
 import limiter from "../middlewares/limiter.middleware.js";
+import validateDocument from "../middlewares/validate-document.js";
 
 const router = Router();
 
-router.post("/", protect, limiter("createChat"), chatController);
+router.post(
+  "/",
+  protect,
+  validateDocument,
+  limiter("createChat"),
+  chatController,
+);
 router.post("/public", limiter("createPublicChat"), chatPublicController);
 router.post(
   "/document/:id/init",
   protect,
+  validateDocument,
   limiter("initChatForDocument"),
   initChatForDocumentController,
 );

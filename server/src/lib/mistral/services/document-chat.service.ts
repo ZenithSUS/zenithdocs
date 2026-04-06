@@ -6,7 +6,6 @@ import {
   getChatByDocument,
   updateChatSummary,
 } from "../../../repositories/chat.repository.js";
-import AppError from "../../../utils/app-error.js";
 import {
   createMessage,
   getRecentMessagesByChatId,
@@ -18,7 +17,6 @@ import redis from "../../../config/redis.js";
 import queryEmbedding from "../utils/query-embedding.js";
 import { streamDocumentChatSchema } from "../../../schemas/chat.schema.js";
 import { userTokenSchema } from "../../../utils/zod.utils.js";
-import { getDocumentById } from "../../../repositories/document.repository.js";
 
 interface StreamChatPayload {
   question: string;
@@ -39,16 +37,6 @@ export const streamDocumentChatWithContextService = async ({
 }: StreamChatPayload) => {
   const validated = streamDocumentChatSchema.parse({ question, documentId });
   const authUser = userTokenSchema.parse({ userId, role });
-
-  const document = await getDocumentById(validated.documentId);
-
-  if (!document) {
-    throw new AppError("Document not found", 404);
-  }
-
-  if (document.status !== "completed") {
-    throw new AppError("Document processing is not completed", 400);
-  }
 
   let chat = await getChatByDocument(validated.documentId, authUser.userId);
 

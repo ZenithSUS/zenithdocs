@@ -52,6 +52,14 @@ export const getDocumentShareByToken = async (token: string) => {
     .lean();
 };
 
+/**
+ * Gets a document share by its associated document ID
+ *
+ * @param {string} documentId - Document ID
+ *
+ * @returns {Promise<DocumentShare | null>} Document share if found, null otherwise
+ * @throws {AppError} If the document share is not found
+ */
 export const getDocumentShareByDocumentId = async (documentId: string) => {
   return await DocumentShare.findOne({ documentId });
 };
