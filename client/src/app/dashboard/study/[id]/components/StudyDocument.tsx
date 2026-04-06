@@ -59,6 +59,7 @@ function StudyDocument({
     finished,
     currentIndex,
     showNext,
+    restartCount,
 
     // Handlers
     handleSetPoints,
@@ -168,7 +169,7 @@ function StudyDocument({
       </div>
 
       <GeneratedLearningCard
-        key={currentIndex}
+        key={`learning-item-${currentIndex}-${restartCount}`}
         learningItem={items[currentIndex]}
         isStudying={isStudying}
         setPoints={handleSetPoints}

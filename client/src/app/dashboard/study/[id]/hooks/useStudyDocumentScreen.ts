@@ -42,7 +42,30 @@ const useStudyDocumentScreen = ({
   const [finished, setFinished] = useState(false);
   const [showNext, setShowNext] = useState(false);
   const [history, setHistory] = useState<UserScore["history"]>([]);
+  const [restartCount, setRestartCount] = useState(0);
+
   const hasAnswered = useRef(false);
+  const hasRecorded = useRef(false);
+
+  const pointsRef = useRef(points);
+  const historyRef = useRef(history);
+  const itemsLengthRef = useRef(items.length);
+  const currentUserScoreRef = useRef(currentUserScore);
+  const userScoreIdRef = useRef(userScoreId);
+  const userIdRef = useRef(userId);
+  const learningSetIdRef = useRef(learningSetId);
+  const createMutationRef = useRef(createUserScoreMutation);
+  const updateMutationRef = useRef(updateUserScoreMutation);
+
+  pointsRef.current = points;
+  historyRef.current = history;
+  itemsLengthRef.current = items.length;
+  currentUserScoreRef.current = currentUserScore;
+  userScoreIdRef.current = userScoreId;
+  userIdRef.current = userId;
+  learningSetIdRef.current = learningSetId;
+  createMutationRef.current = createUserScoreMutation;
+  updateMutationRef.current = updateUserScoreMutation;
 
   const total = items.length;
   const percentage = Math.round((points / total) * 100);
@@ -57,51 +80,54 @@ const useStudyDocumentScreen = ({
     hasAnswered.current = false;
   }, [learningItems]);
 
-  useEffect(() => {
-    if (finished) {
-      handleRecordUserScore();
-    }
-  }, [finished]);
-
   const handleRecordUserScore = useCallback(async () => {
-    if (createUserScoreMutation.isPending || updateUserScoreMutation.isPending)
+    if (hasRecorded.current) return;
+    if (
+      createMutationRef.current.isPending ||
+      updateMutationRef.current.isPending
+    )
       return;
+
+    hasRecorded.current = true;
+
     try {
-      if (currentUserScore && userScoreId) {
+      const latestPoints = pointsRef.current;
+
+      if (currentUserScoreRef.current && userScoreIdRef.current) {
         const data: Partial<UserScoreInput> = {
-          userId: userId,
-          learningSetId: learningSetId,
-          history: history,
-          score: points,
-          total: items.length,
-          correct: points,
+          userId: userIdRef.current,
+          learningSetId: learningSetIdRef.current,
+          history: historyRef.current,
+          score: latestPoints,
+          total: itemsLengthRef.current,
+          correct: latestPoints,
         };
-        await updateUserScoreMutation.mutateAsync({ id: userScoreId, data });
+        await updateMutationRef.current.mutateAsync({
+          id: userScoreIdRef.current,
+          data,
+        });
       } else {
         const data: UserScoreInput = {
-          userId: userId,
-          learningSetId: learningSetId,
-          history: history,
-          score: points,
-          total: items.length,
-          correct: points,
+          userId: userIdRef.current,
+          learningSetId: learningSetIdRef.current,
+          history: historyRef.current,
+          score: latestPoints,
+          total: itemsLengthRef.current,
+          correct: latestPoints,
         };
-        await createUserScoreMutation.mutateAsync(data);
+        await createMutationRef.current.mutateAsync(data);
       }
     } catch (error) {
       const err = error as AxiosError;
       handleApiError(err, "Error creating user score");
     }
-  }, [
-    points,
-    userId,
-    learningSetId,
-    history,
-    items.length,
-    currentUserScore,
-    createUserScoreMutation,
-    updateUserScoreMutation,
-  ]);
+  }, []);
+
+  useEffect(() => {
+    if (finished) {
+      handleRecordUserScore();
+    }
+  }, [finished, handleRecordUserScore]);
 
   const handleSetPoints = (answerInfo: HandleSetPointsProps) => {
     if (hasAnswered.current) return;
@@ -134,6 +160,8 @@ const useStudyDocumentScreen = ({
     setFinished(false);
     setShowNext(false);
     hasAnswered.current = false;
+    hasRecorded.current = false;
+    setRestartCount((prev) => prev + 1);
   };
 
   return {
@@ -145,6 +173,7 @@ const useStudyDocumentScreen = ({
     finished,
     currentIndex,
     showNext,
+    restartCount,
 
     // Handlers
     handleSetPoints,

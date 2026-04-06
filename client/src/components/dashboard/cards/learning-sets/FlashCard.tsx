@@ -7,18 +7,26 @@ interface FlashCardProps {
   learningItem: LearningItem;
   isStudying?: boolean;
   setPoints?: (answerInfo: HandleSetPointsProps) => void;
+  handleRestart?: () => void;
 }
 
 function FlashCard({
   learningItem,
   isStudying = false,
   setPoints,
+  handleRestart,
 }: FlashCardProps) {
   const answeredRef = useRef(false);
   const [isFlipped, setIsFlipped] = useState(false);
   const [answered, setAnswered] = useState<"correct" | "incorrect" | null>(
     null,
   );
+
+  handleRestart = () => {
+    setAnswered(null);
+    setIsFlipped(false);
+    answeredRef.current = false;
+  };
 
   const front = learningItem.front ?? learningItem.question;
   const back = learningItem.back ?? learningItem.answer;
