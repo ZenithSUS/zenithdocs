@@ -17,6 +17,7 @@ interface GlobalInputAreaProps {
     GlobalMessageFormValues
   >;
   handleKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
+  isDisabled: boolean;
 }
 
 function GlobalInputArea({
@@ -27,6 +28,7 @@ function GlobalInputArea({
   onSubmit,
   handleSubmit,
   handleKeyDown,
+  isDisabled = false,
 }: GlobalInputAreaProps) {
   return (
     <div className="shrink-0 px-3 pb-3 pt-2">
@@ -70,7 +72,7 @@ function GlobalInputArea({
           onKeyDown={handleKeyDown}
           placeholder="Ask about your documents…"
           rows={1}
-          disabled={!!streamingBubble}
+          disabled={!!streamingBubble || isDisabled}
           className="gc-textarea flex-1 resize-none bg-transparent text-[12px] text-white/80
                 placeholder:text-white/20 outline-none leading-relaxed
                 disabled:opacity-40 disabled:cursor-not-allowed"
@@ -83,7 +85,7 @@ function GlobalInputArea({
 
         <button
           onClick={handleSubmit(onSubmit)}
-          disabled={!messageValue?.trim() || !!streamingBubble}
+          disabled={!messageValue?.trim() || !!streamingBubble || isDisabled}
           className="send-btn shrink-0 mb-0.5 w-7 h-7 rounded-lg flex items-center justify-center
                 transition-all duration-150 disabled:opacity-20 active:scale-90"
           style={{

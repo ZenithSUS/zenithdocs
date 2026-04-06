@@ -37,6 +37,7 @@ function GlobalChat({ user, setIsOpen }: GlobalChatProps) {
     hasNextGlobalMessagePage,
     fetchNextGlobalMessagePage,
     confidence,
+    deleteGlobalMessageMutation,
   } = useGlobalChatUI(user?._id ?? "");
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -171,6 +172,7 @@ function GlobalChat({ user, setIsOpen }: GlobalChatProps) {
         onSubmit={onSubmit}
         handleSubmit={handleSubmit}
         handleKeyDown={handleKeyDown}
+        isDisabled={deleteGlobalMessageMutation.isPending}
       />
 
       <style>{`
