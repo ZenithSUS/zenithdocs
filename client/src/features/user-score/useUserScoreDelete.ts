@@ -3,6 +3,7 @@ import { UserScore } from "@/types/user-score";
 import { QueryClient, useMutation } from "@tanstack/react-query";
 import { deleteUserScore } from "./user-score.api";
 import { removeUserScoreCache } from "./user-score.cache";
+import userScoreKeys from "./user-score.keys";
 
 export const useUserScoreDelete = (
   queryClient: QueryClient,

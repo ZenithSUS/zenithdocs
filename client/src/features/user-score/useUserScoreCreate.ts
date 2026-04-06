@@ -3,6 +3,7 @@ import { UserScore, UserScoreInput } from "@/types/user-score";
 import { QueryClient, useMutation } from "@tanstack/react-query";
 import { createUserScore } from "./user-score.api";
 import { addUserScoreCache } from "./user-score.cache";
+import userScoreKeys from "./user-score.keys";
 
 export const useUserScoreCreate = (
   queryClient: QueryClient,

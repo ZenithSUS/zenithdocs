@@ -5,6 +5,7 @@ import { useAuthMe } from "@/features/auth/useAuthMe";
 import { useLearningSetById } from "@/features/learning-sets/useLearningSetById";
 import useRetryStore from "@/store/useRetryStore";
 import { useParams } from "next/navigation";
+import { useUserScoreByUserAndLearningSet } from "@/features/user-score/useUserScoreByUserAndLearningSet";
 
 const useStudyPage = () => {
   const params = useParams();
@@ -32,6 +33,14 @@ const useStudyPage = () => {
     refetch: refetchLearningSet,
   } = useLearningSetById(learningSetId);
 
+  const {
+    data: userScore,
+    isLoading: isLoadingUserScore,
+    error: errorUserScore,
+    isError: isErrorUserScore,
+    refetch: refetchUserScore,
+  } = useUserScoreByUserAndLearningSet(me?._id ?? "", learningSetId);
+
   const retryUser = () => {
     increment("learning-set-page");
     refetchMe().then((result) => {
@@ -50,11 +59,21 @@ const useStudyPage = () => {
     });
   };
 
+  const retryUserScore = () => {
+    increment("learning-set-page");
+    refetchUserScore().then((result) => {
+      if (result.status === "success") {
+        useRetryStore.getState().reset("learning-set-page");
+      }
+    });
+  };
+
   return {
     // Retry Functions
     pageRetry,
     retryUser,
     retryLearningSet,
+    retryUserScore,
 
     // Users
     me,
@@ -67,6 +86,12 @@ const useStudyPage = () => {
     isLoadingLearningSet,
     isErrorLearningSet,
     errorLearningSet,
+
+    // User Scores
+    userScore,
+    isLoadingUserScore,
+    isErrorUserScore,
+    errorUserScore,
 
     // UI
     isStudying,

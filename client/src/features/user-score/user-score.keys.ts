@@ -7,3 +7,5 @@ const userScoreKeys = {
   update: () => [...userScoreKeys.all, "update"] as const,
   delete: () => [...userScoreKeys.all, "delete"] as const,
 };
+
+export default userScoreKeys;
