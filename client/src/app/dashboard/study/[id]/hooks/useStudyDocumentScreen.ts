@@ -78,7 +78,6 @@ const useStudyDocumentScreen = ({
         };
         await updateUserScoreMutation.mutateAsync({ id: userScoreId, data });
       } else {
-        console.log("Creating user score");
         const data: UserScoreInput = {
           userId: userId,
           learningSetId: learningSetId,
