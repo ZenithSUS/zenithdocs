@@ -285,6 +285,14 @@ export const updateDocumentShareService = async (
 
   if (data.type === "private") {
     data.publicPermission = undefined;
+
+    const hasOwner = data.allowedUsers?.some(
+      (user) => user.userId === documentShare.ownerId._id.toString(),
+    );
+
+    if (hasOwner) {
+      throw new AppError("You cannot add yourself as an allowed user", 400);
+    }
   }
 
   const validated = updateDocumentShareSchema.parse({

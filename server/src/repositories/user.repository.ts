@@ -40,22 +40,18 @@ export const getUserById = async (id: string): Promise<IUser | null> => {
  * @returns User if found, null otherwise
  */
 export const getUserByEmail = async (email: string): Promise<IUser | null> => {
-  return await User.findOne({ email: email.toLowerCase() }).lean();
+  return await User.findOne({ email: email }).lean();
 };
 
 /**
- * Search for users by their email address.
- * This function is case-insensitive.
- * It will return up to 5 users that match the search query.
- * The refresh token and password of each user will be excluded from the result.
- * @param {string} searchQuery - The search query to search for users by their email address.
- * @returns {Promise<Array<IUser>>} An array of users that match the search query.
+ * Find a user by their email
+ * @param {string} email - User email
+ * @returns {Promise<IUser | null>} User if found, null otherwise
  */
-export const searchUsersByEmail = async (searchQuery: string) => {
-  return await User.find({ email: { $regex: searchQuery, $options: "i" } })
-    .select("-password")
-    .limit(5)
-    .lean();
+export const matchUserByEmail = async (
+  email: string,
+): Promise<IUser | null> => {
+  return await User.findOne({ email: email }).select("_id email").lean();
 };
 
 /**

@@ -5,7 +5,7 @@ export const userParamsSchema = z.object({
   userId: objectId,
 });
 
-export const getUserByEmailSchema = z.object({
+export const userEmailSchema = z.object({
   email,
 });
 

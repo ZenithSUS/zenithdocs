@@ -4,7 +4,7 @@ import {
   getAllUsers,
   getUserByEmail,
   getUserById,
-  searchUsersByEmail,
+  matchUserByEmail,
   updateUser,
 } from "../repositories/user.repository.js";
 import AppError from "../utils/app-error.js";
@@ -12,7 +12,7 @@ import { hashPassword } from "../utils/bcrypt-password.js";
 import PLAN_LIMITS from "../config/plans.js";
 import { updateUsageMonthByUser } from "../repositories/usage.repository.js";
 import {
-  getUserByEmailSchema,
+  userEmailSchema,
   searchUsersByEmailSchema,
   updateUserSchema,
   userParamsSchema,
@@ -51,9 +51,12 @@ export const getUserByIdService = async (id: string) => {
 
 /**
  * Get all users
+ * @param {string} role - User role
  * @returns Array of users
  */
-export const getAllUsersService = async () => {
+export const getAllUsersService = async (role: "user" | "admin") => {
+  if (role !== "admin") throw new AppError("Forbidden", 403);
+
   const users = await getAllUsers();
   return users;
 };
@@ -64,25 +67,26 @@ export const getAllUsersService = async () => {
  * @returns User if found, null otherwise
  */
 export const getUserByEmailService = async (email: string) => {
-  const validated = getUserByEmailSchema.parse({ email });
+  const validated = userEmailSchema.parse({ email });
 
   const user = await getUserByEmail(validated.email);
   return user;
 };
 
 /**
- * Search for users by their email address.
- * This function is case-insensitive.
- * It will return up to 5 users that match the search query.
- * The refresh token and password of each user will be excluded from the result.
- * @param {string} searchQuery - The search query to search for users by their email address.
- * @returns {Promise<Array<IUser>>} An array of users that match the search query.
+ * Finds a user by their email
+ * @param {string} email - User email
+ * @returns {Promise<IUser | null>} User if found, null otherwise
+ * @throws {AppError} If email is invalid
  */
-export const searchUsersByEmailService = async (searchQuery: string) => {
-  const validated = searchUsersByEmailSchema.parse({ searchQuery });
+export const matchUserByEmailService = async (email: string) => {
+  const validated = userEmailSchema.parse({ email });
 
-  const users = await searchUsersByEmail(validated.searchQuery);
-  return users;
+  const user = await matchUserByEmail(validated.email);
+
+  if (!user) throw new AppError("User not found", 404);
+
+  return user;
 };
 
 /**

@@ -451,7 +451,6 @@ function ShareDocumentModal({
                             name={`allowedUsers.${index}.userId`}
                             render={({ field }) => (
                               <UserSearchCombobox
-                                value={field.value || ""}
                                 onChange={field.onChange}
                                 excludeIds={fields
                                   .map((_, i) =>

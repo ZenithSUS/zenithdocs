@@ -3,7 +3,7 @@ import {
   deleteUserController,
   getAllUsersController,
   getUserByIdController,
-  searchUsersByEmailController,
+  matchUserByEmailController,
   updateUserController,
 } from "../controllers/user.controller.js";
 import protect from "../middlewares/protect.middleware.js";
@@ -23,18 +23,18 @@ router.get(
 );
 
 router.get(
-  "/search",
-  protect,
-  limiter("searchUsersByEmail"),
-  searchUsersByEmailController,
-);
-
-router.get(
   "/:id",
   protect,
   authorizeSelfOrAdmin,
   limiter("fetchUser"),
   getUserByIdController,
+);
+
+router.post(
+  "/match-email",
+  protect,
+  limiter("matchUserByEmail"),
+  matchUserByEmailController,
 );
 
 router.put(

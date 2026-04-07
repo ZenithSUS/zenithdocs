@@ -4,7 +4,7 @@ import {
   getAllUsersService,
   getUserByEmailService,
   getUserByIdService,
-  searchUsersByEmailService,
+  matchUserByEmailService,
   updateUserService,
 } from "../services/user.service.js";
 import { NextFunction, ParamsDictionary } from "express-serve-static-core";
@@ -14,6 +14,29 @@ import AppError from "../utils/app-error.js";
 interface UserParams extends ParamsDictionary {
   id: string;
 }
+
+/**
+ * Get all users (admin only)
+ * @route GET /api/users
+ */
+export const getAllUsersController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const role = req.user.role;
+    const users = await getAllUsersService(role);
+
+    return res.status(200).json({
+      success: true,
+      message: "Users fetched successfully",
+      data: users,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 /**
  * Get user by ID
@@ -39,44 +62,22 @@ export const getUserByIdController = async (
 };
 
 /**
- * Search users by email
- * @route GET /api/users/search
+ * Match user by email
+ * @route POST /api/users/match-email
  */
-export const searchUsersByEmailController = async (
+export const matchUserByEmailController = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
   try {
-    const query = req.query.q as string;
-    const users = await searchUsersByEmailService(query);
+    const { email } = req.body;
+    const user = await matchUserByEmailService(email);
 
     return res.status(200).json({
       success: true,
-      message: "Users found successfully",
-      data: users,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
- * Get all users
- * @route GET /api/users
- */
-export const getAllUsersController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const users = await getAllUsersService();
-
-    return res.status(200).json({
-      success: true,
-      message: "Users fetched successfully",
-      data: users,
+      message: "User found successfully",
+      data: user,
     });
   } catch (error) {
     next(error);
