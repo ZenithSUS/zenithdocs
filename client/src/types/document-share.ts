@@ -1,13 +1,15 @@
 export interface DocumentShare {
   _id: string;
-  documentId: {
-    _id: string;
-    title: string;
-    fileUrl: string;
-    fileType: string;
-    fileSize: number;
-    rawText?: string;
-  };
+  documentId:
+    | string
+    | {
+        _id: string;
+        title: string;
+        fileUrl: string;
+        fileType: string;
+        fileSize: number;
+        rawText?: string;
+      };
   ownerId: {
     _id: string;
     email: string;

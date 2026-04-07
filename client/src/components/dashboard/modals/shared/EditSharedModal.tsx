@@ -133,7 +133,10 @@ function EditShareDocumentModal({
   } = useForm<ShareDocumentSchema>({
     resolver: zodResolver(editShareDocumentSchema),
     defaultValues: {
-      documentId: documentShare.documentId._id,
+      documentId:
+        typeof documentShare.documentId === "string"
+          ? documentShare.documentId
+          : documentShare.documentId._id,
       ownerId: userId,
       type: documentShare.type,
       publicPermission: documentShare.publicPermission,

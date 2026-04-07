@@ -5,6 +5,9 @@ import { CreateDocumentShareVariables } from "./useDocumentShare";
 import documentShareKeys from "./document-share.keys";
 import { createDocumentShare } from "./document-share.api";
 import { addDocumentShareCache } from "./document-share.cache";
+import { changeIsSharedInfiniteDocument } from "../documents/document.cache";
+import documentKeys from "../documents/document.keys";
+import fetchLimits from "@/constants/fetch-limits";
 
 export const useDocumentShareCreate = (
   queryClient: QueryClient,
@@ -32,6 +35,16 @@ export const useDocumentShareCreate = (
         queryClient,
         documentShareKeys.byUser(userId),
         finalDocumentShare,
+      );
+
+      // Optimistically mark document as shared
+      changeIsSharedInfiniteDocument(
+        queryClient,
+        documentKeys.byUserPage(userId, fetchLimits.document),
+        {
+          _id: document.id,
+          isShared: true,
+        },
       );
     },
   });

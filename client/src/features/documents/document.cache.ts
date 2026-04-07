@@ -4,7 +4,11 @@ import {
   DocumentsInfiniteData,
   DocumentsWithChatInfiniteData,
 } from "./useDocument";
-import { ChatPage } from "../chat/useChat";
+
+interface IsSharedData {
+  _id: string;
+  isShared: boolean;
+}
 
 export const addInfiniteDocument = (
   queryClient: QueryClient,
@@ -26,6 +30,27 @@ export const addInfiniteDocument = (
         },
         ...oldData.pages.slice(1),
       ],
+    };
+  });
+};
+
+export const changeIsSharedInfiniteDocument = (
+  queryClient: QueryClient,
+  querykey: readonly unknown[],
+  data: IsSharedData,
+) => {
+  queryClient.setQueryData<DocumentsInfiniteData>(querykey, (oldData) => {
+    if (!oldData) return oldData;
+
+    return {
+      ...oldData,
+      pages: oldData.pages.map((page) => ({
+        ...page,
+        documents: page.documents.map((doc) => ({
+          ...doc,
+          isShared: doc._id === data._id ? data.isShared : doc.isShared,
+        })),
+      })),
     };
   });
 };

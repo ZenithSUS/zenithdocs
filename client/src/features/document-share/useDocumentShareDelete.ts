@@ -5,6 +5,9 @@ import { DocumentSharePage, MutateContext } from "./useDocumentShare";
 import documentShareKeys from "./document-share.keys";
 import { deleteDocumentShare } from "./document-share.api";
 import { removeDocumentShareCache } from "./document-share.cache";
+import { changeIsSharedInfiniteDocument } from "../documents/document.cache";
+import documentKeys from "../documents/document.keys";
+import fetchLimits from "@/constants/fetch-limits";
 
 export const useDocumentShareDelete = (
   queryClient: QueryClient,
@@ -40,7 +43,22 @@ export const useDocumentShareDelete = (
         });
       }
     },
-    onSuccess: (deletedDocumentShare) => {
+    onSuccess: (documentShare) => {
+      const documentId =
+        typeof documentShare.documentId === "string"
+          ? documentShare.documentId
+          : documentShare.documentId._id;
+
+      // Change is Shared to false
+      changeIsSharedInfiniteDocument(
+        queryClient,
+        documentKeys.byUserPage(userId, fetchLimits.document),
+        {
+          _id: documentId,
+          isShared: false,
+        },
+      );
+
       // Invalidate all pages to correct any pagination gaps (e.g. page 2 losing an item)
       queryClient.invalidateQueries({
         queryKey: documentShareKeys.byUser(userId),
@@ -48,7 +66,7 @@ export const useDocumentShareDelete = (
 
       // Remove individual cache entry
       queryClient.removeQueries({
-        queryKey: documentShareKeys.byId(deletedDocumentShare._id),
+        queryKey: documentShareKeys.byId(documentShare._id),
       });
     },
   });

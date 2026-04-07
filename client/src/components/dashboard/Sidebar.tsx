@@ -46,10 +46,10 @@ const navItems: { id: NavItem; icon: React.ReactNode; label: string }[] = [
   { id: "documents", icon: <FileText size={15} />, label: "Documents" },
   { id: "studies", icon: <BookOpen size={15} />, label: "Studies" },
   { id: "summaries", icon: <ScrollText size={15} />, label: "Summaries" },
+  { id: "shared", icon: <ArrowLeftRight size={15} />, label: "Shared" },
   { id: "folders", icon: <Folder size={15} />, label: "Folders" },
   { id: "chats", icon: <MessageSquare size={15} />, label: "Chats" },
   { id: "usage", icon: <BarChart2 size={15} />, label: "Usage" },
-  { id: "shared", icon: <ArrowLeftRight size={15} />, label: "Shared" },
 ];
 
 function DashBoardSidebar({
