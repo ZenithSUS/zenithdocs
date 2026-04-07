@@ -168,13 +168,12 @@ function ShareDocumentModal({
       toast.success("Document shared successfully");
       reset();
       onOpenChange(false);
+      onSuccess?.();
     } catch (error) {
       const err = error as AxiosError;
       const errData = err.response?.data;
       handleFormError(errData?.errors, setError);
       if (!errData?.errors) handleApiError(err, "Could not share document");
-    } finally {
-      if (onSuccess) onSuccess();
     }
   };
 

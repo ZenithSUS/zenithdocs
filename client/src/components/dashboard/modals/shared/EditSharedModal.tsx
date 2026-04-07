@@ -181,6 +181,7 @@ function EditShareDocumentModal({
       toast.success("Document share updated successfully");
       reset();
       onOpenChange(false);
+      onSuccess?.();
     } catch (error) {
       const err = error as AxiosError;
       const errData = err.response?.data;
@@ -190,8 +191,6 @@ function EditShareDocumentModal({
           err,
           "Could not update shared document. Please try again.",
         );
-    } finally {
-      if (onSuccess) onSuccess();
     }
   };
 
