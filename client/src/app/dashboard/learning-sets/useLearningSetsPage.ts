@@ -34,6 +34,7 @@ const useLearningSetsPage = () => {
     refetch: refetchDocuments,
     hasNextPage: documentsHasNextPage,
     fetchNextPage: fetchNextDocumentsPage,
+    isFetchingNextPage: isFetchingNextDocumentsPage,
   } = useDocumentByUserPage(user?._id ?? "");
 
   // ─── Learning Sets ───────────────────────────────────────────────────────────
@@ -80,6 +81,7 @@ const useLearningSetsPage = () => {
     refetchDocuments,
     documentsHasNextPage,
     fetchNextDocumentsPage,
+    isFetchingNextDocumentsPage,
 
     // Learning Sets
     createLearningSetMutation,

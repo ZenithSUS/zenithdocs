@@ -29,6 +29,7 @@ function LearningSetsPage() {
     documentsLoading,
     documentsHasNextPage,
     fetchNextDocumentsPage,
+    isFetchingNextDocumentsPage,
 
     // Learning Sets
     createLearningSetMutation,
@@ -84,6 +85,7 @@ function LearningSetsPage() {
               documents={documents}
               documentsHasNextPage={documentsHasNextPage}
               fetchNextDocumentsPage={fetchNextDocumentsPage}
+              isFetchingNextDocumentsPage={isFetchingNextDocumentsPage}
               createLearningSetMutation={createLearningSetMutation}
               setGeneratedSet={setGeneratedSet}
             />

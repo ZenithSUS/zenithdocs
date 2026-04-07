@@ -24,6 +24,7 @@ interface LearningSetConfigProps {
   documents: Doc[];
   documentsHasNextPage?: boolean;
   fetchNextDocumentsPage?: () => void;
+  isFetchingNextDocumentsPage?: boolean;
   createLearningSetMutation: UseMutationResult<
     LearningSet,
     AxiosError,
@@ -37,6 +38,7 @@ function LearningSetConfig({
   documents,
   documentsHasNextPage,
   fetchNextDocumentsPage,
+  isFetchingNextDocumentsPage,
   createLearningSetMutation,
   setGeneratedSet,
 }: LearningSetConfigProps) {
@@ -130,7 +132,7 @@ function LearningSetConfig({
           )}
         </div>
 
-        {documentsHasNextPage && (
+        {documentsHasNextPage && !isFetchingNextDocumentsPage ? (
           <button
             onClick={fetchNextDocumentsPage}
             disabled={createLearningSetMutation.isPending}
@@ -139,6 +141,15 @@ function LearningSetConfig({
             <ChevronDown className="w-3.5 h-3.5" />
             Load more
           </button>
+        ) : !documentsHasNextPage ? (
+          <div className="flex items-center justify-center gap-2 mt-1">
+            <h2 className="text-xs text-primary">No more documents</h2>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center gap-2 mt-1">
+            <h2 className="text-xs text-primary">Getting your documents</h2>
+            <ThreeDot size="small" color="#c9a227" />
+          </div>
         )}
       </section>
 
