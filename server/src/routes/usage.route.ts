@@ -8,6 +8,7 @@ import {
   updateUsageController,
   deleteUsageController,
   deleteUsageByUserController,
+  getDailyMessagesUsageByUserAndMonthController,
 } from "../controllers/usage.controller.js";
 import protect from "../middlewares/protect.middleware.js";
 import requireAdmin from "../middlewares/require-admin.middleware.js";
@@ -17,6 +18,14 @@ import limiter from "../middlewares/limiter.middleware.js";
 const router = Router();
 
 // Usage routes
+router.get(
+  "/user/:id/daily-messages/month/:month",
+  protect,
+  authorizeSelfOrAdmin,
+  limiter("getDailyMessagesUsageByUserAndMonth"),
+  getDailyMessagesUsageByUserAndMonthController,
+);
+
 router.get(
   "/user/:id/last-six-months",
   protect,

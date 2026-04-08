@@ -8,6 +8,7 @@ import {
 import protect from "../middlewares/protect.middleware.js";
 import authorizeSelfOrAdmin from "../middlewares/authorize-self-or-admin.middleware.js";
 import limiter from "../middlewares/limiter.middleware.js";
+import checkMessageLimit from "../middlewares/check-message-limit.js";
 
 const router = Router();
 
@@ -17,7 +18,13 @@ router.post(
   limiter("initGlobalChat"),
   initGlobalChatController,
 );
-router.post("/", protect, limiter("createGlobalChat"), globalChatController);
+router.post(
+  "/",
+  protect,
+  checkMessageLimit,
+  limiter("createGlobalChat"),
+  globalChatController,
+);
 
 router.get(
   "/user/:id",
