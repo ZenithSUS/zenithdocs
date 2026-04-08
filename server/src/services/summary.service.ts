@@ -11,8 +11,10 @@ import {
   updateSummary,
 } from "../repositories/summary.repository.js";
 import AppError from "../utils/app-error.js";
-import { updateUsageMonthByUser } from "../repositories/usage.repository.js";
-import PLAN_LIMITS from "../config/plans.js";
+import {
+  incrementOnlyAIRequests,
+  updateUsageMonthByUser,
+} from "../repositories/usage.repository.js";
 import { generateEmbedding } from "../lib/mistral/services/embedding.service.js";
 import { getSimilaritySummaryScore } from "../repositories/document-chunk.repository.js";
 
@@ -53,13 +55,6 @@ export const createSummaryService = async (data: Partial<ISummary>) => {
     throw new AppError("User plan not found", 500);
   }
 
-  const userLimit =
-    PLAN_LIMITS[usageLimit.user.plan as keyof typeof PLAN_LIMITS];
-
-  if (usageLimit.tokensUsed >= userLimit.tokenLimit) {
-    throw new AppError("You have reached your usage limit for this month", 400);
-  }
-
   const summaryQueries: Record<ISummary["type"], string> = {
     short: "main points overview summary",
     bullet: "key facts insights bullet points",
@@ -84,8 +79,9 @@ export const createSummaryService = async (data: Partial<ISummary>) => {
     contentToSummarize,
     validated.type,
     usageLimit.tokensUsed,
-    userLimit.tokenLimit,
   );
+
+  await incrementOnlyAIRequests(validated.user);
 
   const summary = await createSummary({
     user: validated.user,
@@ -103,10 +99,12 @@ export const createSummaryService = async (data: Partial<ISummary>) => {
 };
 
 /**
- * Retrieves all summaries from the database.
+ * Retrieves all summaries from the database. - Admin Only
+ * @param {"user" | "admin"} role - User role
  * @returns {Promise<ISummary[]>} An array of all summaries
  */
-export const getAllSummaryService = async () => {
+export const getAllSummaryService = async (role: "user" | "admin") => {
+  if (role !== "admin") throw new AppError("Forbidden", 403);
   return await getAllSummary();
 };
 

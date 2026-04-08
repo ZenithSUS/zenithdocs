@@ -36,9 +36,12 @@ export const getUserByIdService = async (id: string) => {
 
   // Add tokenLimit and documentLimit to user
   const userLimits = {
-    tokenLimit: PLAN_LIMITS[user.plan as keyof typeof PLAN_LIMITS].tokenLimit,
     documentLimit:
       PLAN_LIMITS[user.plan as keyof typeof PLAN_LIMITS].documentLimit,
+    storageLimit:
+      PLAN_LIMITS[user.plan as keyof typeof PLAN_LIMITS].storageLimitMB,
+    messagesPerDay:
+      PLAN_LIMITS[user.plan as keyof typeof PLAN_LIMITS].messagesPerDay,
   };
 
   // Update usage

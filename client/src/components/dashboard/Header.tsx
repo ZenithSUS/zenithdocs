@@ -20,7 +20,6 @@ function Header({ user, title, titleHighlight }: HeaderProps) {
 
   const { data: overview } = useDashboardOverview(user?._id ?? "");
 
-  const tokenPct = calcPct(overview?.tokensUsed, user?.tokenLimit);
   const documentPct = calcPct(overview?.documentsUploaded, user?.documentLimit);
 
   return (
@@ -50,12 +49,12 @@ function Header({ user, title, titleHighlight }: HeaderProps) {
           <HeaderDropDown
             email={user?.email ?? ""}
             plan={user?.plan ?? ""}
-            tokensUsed={overview?.tokensUsed ?? 0}
-            tokenLimit={user?.tokenLimit ?? 0}
-            tokenPct={tokenPct}
             documentUsed={overview?.documentsUploaded ?? 0}
             documentLimit={user?.documentLimit ?? 0}
             documentPct={documentPct}
+            storageUsed={overview?.storageUsed ?? 0}
+            storageLimit={user?.storageLimit ?? 0}
+            storagePct={calcPct(overview?.storageUsed, user?.storageLimit)}
           />
         )}
 

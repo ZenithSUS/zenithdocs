@@ -10,16 +10,17 @@ import {
   getUsageById,
   incrementOnlyTokensUsed,
   getLastSixMonthsUsageByUser,
+  getDailyMessagesUsageByUserAndMonth,
 } from "../repositories/usage.repository.js";
 import AppError from "../utils/app-error.js";
 import {
   createUsageSchema,
-  deleteUsageByUserSchema,
-  getLastSixMonthsUsageByUserSchema,
+  getDailyMessagesUsageByUserAndMonthSchema,
   getUsageByUserAndMonthSchema,
   updateUsageByUserAndMonthSchema,
   updateUsageSchema,
   usageParamsSchema,
+  usageUserParamsSchema,
 } from "../schemas/usage.schema.js";
 import { userTokenSchema } from "../utils/zod.utils.js";
 
@@ -95,9 +96,32 @@ export const getUsageByUserService = async (userId: string) => {
  * @throws {AppError} If user ID is invalid or missing
  */
 export const getLastSixMonthsUsageByUserService = async (userId: string) => {
-  const validated = getLastSixMonthsUsageByUserSchema.parse({ userId });
+  const validated = usageUserParamsSchema.parse({ userId });
 
   const usage = await getLastSixMonthsUsageByUser(validated.userId);
+  return usage;
+};
+
+/**
+ * Retrieves the daily messages for a given user and month
+ * @param {string} userId - User ID
+ * @param {string} month - Month in format "YYYY-MM"
+ * @returns {Promise<IUsage[]>} Array of daily messages if found, empty array otherwise
+ * @throws {AppError} If user ID is invalid or missing
+ */
+export const getDailyMessagesUsageByUserAndMonthService = async (
+  userId: string,
+  month: string,
+) => {
+  const validated = getDailyMessagesUsageByUserAndMonthSchema.parse({
+    userId,
+    month,
+  });
+
+  const usage = await getDailyMessagesUsageByUserAndMonth(
+    validated.userId,
+    validated.month,
+  );
   return usage;
 };
 
@@ -177,7 +201,7 @@ export const deleteUsageByUserService = async (
   currentUserId: string,
   role: "user" | "admin",
 ) => {
-  const validated = deleteUsageByUserSchema.parse({ userId });
+  const validated = usageUserParamsSchema.parse({ userId });
   const authUser = userTokenSchema.parse({ userId: currentUserId, role });
 
   const existingUsage = await getUsageByUser(validated.userId);

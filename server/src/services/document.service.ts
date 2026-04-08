@@ -65,8 +65,21 @@ export const createDocumentService = async (data: Partial<IDocumentInput>) => {
     throw new AppError("User plan not found", 500);
   }
 
-  const userLimit =
-    PLAN_LIMITS[usageLimit.user.plan as keyof typeof PLAN_LIMITS].documentLimit;
+  const userPlan = usageLimit.user.plan as keyof typeof PLAN_LIMITS;
+  const userLimit = PLAN_LIMITS[userPlan].documentLimit;
+  const storageLimit = PLAN_LIMITS[userPlan].storageLimitMB;
+
+  const sizeMB = parseFloat((validData.fileSize / (1024 * 1024)).toFixed(2));
+
+  const currentUsageMB = usageLimit.storageUsed || 0;
+  const newTotalMB = currentUsageMB + sizeMB;
+
+  if (newTotalMB > storageLimit) {
+    throw new AppError(
+      `Storage limit exceeded for ${userPlan} plan (${storageLimit} MB)`,
+      400,
+    );
+  }
 
   if (usageLimit.documentsUploaded >= userLimit) {
     throw new AppError("Document limit reached for this month", 400);
@@ -74,7 +87,7 @@ export const createDocumentService = async (data: Partial<IDocumentInput>) => {
 
   const document = await createDocument(validData);
 
-  await incrementUsage(validData.user, 0);
+  await incrementUsage(validData.user, 0, sizeMB);
   return document;
 };
 

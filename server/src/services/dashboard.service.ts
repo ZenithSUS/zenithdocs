@@ -1,5 +1,3 @@
-import mongoose from "mongoose";
-import AppError from "../utils/app-error.js";
 import {
   getRecentDocumentsByUser,
   getTotalDocumentsByUser,
@@ -16,6 +14,8 @@ import {
   getTotalSummaryByUser,
 } from "../repositories/summary.repository.js";
 import { getDashboardOverviewSchema } from "../schemas/dashboard.schema.js";
+import { getTotalSharedDocumentsByUser } from "../repositories/document-share.repository.js";
+import dayjs from "dayjs";
 
 /**
  * Retrieves an overview of the dashboard for a user
@@ -24,44 +24,73 @@ import { getDashboardOverviewSchema } from "../schemas/dashboard.schema.js";
  * @throws {AppError} If the user ID is invalid or missing
  */
 export const getDashboardOverviewService = async (userId: string) => {
+  const today = dayjs().format("YYYY-MM-DD");
   const month = new Date().toISOString().slice(0, 7); // YYYY-MM
 
   const validated = getDashboardOverviewSchema.parse({ userId, month });
 
   const [
+    // Overview Stats
     totalDocuments,
     totalFolders,
     totalSummary,
     totalSummaryTypes,
+    totalSharedDocuments,
+
+    // Usage
     usage,
     usageHistory,
+
+    // Totals
     completedDocuments,
     processingDocuments,
+
+    // Recents
     recentDocuments,
     recentSummary,
   ] = await Promise.all([
+    // Overview Stats
     getTotalDocumentsByUser(validated.userId),
     getTotalFoldersByUser(validated.userId),
     getTotalSummaryByUser(validated.userId),
     getAllTotalEachSummaryTypesByUser(validated.userId),
-    getUsageByUserAndMonth(validated.userId, month),
+    getTotalSharedDocumentsByUser(validated.userId),
+
+    // Usage
+    getUsageByUserAndMonth(validated.userId, validated.month),
     getLastSixMonthsUsageByUser(validated.userId),
+
+    // Totals
     getTotalStatusDocumentsByUser(validated.userId, "completed"),
     getTotalStatusDocumentsByUser(validated.userId, "processing"),
+
+    // Recents
     getRecentDocumentsByUser(validated.userId),
     getRecentSummaryByUser(validated.userId),
   ]);
 
   const overview = {
+    // Overview Stats
+    totalAIRequests: usage?.aiRequests || 0,
+    totalMessages: usage?.totalMessages || 0,
     totalDocuments,
     totalFolders,
     totalSummary,
     totalSummaryTypes,
+
+    // Usage
+    totalSharedDocuments,
     tokensUsed: usage?.tokensUsed || 0,
     documentsUploaded: usage?.documentsUploaded || 0,
-    completedDocuments,
+    storageUsed: usage?.storageUsed || 0,
     usageHistory,
+    dailyMessage: usage?.dailyMessages[today] || 0,
+
+    // Totals
+    completedDocuments,
     processingDocuments,
+
+    // Recents
     recentDocuments,
     recentSummary,
   };

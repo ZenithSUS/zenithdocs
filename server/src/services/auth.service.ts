@@ -47,7 +47,7 @@ export const loginService = async (
 
   // Generate access token and refresh token
   const accessToken = jwt.sign(
-    { sub: user._id, role: user.role },
+    { sub: user._id, role: user.role, plan: user.plan },
     config.jwt.accessSecret,
     { expiresIn: user.role === "admin" ? "7d" : "1h" },
   );
@@ -93,7 +93,7 @@ export const oauthLoginService = async (user: IUser, req: Request) => {
 
   // Generate access token and refresh token
   const accessToken = jwt.sign(
-    { sub: user._id, role: user.role },
+    { sub: user._id, role: user.role, plan: user.plan },
     config.jwt.accessSecret,
     { expiresIn: user.role === "admin" ? "7d" : "1h" },
   );
@@ -242,7 +242,7 @@ export const refreshAccessTokenService = async (
 
   // Issue a new access token
   const accessToken = jwt.sign(
-    { sub: user._id, role: user.role },
+    { sub: user._id, role: user.role, plan: user.plan },
     config.jwt.accessSecret,
     { expiresIn: user.role === "admin" ? "7d" : "1h" },
   );
