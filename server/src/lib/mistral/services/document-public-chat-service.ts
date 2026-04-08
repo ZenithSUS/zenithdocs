@@ -50,7 +50,7 @@ export const streamDocumentPublicChatService = async (
 
   if (history && history.length >= MAX_PUBLIC_MESSAGES) {
     throw new AppError(
-      `You have reached the maximum number of messages (${MAX_PUBLIC_MESSAGES}) in the public chat. Please wait before sending more.`,
+      `You have reached the maximum number of messages (${MAX_PUBLIC_MESSAGES}) in the public chat. Please refresh or delete the message to start new one`,
       400,
     );
   }
