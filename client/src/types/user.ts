@@ -4,11 +4,11 @@ export type User = {
   password?: string;
   role: "user" | "admin";
   plan: string;
-  refreshToken?: string;
   createdAt: Date;
   updatedAt: Date;
-  tokenLimit: number;
   documentLimit: number;
+  storageLimit: number;
+  messagesPerDay: number;
   __v: number;
 };
 
