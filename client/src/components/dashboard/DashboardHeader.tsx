@@ -6,7 +6,6 @@ import { Brain, Upload } from "lucide-react";
 import useDropdown from "@/features/ui/useDropdown";
 
 interface DashboardHeaderProps {
-  userId: string;
   plan: string;
   email: string;
   nav: string;
@@ -14,16 +13,15 @@ interface DashboardHeaderProps {
   totalDocuments: number;
   totalSummaries: number;
   totalFolders: number;
-  tokensUsed: number;
-  tokenLimit: number;
-  tokenPct: number;
   documentUsed: number;
   documentLimit: number;
   documentPct: number;
+  storageLimit: number;
+  storageUsed: number;
+  storagePct: number;
 }
 
 function DashboardHeader({
-  userId,
   plan,
   email,
   nav,
@@ -31,12 +29,12 @@ function DashboardHeader({
   totalDocuments,
   totalSummaries,
   totalFolders,
-  tokensUsed,
-  tokenLimit,
-  tokenPct,
   documentUsed,
   documentLimit,
   documentPct,
+  storageLimit,
+  storageUsed,
+  storagePct,
 }: DashboardHeaderProps) {
   const router = useRouter();
   const options = useDropdown();
@@ -61,7 +59,7 @@ function DashboardHeader({
             {nav === "summaries" && `${totalSummaries} AI-generated summaries`}
             {nav === "folders" && `${totalFolders} folders`}
             {nav === "chats" && "Your chat history"}
-            {nav === "usage" && "Token & document consumption"}
+            {nav === "usage" && "Document and Message Consumption"}
             {nav === "shared" && "All shared documents"}
           </p>
         </div>
@@ -114,12 +112,12 @@ function DashboardHeader({
             <HeaderDropDown
               email={email}
               plan={plan}
-              tokensUsed={tokensUsed}
-              tokenLimit={tokenLimit}
-              tokenPct={tokenPct}
               documentUsed={documentUsed}
               documentLimit={documentLimit}
               documentPct={documentPct}
+              storageLimit={storageLimit}
+              storageUsed={storageUsed}
+              storagePct={storagePct}
             />
           )}
 

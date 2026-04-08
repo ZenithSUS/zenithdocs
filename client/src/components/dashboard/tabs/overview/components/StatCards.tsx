@@ -1,4 +1,3 @@
-import sizefmt from "@/helpers/size-format";
 import { DashboardOverview } from "@/types/dashboard";
 import { ThreeDot } from "react-loading-indicators";
 
@@ -6,21 +5,9 @@ interface Props {
   overview: DashboardOverview | undefined;
   overviewLoading: boolean;
   completedDocs: number;
-  tokenPct: number;
-  currentTokensUsed: number;
-  maxUsage: number;
 }
 
-const StatCards = ({
-  overview,
-  overviewLoading,
-  completedDocs,
-  tokenPct,
-  currentTokensUsed,
-  maxUsage,
-}: Props) => {
-  const tokensUsed = Math.min(maxUsage, currentTokensUsed);
-
+const StatCards = ({ overview, overviewLoading, completedDocs }: Props) => {
   const stats = [
     {
       icon: "▣",
@@ -41,10 +28,10 @@ const StatCards = ({
       sub: "Organised workspace",
     },
     {
-      icon: "◉",
-      label: "Tokens This Month",
-      value: sizefmt.num(tokensUsed),
-      sub: `${tokenPct}% of limit`,
+      icon: "⇄",
+      label: "Shared",
+      value: overview?.totalSharedDocuments ?? 0,
+      sub: "Documents shared",
     },
   ];
 

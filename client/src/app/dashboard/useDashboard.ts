@@ -35,8 +35,9 @@ const useDashboardPage = () => {
   } = useDashboardOverview(user?._id ?? "");
 
   // ─── Derived usage percentages ────────────────────────────────────────────
-  const tokenPct = calcPct(overview?.tokensUsed, user?.tokenLimit);
   const documentPct = calcPct(overview?.documentsUploaded, user?.documentLimit);
+  const storagePct = calcPct(overview?.storageUsed, user?.storageLimit);
+  const messagePct = calcPct(overview?.dailyMessage, user?.messagesPerDay);
 
   // ─── Refetch helper ───────────────────────────────────────────────────────
   const handleRefetch = useCallback(
@@ -112,8 +113,9 @@ const useDashboardPage = () => {
     setFilterFolder,
 
     // Usage
-    tokenPct,
     documentPct,
+    storagePct,
+    messagePct,
 
     // Actions
     handleRefetch,

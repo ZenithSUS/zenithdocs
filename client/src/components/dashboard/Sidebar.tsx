@@ -32,13 +32,16 @@ interface DashboardSidebarProps {
   setNav: React.Dispatch<React.SetStateAction<NavItem>>;
   sidebarOpen: boolean;
   setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  tokenPct: number;
   processingDocs: number;
-  tokensUsed: number;
-  tokenLimit: number;
   documentLimit: number;
   documentUsed: number;
   documentPct: number;
+  storageLimit: number;
+  storageUsed: number;
+  storagePct: number;
+  messages: number;
+  messagesPerDay: number;
+  messagePct: number;
 }
 
 const navItems: { id: NavItem; icon: React.ReactNode; label: string }[] = [
@@ -59,16 +62,17 @@ function DashBoardSidebar({
   setNav,
   sidebarOpen,
   setSidebarOpen,
-  tokenPct,
   processingDocs,
-  tokensUsed,
-  tokenLimit,
   documentLimit,
   documentUsed,
   documentPct,
+  storageLimit,
+  storageUsed,
+  storagePct,
+  messages,
+  messagesPerDay,
+  messagePct,
 }: DashboardSidebarProps) {
-  const userTokensUsed = Math.min(tokenLimit, tokensUsed);
-
   return (
     <aside
       className={`fixed inset-y-0 left-0 z-40 w-64 bg-background border-r border-white/6 flex flex-col transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
@@ -119,51 +123,56 @@ function DashBoardSidebar({
 
       {/* Bottom widgets + user */}
       <div className="shrink-0">
-        {/* Token quota widget */}
-        <div className="mx-3 mb-4 px-4 py-4 border border-primary/15 rounded-sm bg-primary/4">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-[10px] tracking-[0.15em] text-primary font-sans">
-              TOKENS USED
-            </span>
-            <span className="text-[11px] text-text/50 font-sans">
-              {tokenPct}%
-            </span>
-          </div>
-          <div className="w-full h-1 bg-white/8 rounded-full overflow-hidden mb-2">
-            <div
-              className="h-full rounded-full transition-all duration-700"
-              style={{
-                width: `${tokenPct}%`,
-                background: tokenPct > 80 ? "#ef4444" : "#C9A227",
-              }}
-            />
-          </div>
-          <div className="text-[11px] text-text/35 font-sans">
-            {sizefmt.num(userTokensUsed)} / {sizefmt.num(tokenLimit)}
-          </div>
-        </div>
+        {/* Usage summary */}
+        <div className="mx-3 mb-4 px-4 py-3">
+          <h2 className="mb-3 text-[10px] text-text/25 tracking-widest font-sans">
+            USAGE
+          </h2>
 
-        {/* Document quota widget */}
-        <div className="mx-3 mb-4 px-4 py-4 border border-primary/15 rounded-sm bg-primary/4">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-[10px] tracking-[0.15em] text-primary font-sans">
-              DOCUMENTS UPLOADED
-            </span>
-            <span className="text-[11px] text-text/50 font-sans">
-              {documentPct}%
-            </span>
-          </div>
-          <div className="w-full h-1 bg-white/8 rounded-full overflow-hidden mb-2">
-            <div
-              className="h-full rounded-full transition-all duration-700"
-              style={{
-                width: `${documentPct}%`,
-                background: "#C9A227",
-              }}
-            />
-          </div>
-          <div className="text-[11px] text-text/35 font-sans">
-            {sizefmt.num(documentUsed)} / {sizefmt.num(documentLimit)}
+          <div className="flex flex-col gap-2.5 font-sans">
+            {[
+              {
+                label: "Docs",
+                value: documentUsed,
+                limit: documentLimit,
+                pct: documentPct,
+                suffix: "",
+              },
+              {
+                label: "Storage",
+                value: sizefmt.num(Math.min(storageUsed, storageLimit)),
+                limit: `${sizefmt.num(storageLimit)} MB`,
+                pct: storagePct,
+                suffix: "",
+              },
+              {
+                label: "Messages",
+                value: messages,
+                limit: messagesPerDay,
+                pct: messagePct,
+                suffix: "",
+              },
+            ].map(({ label, value, limit, pct }) => (
+              <div key={label}>
+                <div className="flex justify-between items-baseline mb-1">
+                  <span className="text-[11px] text-text/35 tracking-wide">
+                    {label}
+                  </span>
+                  <span className="text-[11px] text-primary">
+                    {value} <span className="text-text">/ {limit}</span>
+                  </span>
+                </div>
+                <div className="w-full h-[2px] bg-white/6 rounded-full overflow-hidden">
+                  <div
+                    className="h-[2px] rounded-full transition-all duration-500"
+                    style={{
+                      width: `${Math.min(pct, 100)}%`,
+                      backgroundColor: pct >= 90 ? "#e05050" : "#C9A227",
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 

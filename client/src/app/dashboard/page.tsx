@@ -15,6 +15,7 @@ import FolderLoadingSkeletion from "@/components/dashboard/tabs/folder/component
 import SummaryCardSkeleton from "@/components/dashboard/skeleton/SummaryCardSkeleton";
 import DocumentChatLoading from "@/components/dashboard/tabs/chat/components/DocumentChatLoading";
 import SharedDocumentLoading from "@/components/dashboard/tabs/shared/components/SharedDocumentLoading";
+import UsageTabLoading from "@/components/dashboard/skeleton/UsageTabLoading";
 import GlobalChatUI from "@/components/dashboard/GlobalChatUI";
 
 // Lazy-load dashboard tab components for code splitting
@@ -61,8 +62,9 @@ export default function DashboardPage() {
     setFilterFolder,
 
     // Usage
-    tokenPct,
     documentPct,
+    storagePct,
+    messagePct,
 
     // Actions
     handleRefetch,
@@ -112,12 +114,15 @@ export default function DashboardPage() {
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
         processingDocs={overview?.processingDocuments || 0}
-        tokenPct={tokenPct}
-        tokensUsed={overview?.tokensUsed || 0}
-        tokenLimit={user?.tokenLimit || 0}
         documentLimit={user?.documentLimit || 0}
         documentUsed={overview?.documentsUploaded || 0}
         documentPct={documentPct}
+        storageLimit={user?.storageLimit || 0}
+        storageUsed={overview?.storageUsed || 0}
+        storagePct={storagePct}
+        messages={overview?.dailyMessage || 0}
+        messagesPerDay={user?.messagesPerDay || 0}
+        messagePct={messagePct}
       />
 
       {/* ── MAIN ────────────────────────────────────────────────────────────── */}
@@ -126,19 +131,18 @@ export default function DashboardPage() {
         {/* Top bar */}
         <DashboardHeader
           email={user?.email || "..."}
-          userId={user?._id || ""}
           plan={user?.plan || ""}
           nav={nav}
           setSidebarOpen={setSidebarOpen}
           totalDocuments={overview?.totalDocuments || 0}
           totalSummaries={overview?.totalSummary || 0}
           totalFolders={overview?.totalFolders || 0}
-          tokensUsed={overview?.tokensUsed || 0}
-          tokenLimit={user?.tokenLimit || 0}
-          tokenPct={tokenPct}
           documentUsed={overview?.documentsUploaded || 0}
           documentLimit={user?.documentLimit || 0}
           documentPct={documentPct}
+          storageLimit={user?.storageLimit || 0}
+          storageUsed={overview?.storageUsed || 0}
+          storagePct={storagePct}
         />
 
         {/* Page content — this is the ONLY scrollable area */}
@@ -152,11 +156,8 @@ export default function DashboardPage() {
               <OverViewTab
                 key={CURRENT_MONTH}
                 setNav={setNav}
-                currentMonth={CURRENT_MONTH}
+                messsagesPerDay={user?.messagesPerDay || 0}
                 completedDocs={overview?.completedDocuments || 0}
-                tokenPct={tokenPct}
-                currentTokensUsed={overview?.tokensUsed || 0}
-                maxUsage={user?.tokenLimit || 0}
                 overview={overview}
                 overviewLoading={overviewLoading}
               />
@@ -209,14 +210,12 @@ export default function DashboardPage() {
 
           {/* ══ USAGE ═════════════════════════════════════════════════════════ */}
           {nav === "usage" && (
-            <Suspense fallback={<DashboardTabLoading />}>
+            <Suspense fallback={<UsageTabLoading />}>
               <UsageTab
                 userId={user?._id ?? ""}
+                totalMessagesThisMonth={overview?.totalMessages ?? 0}
+                totalAIRequests={overview?.totalAIRequests ?? 0}
                 currentMonth={CURRENT_MONTH}
-                tokenPct={tokenPct}
-                tokenLimit={user?.tokenLimit || 0}
-                currentTokensUsed={overview?.tokensUsed || 0}
-                maxUsage={user?.tokenLimit || 0}
               />
             </Suspense>
           )}

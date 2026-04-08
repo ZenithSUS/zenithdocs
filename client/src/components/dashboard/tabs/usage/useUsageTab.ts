@@ -1,22 +1,34 @@
 import { useUsageByUserSixMonths } from "@/features/usage/useUsageByUserSixMonths";
+import { useUsageDailyMessagesByUserAndMonth } from "@/features/usage/useUsageDailyMessagesByUserAndMonth";
 
 interface UseUsageTabOptions {
   userId: string;
   currentMonth: string;
-  tokenLimit: number;
-  currentTokensUsed: number;
 }
 
-const useUsageTab = ({
-  userId,
-  currentMonth,
-  tokenLimit,
-  currentTokensUsed,
-}: UseUsageTabOptions) => {
-  const { data: usage = [] } = useUsageByUserSixMonths(userId, currentMonth);
+const useUsageTab = ({ userId, currentMonth }: UseUsageTabOptions) => {
+  const {
+    data: usage = [],
+    isLoading: isLoadingUsage,
+    isError: usageError,
+    error: usageErrorData,
+    refetch: refetchUsage,
+  } = useUsageByUserSixMonths(userId, currentMonth);
+  const {
+    data: userDailyMessages,
+    isLoading: isLoadingDailyMessages,
+    isError: dailyMessagesError,
+    error: dailyMessagesErrorData,
+    refetch: refetchDailyMessagesUsage,
+  } = useUsageDailyMessagesByUserAndMonth(userId, currentMonth);
 
-  const tokensUsed = Math.min(tokenLimit, currentTokensUsed);
-  const remainingTokens = Math.max(0, tokenLimit - currentTokensUsed);
+  const isUsageTabError = usageError || dailyMessagesError;
+  const usageErrorInfo = usageErrorData || dailyMessagesErrorData;
+
+  const refetchUsagePage = async () => {
+    await Promise.all([refetchUsage(), refetchDailyMessagesUsage()]);
+  };
+
   const documentsThisMonth =
     usage.find((u) => u.month === currentMonth)?.documentsUploaded || 0;
 
@@ -32,9 +44,22 @@ const useUsageTab = ({
   });
 
   return {
+    // Usage Six Months
     usage,
-    tokensUsed,
-    remainingTokens,
+    isLoadingUsage,
+
+    // User Daily Messages
+    userDailyMessages,
+    isLoadingDailyMessages,
+
+    // Errors
+    isUsageTabError,
+    usageErrorInfo,
+
+    // Refetch
+    refetchUsagePage,
+
+    // Utils
     documentsThisMonth,
     nextMonthLabel,
   };
