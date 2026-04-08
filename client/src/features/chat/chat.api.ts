@@ -1,6 +1,7 @@
 import config from "@/config/env";
 import { api, authApi } from "@/lib/axios";
 import {
+  AxiosError,
   RefreshTokenResponse,
   ResponseWithData,
   ResponseWithPagedData,
@@ -88,7 +89,18 @@ export const createChatStream = async (
       return createChatStream(data, onChunk, onDone, setConfidence);
     }
 
-    throw new Error("Failed to send message");
+    let errorMessage = "Failed to send message";
+
+    try {
+      const errorData: AxiosError = await response.json();
+      errorMessage = errorData.message || errorMessage;
+    } catch (err) {
+      // fallback if not JSON
+      const text = await response.text();
+      if (text) errorMessage = text;
+    }
+
+    throw new Error(errorMessage);
   }
 
   if (!response.body) throw new Error("No stream body");

@@ -10,8 +10,7 @@ import {
 import { Message } from "@/types/message";
 import messageKeys from "@/features/message/message.keys";
 import documentKeys from "@/features/documents/document.keys";
-import { AxiosError } from "@/types/api";
-import { handleApiError } from "@/helpers/api-error";
+import { handleNormalFetchError } from "@/helpers/api-error";
 
 export interface MessageFormValues {
   message: string;
@@ -115,8 +114,10 @@ const useMessageStream = ({
           queryKey: documentKeys.byUserWithChatPage(userId),
         });
       } catch (error) {
-        const err = error as AxiosError;
-        handleApiError(err, "Error sending message. Please try again later.");
+        handleNormalFetchError(
+          error as Error,
+          "Error sending message. Please try again later.",
+        );
         removeMessageFromCache(
           queryClient,
           messageKeys.byChat(chatId),

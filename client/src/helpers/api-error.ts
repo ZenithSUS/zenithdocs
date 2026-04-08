@@ -2,6 +2,10 @@ import { toast } from "sonner";
 import { AxiosError } from "@/types/api";
 import { FieldValues, Path, UseFormSetError } from "react-hook-form";
 
+export const handleNormalFetchError = (err: Error, fallback: string) => {
+  toast.error(err.message ?? fallback);
+};
+
 export const handleApiError = (err: AxiosError, fallback: string) => {
   const data = err.response?.data;
 

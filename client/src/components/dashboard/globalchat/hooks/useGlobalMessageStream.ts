@@ -4,12 +4,11 @@ import {
   removeGlobalMessageFromCache,
 } from "@/features/global-message/global-message.cache";
 import globalMessageKeys from "@/features/global-message/global-message.keys";
-import { AxiosError } from "@/types/api";
+import { handleNormalFetchError } from "@/helpers/api-error";
 import { GlobalMessage } from "@/types/global-message";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 
 export interface GlobalMessageFormValues {
   message: string;
@@ -106,8 +105,7 @@ const useGlobalMessageStream = ({
           updateConfidence,
         );
       } catch (error) {
-        const err = error as AxiosError;
-        toast.error(err.response?.data?.message ?? "Error sending message");
+        handleNormalFetchError(error as Error, "Error sending global message");
         removeGlobalMessageFromCache(
           queryClient,
           globalMessageKeys.byChatPage(chatId),

@@ -86,7 +86,7 @@ function GlobalInputArea({
         <button
           onClick={handleSubmit(onSubmit)}
           disabled={!messageValue?.trim() || !!streamingBubble || isDisabled}
-          className="send-btn shrink-0 mb-0.5 w-7 h-7 rounded-lg flex items-center justify-center
+          className="send-btn shrink-0 mb-0.5 w-6 h-6 rounded-lg flex items-center justify-center
                 transition-all duration-150 disabled:opacity-20 active:scale-90"
           style={{
             background:
@@ -118,7 +118,7 @@ function GlobalInputArea({
         </button>
       </div>
 
-      <p className="text-[10px] text-white/15 text-center mt-1.5 tracking-wide hidden sm:block">
+      <p className="text-[10px] text-white/20 text-center mt-1.5 tracking-wide hidden sm:block">
         Enter ↵ to send · Shift+Enter for new line
       </p>
     </div>
