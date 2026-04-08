@@ -173,6 +173,18 @@ export const getDocumentShareByUserAndDocumentId = async (
 };
 
 /**
+ * Retrieves the total number of documents belonging to a user that have been shared with them
+ * @param {string} userId - User ID
+ * @returns {Promise<number>} The total number of shared documents if found, null otherwise
+ * @throws {null} If the user ID is invalid
+ */
+export const getTotalSharedDocumentsByUser = async (userId: string) => {
+  return await DocumentShare.countDocuments({
+    ownerId: new Types.ObjectId(userId),
+  });
+};
+
+/**
  * Increases the access count of a document share by one and updates the last accessed at field to the current date.
  * @param {string} id - Document share ID
  * @returns {Promise<DocumentShare>} Updated document share if found, null otherwise

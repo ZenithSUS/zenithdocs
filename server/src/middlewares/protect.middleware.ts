@@ -27,6 +27,7 @@ const protect = async (req: Request, res: Response, next: NextFunction) => {
     req.user = {
       sub: user._id.toString(),
       role: user.role,
+      plan: user.plan,
     };
 
     next();

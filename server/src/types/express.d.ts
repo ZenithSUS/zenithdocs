@@ -16,6 +16,7 @@ declare module "express-serve-static-core" {
 export interface JwtPayload {
   sub: string;
   role: "user" | "admin";
+  plan: "free" | "premium" | "enterprise";
 }
 
 export interface RefreshTokenPayload {

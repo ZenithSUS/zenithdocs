@@ -74,6 +74,11 @@ export const rateLimiters = {
   fetchUsageAdmin: createLimiter(10, "1 m", "fetchUsageAdmin"),
   getUsageByUserAndMonth: createLimiter(15, "1 m", "getUsageByUserAndMonth"),
   getLastSixMonthsUsage: createLimiter(15, "1 m", "getLastSixMonthsUsage"),
+  getDailyMessagesUsageByUserAndMonth: createLimiter(
+    15,
+    "1 m",
+    "getDailyMessagesUsageByUserAndMonth",
+  ),
 
   // Usage write
   createUsage: createLimiter(20, "1 m", "createUsage"),
