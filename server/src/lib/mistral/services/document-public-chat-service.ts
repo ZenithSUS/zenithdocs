@@ -19,6 +19,8 @@ interface PublicStreamChatPayload {
   req: Request;
 }
 
+const MAX_PUBLIC_MESSAGES = 20;
+
 export const streamDocumentPublicChatService = async (
   payload: PublicStreamChatPayload,
 ) => {
@@ -44,6 +46,13 @@ export const streamDocumentPublicChatService = async (
 
   if (!document) {
     throw new AppError("Document not found", 404);
+  }
+
+  if (history && history.length >= MAX_PUBLIC_MESSAGES) {
+    throw new AppError(
+      `You have reached the maximum number of messages (${MAX_PUBLIC_MESSAGES}) in the public chat. Please wait before sending more.`,
+      400,
+    );
   }
 
   const embedding = await generateEmbedding(validated.question);
