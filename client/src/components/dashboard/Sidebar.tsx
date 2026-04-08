@@ -162,9 +162,9 @@ function DashBoardSidebar({
                     {value} <span className="text-text">/ {limit}</span>
                   </span>
                 </div>
-                <div className="w-full h-[2px] bg-white/6 rounded-full overflow-hidden">
+                <div className="w-full h-0.5 bg-white/6 rounded-full overflow-hidden">
                   <div
-                    className="h-[2px] rounded-full transition-all duration-500"
+                    className="h-0.5 rounded-full transition-all duration-500"
                     style={{
                       width: `${Math.min(pct, 100)}%`,
                       backgroundColor: pct >= 90 ? "#e05050" : "#C9A227",
