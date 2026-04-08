@@ -5,6 +5,10 @@ export const usageParamsSchema = z.object({
   usageId: objectId,
 });
 
+export const usageUserParamsSchema = z.object({
+  userId: objectId,
+});
+
 export const createUsageSchema = z.object({
   user: objectId,
   month: yearMonth,
@@ -15,12 +19,9 @@ export const getUsageByUserAndMonthSchema = z.object({
   month: yearMonth,
 });
 
-export const getLastSixMonthsUsageByUserSchema = z.object({
+export const getDailyMessagesUsageByUserAndMonthSchema = z.object({
   userId: objectId,
-});
-
-export const deleteUsageByUserSchema = z.object({
-  userId: objectId,
+  month: yearMonth,
 });
 
 export const updateUsageSchema = createUsageSchema.partial();

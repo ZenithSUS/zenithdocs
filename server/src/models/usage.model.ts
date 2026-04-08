@@ -5,7 +5,11 @@ export interface IUsage extends Document {
   user: Types.ObjectId;
   month: string; // "2026-02"
   documentsUploaded: number;
+  storageUsed: number;
   tokensUsed: number;
+  totalMessages: number;
+  dailyMessages: Record<string, number>;
+  aiRequests: number;
 }
 
 export interface IUsageInput {
@@ -32,6 +36,30 @@ const usageSchema = new Schema<IUsage>({
     required: true,
   },
   documentsUploaded: {
+    type: Number,
+    default: 0,
+    min: 0,
+  },
+  storageUsed: {
+    type: Number,
+    default: 0,
+    min: 0,
+  },
+  totalMessages: {
+    type: Number,
+    default: 0,
+    min: 0,
+  },
+  dailyMessages: {
+    type: Map,
+    of: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    default: {},
+  },
+  aiRequests: {
     type: Number,
     default: 0,
     min: 0,

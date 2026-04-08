@@ -1,8 +1,5 @@
-import Usage, {
-  IUsage,
-  IUsageInput,
-  IUsagePopulated,
-} from "../models/usage.model.js";
+import Usage, { IUsageInput, IUsagePopulated } from "../models/usage.model.js";
+import dayjs from "dayjs";
 
 /**
  * Creates a new usage with the given data
@@ -16,15 +13,18 @@ export const createUsage = async (data: IUsageInput) => {
 };
 
 /**
- * Increments a usage document by a given amount of tokens used and documents uploaded
- * If a usage document for the given user and month already exists, it will be updated
- * If a usage document for the given user and month does not exist, it will be created
+ * Increments the tokensUsed, documentsUploaded and storageUsed counts for a given user and month, or creates a new document if it does not exist
  * @param {string} userId - User ID
  * @param {number} tokensUsed - Amount of tokens used to increment the tokensUsed count by
- * @returns {Promise<IUsage>} Updated usage document if found, created usage document if not found
+ * @param {number} storageUsed - Amount of storage used to increment the storageUsed count by
+ * @returns {Promise<IUsage>} Updated or created usage document
  * @throws {MongooseError} If usage data is invalid
  */
-export const incrementUsage = async (userId: string, tokensUsed: number) => {
+export const incrementUsage = async (
+  userId: string,
+  tokensUsed: number,
+  storageUsed: number,
+) => {
   const month = new Date().toISOString().slice(0, 7);
 
   return await Usage.findOneAndUpdate(
@@ -33,6 +33,7 @@ export const incrementUsage = async (userId: string, tokensUsed: number) => {
       $inc: {
         tokensUsed,
         documentsUploaded: 1,
+        storageUsed,
       },
     },
     {
@@ -86,9 +87,27 @@ export const getLastSixMonthsUsageByUser = async (userId: string) => {
       path: "user",
       select: "_id email plan",
     })
+    .select("-tokensUsed")
     .sort({ month: -1 })
     .limit(6)
     .lean();
+};
+
+/**
+ * Retrieves the total number of AI requests for a given user and month
+ * @param {string} userId - User ID
+ * @param {string} month - Month in format "YYYY-MM"
+ * @returns {Promise<number>} Total number of AI requests for the given user and month
+ * @throws {MongooseError} If usage data is invalid
+ */
+export const getTotalAIRequests = async (userId: string, month: string) => {
+  const usage = await Usage.findOne({ user: userId, month: month })
+    .select("aiRequests")
+    .lean();
+
+  if (!usage) return 0;
+
+  return usage?.aiRequests || 0;
 };
 
 /**
@@ -104,6 +123,22 @@ export const getUsageByUser = async (userId: string) => {
       select: "_id email plan",
     })
     .sort({ month: -1 })
+    .lean();
+};
+
+/**
+ * Retrieves the daily messages for a given user and month
+ * @param {string} userId - User ID
+ * @param {string} month - Month in format "YYYY-MM"
+ * @returns {Promise<IUsage[]>} Array of daily messages if found, empty array otherwise
+ * @throws {MongooseError} If usage data is invalid
+ */
+export const getDailyMessagesUsageByUserAndMonth = async (
+  userId: string,
+  month: string,
+) => {
+  return await Usage.findOne({ user: userId, month: month })
+    .select("_id user month dailyMessages")
     .lean();
 };
 
@@ -184,6 +219,50 @@ export const incrementOnlyTokensUsed = async (
       setDefaultsOnInsert: true,
     },
   ).lean();
+};
+
+/**
+ * Increments the aiRequests count for a given user and month, or creates a new document if it does not exist
+ * @param {string} userId - User ID
+ * @returns {Promise<IUsage>} Updated or created usage document
+ * @throws {MongooseError} If usage data is invalid
+ */
+export const incrementOnlyAIRequests = async (userId: string) => {
+  const month = new Date().toISOString().slice(0, 7); // YYYY-MM
+
+  return await Usage.findOneAndUpdate(
+    { user: userId, month },
+    {
+      $inc: {
+        aiRequests: 1,
+      },
+    },
+    {
+      returnDocument: "after",
+      upsert: true,
+      setDefaultsOnInsert: true,
+    },
+  );
+};
+
+export const incrementOnlyDailyAndTotalMessages = async (userId: string) => {
+  const month = new Date().toISOString().slice(0, 7); // YYYY-MM
+  const today = dayjs().format("YYYY-MM-DD");
+
+  return await Usage.findOneAndUpdate(
+    { user: userId, month },
+    {
+      $inc: {
+        [`dailyMessages.${today}`]: 1,
+        totalMessages: 1,
+      },
+    },
+    {
+      returnDocument: "after",
+      upsert: true,
+      setDefaultsOnInsert: true,
+    },
+  );
 };
 
 /**
