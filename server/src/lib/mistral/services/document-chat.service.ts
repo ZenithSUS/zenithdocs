@@ -17,6 +17,10 @@ import redis from "../../../config/redis.js";
 import queryEmbedding from "../utils/query-embedding.js";
 import { streamDocumentChatSchema } from "../../../schemas/chat.schema.js";
 import { userTokenSchema } from "../../../utils/zod.utils.js";
+import {
+  incrementOnlyAIRequests,
+  incrementOnlyDailyAndTotalMessages,
+} from "../../../repositories/usage.repository.js";
 
 interface StreamChatPayload {
   question: string;
@@ -117,6 +121,11 @@ ${context}`;
     topP: 1,
     maxTokens: 2000,
   });
+
+  await Promise.all([
+    incrementOnlyAIRequests(authUser.userId),
+    incrementOnlyDailyAndTotalMessages(authUser.userId),
+  ]);
 
   await createMessage({
     chatId: chat._id.toString(),

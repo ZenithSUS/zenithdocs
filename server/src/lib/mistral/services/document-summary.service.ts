@@ -10,6 +10,68 @@ export interface AdditionalDetails {
   entity: string[]; // e.g. ["Acme Corp", "John Doe (CEO)"]
 }
 
+const ADDITIONAL_DETAILS_SYSTEM_PROMPT = `
+You are an expert document analyst. You read any type of document — contracts, resumes, reports, invoices, research papers, emails, proposals, policies, and more.
+
+Analyze the provided text and return a JSON object with exactly these fields:
+
+{
+  "risk": "string",
+  "action": "string",
+  "entity": ["string"]
+}
+
+━━━ FIELD DEFINITIONS ━━━
+
+risk:
+  Identify the most significant risk, gap, concern, or weakness in the document.
+  Adapt your analysis to the document type:
+  - Contract/Legal  → "Auto-renewal clause present", "Indemnity clause missing"
+  - Resume/CV       → "No quantified achievements listed", "3-year employment gap (2019–2022)"
+  - Report/Analysis → "Conclusion not supported by data", "Sample size too small (n=12)"
+  - Invoice/Finance → "Payment overdue by 45 days", "Missing tax identification number"
+  - Email/Memo      → "No clear decision maker assigned", "Deadline not specified"
+  - Proposal        → "Budget section absent", "ROI not addressed"
+  - Policy          → "Enforcement mechanism unclear", "Last reviewed 4 years ago"
+  - General         → Identify any notable weakness, inconsistency, or missing element
+
+  If genuinely no risk exists, return "No significant risk identified".
+  Maximum 10 words. Be specific — never vague.
+
+action:
+  Identify the most important next step, deadline, or recommended action from the document.
+  Adapt to the document type:
+  - Contract/Legal  → "Sign before March 1, 2024", "Negotiate liability cap before signing"
+  - Resume/CV       → "Add metrics to work experience", "Include a summary section"
+  - Report/Analysis → "Expand sample size before publishing", "Validate findings with follow-up study"
+  - Invoice/Finance → "Process payment by due date", "Request missing invoice number"
+  - Email/Memo      → "Respond by end of week", "Schedule follow-up meeting"
+  - Proposal        → "Submit by RFP deadline", "Add cost-benefit breakdown"
+  - Policy          → "Schedule annual review", "Assign policy owner"
+  - General         → Identify any clear next step or improvement action
+
+  If no action is needed, return "No immediate action required".
+  Maximum 10 words. Be direct and actionable.
+
+entity:
+  Extract the most relevant named entities from the document.
+  - People: include role/title if mentioned (e.g. "Jane Smith (CTO)", "John Doe (Applicant)")
+  - Organizations: companies, institutions, agencies (e.g. "Acme Corp", "MIT", "IRS")
+  - Systems/Tools: software, platforms, technologies (e.g. "Salesforce", "AWS Lambda", "PostgreSQL")
+  - Locations: cities, countries, addresses if significant (e.g. "San Francisco, CA")
+  - Dates/Deadlines: only if critical (e.g. "March 1, 2024 (deadline)")
+  Extract up to 8 of the most relevant. If none found, return [].
+
+━━━ RULES ━━━
+- Return ONLY valid JSON. No explanations, no markdown, no preamble.
+- Do NOT wrap output in backticks or code blocks.
+- Never return vague placeholders like "N/A", "Unknown", or "See document".
+- Always produce a meaningful risk and action — think carefully before defaulting to fallbacks.
+`;
+
+const MAX_CHARS_PER_CHUNK = 12000; // ~3000 tokens
+const CHUNK_DELAY_MS = 1500;
+
 function buildSystemPrompt(type: SummaryType) {
   switch (type) {
     case "short":
@@ -90,68 +152,6 @@ Deliver structured, executive-ready plain text.
   }
 }
 
-const ADDITIONAL_DETAILS_SYSTEM_PROMPT = `
-You are an expert document analyst. You read any type of document — contracts, resumes, reports, invoices, research papers, emails, proposals, policies, and more.
-
-Analyze the provided text and return a JSON object with exactly these fields:
-
-{
-  "risk": "string",
-  "action": "string",
-  "entity": ["string"]
-}
-
-━━━ FIELD DEFINITIONS ━━━
-
-risk:
-  Identify the most significant risk, gap, concern, or weakness in the document.
-  Adapt your analysis to the document type:
-  - Contract/Legal  → "Auto-renewal clause present", "Indemnity clause missing"
-  - Resume/CV       → "No quantified achievements listed", "3-year employment gap (2019–2022)"
-  - Report/Analysis → "Conclusion not supported by data", "Sample size too small (n=12)"
-  - Invoice/Finance → "Payment overdue by 45 days", "Missing tax identification number"
-  - Email/Memo      → "No clear decision maker assigned", "Deadline not specified"
-  - Proposal        → "Budget section absent", "ROI not addressed"
-  - Policy          → "Enforcement mechanism unclear", "Last reviewed 4 years ago"
-  - General         → Identify any notable weakness, inconsistency, or missing element
-
-  If genuinely no risk exists, return "No significant risk identified".
-  Maximum 10 words. Be specific — never vague.
-
-action:
-  Identify the most important next step, deadline, or recommended action from the document.
-  Adapt to the document type:
-  - Contract/Legal  → "Sign before March 1, 2024", "Negotiate liability cap before signing"
-  - Resume/CV       → "Add metrics to work experience", "Include a summary section"
-  - Report/Analysis → "Expand sample size before publishing", "Validate findings with follow-up study"
-  - Invoice/Finance → "Process payment by due date", "Request missing invoice number"
-  - Email/Memo      → "Respond by end of week", "Schedule follow-up meeting"
-  - Proposal        → "Submit by RFP deadline", "Add cost-benefit breakdown"
-  - Policy          → "Schedule annual review", "Assign policy owner"
-  - General         → Identify any clear next step or improvement action
-
-  If no action is needed, return "No immediate action required".
-  Maximum 10 words. Be direct and actionable.
-
-entity:
-  Extract the most relevant named entities from the document.
-  - People: include role/title if mentioned (e.g. "Jane Smith (CTO)", "John Doe (Applicant)")
-  - Organizations: companies, institutions, agencies (e.g. "Acme Corp", "MIT", "IRS")
-  - Systems/Tools: software, platforms, technologies (e.g. "Salesforce", "AWS Lambda", "PostgreSQL")
-  - Locations: cities, countries, addresses if significant (e.g. "San Francisco, CA")
-  - Dates/Deadlines: only if critical (e.g. "March 1, 2024 (deadline)")
-  Extract up to 8 of the most relevant. If none found, return [].
-
-━━━ RULES ━━━
-- Return ONLY valid JSON. No explanations, no markdown, no preamble.
-- Do NOT wrap output in backticks or code blocks.
-- Never return vague placeholders like "N/A", "Unknown", or "See document".
-- Always produce a meaningful risk and action — think carefully before defaulting to fallbacks.
-`;
-
-const MAX_CHARS_PER_CHUNK = 12000; // ~3000 tokens
-const CHUNK_DELAY_MS = 1500;
-
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -171,6 +171,7 @@ async function callMistralWithRetry(
           { role: "user", content },
         ],
         temperature: 0.4,
+        maxTokens: 2000,
       });
 
       return {
@@ -246,7 +247,6 @@ export const summarizeText = async (
   content: string,
   type: SummaryType,
   currentTokens: number,
-  maxTokens: number,
 ) => {
   const systemPrompt = buildSystemPrompt(type);
   let runningTokenTotal = currentTokens;
@@ -254,13 +254,6 @@ export const summarizeText = async (
   // ─── Small content — send directly ───────────────────────────────────────
   if (content.length <= MAX_CHARS_PER_CHUNK) {
     const result = await callMistralWithRetry(content, systemPrompt);
-
-    if (runningTokenTotal + result.tokens > maxTokens) {
-      throw new AppError(
-        `You've run out of tokens for this month. Please upgrade your plan or wait until next month to continue.`,
-        400,
-      );
-    }
 
     const { details, tokens: detailTokens } =
       await extractAdditionalDetails(content);
@@ -279,26 +272,9 @@ export const summarizeText = async (
   const chunkSummaries: string[] = [];
 
   for (let i = 0; i < chunks.length; i++) {
-    const estimatedChunkTokens = Math.ceil(chunks[i].length / 4);
-    const remaining = Math.max(0, maxTokens - runningTokenTotal - totalTokens);
-
-    if (runningTokenTotal + totalTokens + estimatedChunkTokens > maxTokens) {
-      throw new AppError(
-        `This document is too large to summarize with your current plan. You have ${remaining.toLocaleString()} tokens remaining. Try a shorter document or upgrade your plan for more capacity.`,
-        400,
-      );
-    }
-
     const result = await callMistralWithRetry(chunks[i], systemPrompt);
     chunkSummaries.push(result.text);
     totalTokens += result.tokens;
-
-    if (runningTokenTotal + totalTokens > maxTokens) {
-      throw new AppError(
-        `Your token limit was reached while processing this document. Partial summaries cannot be saved. Please upgrade your plan to handle larger documents.`,
-        400,
-      );
-    }
 
     if (i < chunks.length - 1) await sleep(CHUNK_DELAY_MS);
   }
@@ -317,15 +293,6 @@ export const summarizeText = async (
 
   // ─── Final combination pass ───────────────────────────────────────────────
   const combined = chunkSummaries.join("\n\n");
-  const estimatedFinalTokens = Math.ceil(combined.length / 4);
-  const remaining = Math.max(0, maxTokens - runningTokenTotal - totalTokens);
-
-  if (runningTokenTotal + totalTokens + estimatedFinalTokens > maxTokens) {
-    throw new AppError(
-      `Almost there, but you don't have enough tokens left to finalize this summary. You have ${remaining.toLocaleString()} tokens remaining. Upgrade your plan to process larger documents.`,
-      400,
-    );
-  }
 
   const finalResult = await callMistralWithRetry(combined, systemPrompt);
   totalTokens += finalResult.tokens;

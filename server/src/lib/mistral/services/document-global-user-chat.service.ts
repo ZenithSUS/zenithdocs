@@ -16,7 +16,10 @@ import { IDocumentChunkOutput } from "../../../models/document-chunk.model.js";
 import { globalChatUserSchema } from "../../../schemas/global-chat.schema.js";
 import isZenithDocsQuestion from "../../../utils/zenithdocs-question.js";
 import redis from "../../../config/redis.js";
-
+import {
+  incrementOnlyAIRequests,
+  incrementOnlyDailyAndTotalMessages,
+} from "../../../repositories/usage.repository.js";
 interface streamDocumentUserChatPayload {
   userId: string;
   question: string;
@@ -216,6 +219,11 @@ export const streamDocumentUserChat = async ({
   const relatedDocumentIds = new Set(
     filteredChunks.map((chunk) => chunk.documentId.toString()),
   );
+
+  await Promise.all([
+    incrementOnlyAIRequests(validated.userId),
+    incrementOnlyDailyAndTotalMessages(validated.userId),
+  ]);
 
   await createGlobalMessage({
     role: "user",
