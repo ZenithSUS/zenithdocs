@@ -2,6 +2,7 @@ import { IDocumentChunk } from "../../../models/document-chunk.model.js";
 import { ILearningItem } from "../../../models/learning-set.model.js";
 import { getDocumentChunksByDocumentId } from "../../../repositories/document-chunk.repository.js";
 import { getDocumentById } from "../../../repositories/document.repository.js";
+import { incrementOnlyAIRequests } from "../../../repositories/usage.repository.js";
 import AppError from "../../../utils/app-error.js";
 import colors from "../../../utils/log-colors.js";
 import client from "../index.js";
@@ -276,6 +277,8 @@ export const generateLearningSets = async ({
   if (!mergedItems.length) {
     throw new AppError("All batches failed. No items generated.", 500);
   }
+
+  await incrementOnlyAIRequests(ownerId);
 
   return {
     documentId,

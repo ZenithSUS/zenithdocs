@@ -5,6 +5,7 @@ import {
   deleteUsageById,
   deleteUsageByUserService,
   getAllUsageServiceAdmin,
+  getDailyMessagesUsageByUserAndMonthService,
   getLastSixMonthsUsageByUserService,
   getUsageByUserAndMonthService,
   getUsageByUserService,
@@ -123,6 +124,29 @@ export const getLastSixMonthsUsageByUserController = async (
     return res.status(200).json({
       success: true,
       message: "Usage fetched successfully",
+      data: usage,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/** Retrieves the daily messages for a given user
+ * @route GET /api/usage/user/:id/daily-messages/month/:month
+ */
+export const getDailyMessagesUsageByUserAndMonthController = async (
+  req: Request<UsageParams>,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { id, month } = req.params;
+
+    const usage = await getDailyMessagesUsageByUserAndMonthService(id, month);
+
+    return res.status(200).json({
+      success: true,
+      message: "Daily messages fetched successfully",
       data: usage,
     });
   } catch (error) {

@@ -59,7 +59,7 @@ export const createSummaryController = async (
 };
 
 /**
- * Get all summaries
+ * Get all summaries (admin only)
  * @route GET /api/summaries
  */
 export const getAllSummaryController = async (
@@ -68,7 +68,8 @@ export const getAllSummaryController = async (
   next: NextFunction,
 ) => {
   try {
-    const summaries = await getAllSummaryService();
+    const role = req.user.role;
+    const summaries = await getAllSummaryService(role);
 
     return res.status(200).json({
       success: true,
