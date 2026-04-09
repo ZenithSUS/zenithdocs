@@ -20,13 +20,18 @@ export const addInfiniteDocument = (
 
     const firstPage = oldData.pages[0];
 
+    // Remove any existing entry with the same _id before prepending
+    const dedupedDocuments = firstPage.documents.filter(
+      (doc) => doc._id !== newDoc._id,
+    );
+
     // Add the new document to the first page of the cache then append the rest of the pages
     return {
       ...oldData,
       pages: [
         {
           ...firstPage,
-          documents: [newDoc, ...firstPage.documents],
+          documents: [newDoc, ...dedupedDocuments],
         },
         ...oldData.pages.slice(1),
       ],

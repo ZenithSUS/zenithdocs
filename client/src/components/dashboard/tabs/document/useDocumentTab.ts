@@ -1,4 +1,11 @@
-import { useState, useEffect, useRef, useCallback, ChangeEvent } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  ChangeEvent,
+  useMemo,
+} from "react";
 import { useRouter } from "next/navigation";
 import useDocument from "@/features/documents/useDocument";
 import Doc, { DocumentShareInfo } from "@/types/doc";
@@ -68,7 +75,15 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
   const { mutateAsync: reprocessDoc } = reprocessDocumentMutation;
 
   // ─── Flattened data ───────────────────────────────────────────────────────
-  const allDocs = documentsData?.pages.flatMap((p) => p.documents) ?? [];
+  const allDocs = useMemo(() => {
+    const docs = documentsData?.pages.flatMap((p) => p.documents) ?? [];
+    const seen = new Set<string>();
+    return docs.filter((doc) => {
+      if (seen.has(doc._id)) return false;
+      seen.add(doc._id);
+      return true;
+    });
+  }, [documentsData]);
   const allFolders = foldersData?.pages.flatMap((p) => p.folders) ?? [];
   const allSummaries = summariesData?.pages.flatMap((p) => p.summaries) ?? [];
 
