@@ -5,7 +5,7 @@ export interface IUsage extends Document {
   user: Types.ObjectId;
   month: string; // "2026-02"
   documentsUploaded: number;
-  storageUsed: number;
+  storageAdded: number;
   tokensUsed: number;
   totalMessages: number;
   dailyMessages: Record<string, number>;
@@ -40,7 +40,7 @@ const usageSchema = new Schema<IUsage>({
     default: 0,
     min: 0,
   },
-  storageUsed: {
+  storageAdded: {
     type: Number,
     default: 0,
     min: 0,

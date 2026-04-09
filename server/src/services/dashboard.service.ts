@@ -16,6 +16,7 @@ import {
 import { getDashboardOverviewSchema } from "../schemas/dashboard.schema.js";
 import { getTotalSharedDocumentsByUser } from "../repositories/document-share.repository.js";
 import dayjs from "dayjs";
+import { getStorageByUser } from "../repositories/storage.repository.js";
 
 /**
  * Retrieves an overview of the dashboard for a user
@@ -41,6 +42,9 @@ export const getDashboardOverviewService = async (userId: string) => {
     usage,
     usageHistory,
 
+    // Storage
+    storageUsed,
+
     // Totals
     completedDocuments,
     processingDocuments,
@@ -59,6 +63,9 @@ export const getDashboardOverviewService = async (userId: string) => {
     // Usage
     getUsageByUserAndMonth(validated.userId, validated.month),
     getLastSixMonthsUsageByUser(validated.userId),
+
+    // Storage
+    getStorageByUser(validated.userId),
 
     // Totals
     getTotalStatusDocumentsByUser(validated.userId, "completed"),
@@ -80,11 +87,13 @@ export const getDashboardOverviewService = async (userId: string) => {
 
     // Usage
     totalSharedDocuments,
-    tokensUsed: usage?.tokensUsed || 0,
     documentsUploaded: usage?.documentsUploaded || 0,
-    storageUsed: usage?.storageUsed || 0,
+    storageAdded: usage?.storageAdded || 0,
     usageHistory,
     dailyMessage: usage?.dailyMessages[today] || 0,
+
+    // Storage
+    storageUsed: storageUsed?.totalUsed || 0,
 
     // Totals
     completedDocuments,

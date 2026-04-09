@@ -13,17 +13,17 @@ export const createUsage = async (data: IUsageInput) => {
 };
 
 /**
- * Increments the tokensUsed, documentsUploaded and storageUsed counts for a given user and month, or creates a new document if it does not exist
+ * Increments the tokensUsed, documentsUploaded and storageAdded counts for a given user and month, or creates a new document if it does not exist
  * @param {string} userId - User ID
  * @param {number} tokensUsed - Amount of tokens used to increment the tokensUsed count by
- * @param {number} storageUsed - Amount of storage used to increment the storageUsed count by
+ * @param {number} storageAdded - Amount of storage used to increment the storageAdded count by
  * @returns {Promise<IUsage>} Updated or created usage document
  * @throws {MongooseError} If usage data is invalid
  */
 export const incrementUsage = async (
   userId: string,
   tokensUsed: number,
-  storageUsed: number,
+  storageAdded: number,
 ) => {
   const month = new Date().toISOString().slice(0, 7);
 
@@ -33,7 +33,7 @@ export const incrementUsage = async (
       $inc: {
         tokensUsed,
         documentsUploaded: 1,
-        storageUsed,
+        storageAdded,
       },
     },
     {

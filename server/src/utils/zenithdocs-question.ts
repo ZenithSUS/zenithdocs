@@ -22,6 +22,7 @@ const isZenithDocsQuestion = (question: string): boolean => {
     "supported file formats",
     "created by",
     "developed by",
+    "document support",
 
     // About the Platform
     "what is zenithdocs",

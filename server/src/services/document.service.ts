@@ -30,6 +30,11 @@ import {
 } from "../schemas/document.schema.js";
 import { userTokenSchema } from "../utils/zod.utils.js";
 import subtypePrefixMap from "../constants/subtype-prefix.js";
+import {
+  addStorageService,
+  getOrCreateStorageService,
+  removeStorageService,
+} from "./storage.service.js";
 
 /**
  * Creates a new document with the given data
@@ -55,39 +60,44 @@ export const createDocumentService = async (data: Partial<IDocumentInput>) => {
   }
 
   // Update usage or create a new one
-  let usageLimit = await updateUsageMonthByUser(validData.user, month);
+  let usage = await updateUsageMonthByUser(validData.user, month);
 
-  if (!usageLimit.user || typeof usageLimit.user === "string") {
+  // Increment storage
+
+  if (!usage.user || typeof usage.user === "string") {
     throw new AppError("User not populated properly", 500);
   }
 
-  if (!("plan" in usageLimit.user)) {
+  if (!("plan" in usage.user)) {
     throw new AppError("User plan not found", 500);
   }
 
-  const userPlan = usageLimit.user.plan as keyof typeof PLAN_LIMITS;
+  const userPlan = usage.user.plan as keyof typeof PLAN_LIMITS;
   const userLimit = PLAN_LIMITS[userPlan].documentLimit;
   const storageLimit = PLAN_LIMITS[userPlan].storageLimitMB;
 
-  const sizeMB = parseFloat((validData.fileSize / (1024 * 1024)).toFixed(2));
+  const fileSize = validData.fileSize;
 
-  const currentUsageMB = usageLimit.storageUsed || 0;
-  const newTotalMB = currentUsageMB + sizeMB;
+  const currentStorage = await getOrCreateStorageService(validData.user);
 
-  if (newTotalMB > storageLimit) {
+  const storageLimitBytes = storageLimit * 1024 * 1024;
+  const newTotal = currentStorage.totalUsed + fileSize;
+
+  if (newTotal > storageLimitBytes) {
     throw new AppError(
       `Storage limit exceeded for ${userPlan} plan (${storageLimit} MB)`,
       400,
     );
   }
 
-  if (usageLimit.documentsUploaded >= userLimit) {
+  if (usage.documentsUploaded >= userLimit) {
     throw new AppError("Document limit reached for this month", 400);
   }
 
-  const document = await createDocument(validData);
+  await addStorageService(validData.user, fileSize);
+  await incrementUsage(validData.user, 0, fileSize);
 
-  await incrementUsage(validData.user, 0, sizeMB);
+  const document = await createDocument(validData);
   return document;
 };
 
@@ -337,6 +347,11 @@ export const deleteDocumentByIdService = async (
 
   // Delete the document chunks associated with the document
   await deleteDocumentChunksByDocumentId(docId);
+
+  await removeStorageService(
+    deletedDocument.user._id.toString(),
+    deletedDocument.fileSize,
+  );
 
   return deletedDocument;
 };
