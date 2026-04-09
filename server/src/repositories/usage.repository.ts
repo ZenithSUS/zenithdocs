@@ -195,6 +195,12 @@ export const getOrCreateUsageByUserAndMonth = async (
   ).populate("user", "_id email plan");
 };
 
+/**
+ * Updates a usage document for a given user and month (write intent)
+ * @param {string} userId - User ID
+ * @param {string} month - Month in format "YYYY-MM"
+ * @returns {Promise<IUsage>} Existing or newly created usage document
+ */
 export const updateUsageMonthByUser = async (userId: string, month: string) => {
   return await Usage.findOneAndUpdate(
     { user: userId, month },
