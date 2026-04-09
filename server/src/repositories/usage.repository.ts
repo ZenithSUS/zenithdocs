@@ -175,13 +175,15 @@ export const updateUsage = async (id: string, data: Partial<IUsageInput>) => {
 };
 
 /**
- * Updates a usage document for a given user and month, or creates a new one if it does not exist
+ * Gets or creates a usage document for a given user and month (read-only intent)
  * @param {string} userId - User ID
  * @param {string} month - Month in format "YYYY-MM"
- * @returns {Promise<IUsage>} Updated or created usage document
- * @throws {MongooseError} If usage data is invalid
+ * @returns {Promise<IUsage>} Existing or newly created usage document
  */
-export const updateUsageMonthByUser = async (userId: string, month: string) => {
+export const getOrCreateUsageByUserAndMonth = async (
+  userId: string,
+  month: string,
+) => {
   return await Usage.findOneAndUpdate(
     { user: userId, month },
     {},
@@ -190,6 +192,14 @@ export const updateUsageMonthByUser = async (userId: string, month: string) => {
       upsert: true,
       setDefaultsOnInsert: true,
     },
+  ).populate("user", "_id email plan");
+};
+
+export const updateUsageMonthByUser = async (userId: string, month: string) => {
+  return await Usage.findOneAndUpdate(
+    { user: userId, month },
+    {},
+    { returnDocument: "after", upsert: true, setDefaultsOnInsert: true },
   ).populate("user", "_id email plan");
 };
 

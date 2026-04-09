@@ -3,6 +3,7 @@ import { promisify } from "util";
 import { Request, Response } from "express";
 import { IDocumentInput } from "../models/document.model.js";
 import {
+  checkUserDocumentLimitsService,
   createDocumentService,
   deleteDocumentByIdService,
   getAllDocumentsService,
@@ -15,7 +16,6 @@ import {
 import { NextFunction, ParamsDictionary } from "express-serve-static-core";
 import AppError from "../utils/app-error.js";
 import cloudinary, { uploadToCloudinary } from "../lib/cloudinary.service.js";
-import extractRawText from "../lib/extract-text.js";
 import { embeddingQueue } from "../queues/embedding.queue.js";
 
 const unlink = promisify(fs.unlink);
@@ -46,8 +46,9 @@ export const createDocumentController = async (
       throw new AppError("File size must be less than 10MB", 400);
     }
 
-    const data: Partial<IDocumentInput> = req.body;
+    await checkUserDocumentLimitsService(userId, req.file.size);
 
+    const data: Partial<IDocumentInput> = req.body;
     const { url, publicId } = await uploadToCloudinary(
       tempFilePath,
       req.file.originalname,

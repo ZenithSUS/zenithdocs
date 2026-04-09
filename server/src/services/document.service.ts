@@ -1,3 +1,4 @@
+import subtypePrefixMap from "../constants/subtype-prefix.js";
 import { IDocumentInput } from "../models/document.model.js";
 import {
   createDocument,
@@ -13,7 +14,7 @@ import AppError from "../utils/app-error.js";
 import PLAN_LIMITS from "../config/plans.js";
 import {
   incrementUsage,
-  updateUsageMonthByUser,
+  getOrCreateUsageByUserAndMonth,
 } from "../repositories/usage.repository.js";
 import { deleteFileFromCloudinary } from "../lib/cloudinary.service.js";
 import colors from "../utils/log-colors.js";
@@ -29,7 +30,6 @@ import {
   updateDocumentSchema,
 } from "../schemas/document.schema.js";
 import { userTokenSchema } from "../utils/zod.utils.js";
-import subtypePrefixMap from "../constants/subtype-prefix.js";
 import {
   addStorageService,
   getOrCreateStorageService,
@@ -37,65 +37,62 @@ import {
 } from "./storage.service.js";
 
 /**
- * Creates a new document with the given data
- * @param {Partial<IDocumentInput>} data - Data to create document
- * @returns The created document
- * @throws {AppError} If data is invalid or missing
- * @throws {AppError} If title, file URL, file type, or file size is missing or invalid
- * @throws {AppError} If user ID is invalid or missing
- * @throws {AppError} If folder ID is invalid or missing, or if the folder does not exist or belongs to a different user
+ * Checks if the user has exceeded the document limit and storage limit for the given month.
+ * If the user has exceeded the document limit, it throws an AppError with a 400 status code.
+ * If the user has exceeded the storage limit, it throws an AppError with a 400 status code.
+ *
+ * @param {string} userId - User ID
+ * @param {number} fileSize - File size in bytes
+ * @throws {AppError} If the user has exceeded the document limit or storage limit
  */
-export const createDocumentService = async (data: Partial<IDocumentInput>) => {
+export const checkUserDocumentLimitsService = async (
+  userId: string,
+  fileSize: number,
+) => {
   const month = new Date().toISOString().slice(0, 7);
-  const validData = createDocumentSchema.parse(data);
+  const usage = await getOrCreateUsageByUserAndMonth(userId, month);
 
-  // If folder is provided, validate it and check ownership
-  if (validData.folder) {
-    const existingFolder = await getFolderById(validData.folder);
-
-    if (!existingFolder) throw new AppError("Folder not found", 404);
-
-    if (existingFolder.user._id.toString() !== validData.user)
-      throw new AppError("Forbidden", 403);
-  }
-
-  // Update usage or create a new one
-  let usage = await updateUsageMonthByUser(validData.user, month);
-
-  // Increment storage
-
-  if (!usage.user || typeof usage.user === "string") {
+  if (!usage.user || typeof usage.user === "string")
     throw new AppError("User not populated properly", 500);
-  }
-
-  if (!("plan" in usage.user)) {
-    throw new AppError("User plan not found", 500);
-  }
+  if (!("plan" in usage.user)) throw new AppError("User plan not found", 500);
 
   const userPlan = usage.user.plan as keyof typeof PLAN_LIMITS;
   const userLimit = PLAN_LIMITS[userPlan].documentLimit;
   const storageLimit = PLAN_LIMITS[userPlan].storageLimitMB;
 
-  const fileSize = validData.fileSize;
+  if (usage.documentsUploaded >= userLimit)
+    throw new AppError("Document limit reached for this month", 400);
 
-  const currentStorage = await getOrCreateStorageService(validData.user);
-
+  const currentStorage = await getOrCreateStorageService(userId);
   const storageLimitBytes = storageLimit * 1024 * 1024;
-  const newTotal = currentStorage.totalUsed + fileSize;
 
-  if (newTotal > storageLimitBytes) {
+  if (currentStorage.totalUsed + fileSize > storageLimitBytes)
     throw new AppError(
       `Storage limit exceeded for ${userPlan} plan (${storageLimit} MB)`,
       400,
     );
+};
+
+/**
+ * Creates a new document with the given data
+ * @param {Partial<IDocumentInput>} data - Document data to create
+ * @throws {AppError} If the folder is not found or if the user is not allowed to share the document
+ * @throws {AppError} If user document limit is reached for the current month
+ * @throws {AppError} If the storage limit is exceeded for the current month
+ * @returns {Promise<Document>} The created document
+ */
+export const createDocumentService = async (data: Partial<IDocumentInput>) => {
+  const validData = createDocumentSchema.parse(data);
+
+  if (validData.folder) {
+    const existingFolder = await getFolderById(validData.folder);
+    if (!existingFolder) throw new AppError("Folder not found", 404);
+    if (existingFolder.user._id.toString() !== validData.user)
+      throw new AppError("Forbidden", 403);
   }
 
-  if (usage.documentsUploaded >= userLimit) {
-    throw new AppError("Document limit reached for this month", 400);
-  }
-
-  await addStorageService(validData.user, fileSize);
-  await incrementUsage(validData.user, 0, fileSize);
+  await addStorageService(validData.user, validData.fileSize);
+  await incrementUsage(validData.user, 0, validData.fileSize);
 
   const document = await createDocument(validData);
   return document;
