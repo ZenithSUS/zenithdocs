@@ -13,6 +13,12 @@ import documentKeys from "@/features/documents/document.keys";
 import { handleNormalFetchError } from "@/helpers/api-error";
 import { incrementDashboardMessageCache } from "@/features/dashboard/dashboard.cache";
 import { dashboardKeys } from "@/features/dashboard/dashboard.keys";
+import {
+  incrementUsageDailyMessagesCache,
+  incrementUsageMessageDataBySixMonthsCache,
+} from "@/features/usage/usage.cache";
+import usageKeys from "@/features/usage/usage.keys";
+import dayjs from "dayjs";
 
 export interface MessageFormValues {
   message: string;
@@ -80,6 +86,19 @@ const useMessageStream = ({
       );
 
       incrementDashboardMessageCache(queryClient, dashboardKeys.overview());
+
+      incrementUsageMessageDataBySixMonthsCache(
+        queryClient,
+        usageKeys.byUserSixMonths(userId),
+      );
+
+      incrementUsageDailyMessagesCache(
+        queryClient,
+        usageKeys.dailyMessagesByUserAndMonth(
+          userId,
+          dayjs().format("YYYY-MM"),
+        ),
+      );
 
       try {
         await sendMessageStream(

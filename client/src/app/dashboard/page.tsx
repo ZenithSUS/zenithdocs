@@ -1,5 +1,6 @@
 "use client";
 
+import dayjs from "dayjs";
 import CursorGlow from "@/components/CursorGlow";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import DashboardTabLoading from "@/components/dashboard/DashBoardTabLoading";
@@ -28,7 +29,7 @@ const FolderTab = lazy(() => import("@/components/dashboard/tabs/folder"));
 const UsageTab = lazy(() => import("@/components/dashboard/tabs/usage"));
 const SharedTab = lazy(() => import("@/components/dashboard/tabs/shared"));
 
-const CURRENT_MONTH = new Date().toISOString().slice(0, 7); // YYYY-MM
+const CURRENT_MONTH = dayjs().format("YYYY-MM");
 
 export default function DashboardPage() {
   const {

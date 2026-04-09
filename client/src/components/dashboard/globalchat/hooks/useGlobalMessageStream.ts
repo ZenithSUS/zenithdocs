@@ -6,9 +6,15 @@ import {
   removeGlobalMessageFromCache,
 } from "@/features/global-message/global-message.cache";
 import globalMessageKeys from "@/features/global-message/global-message.keys";
+import {
+  incrementUsageDailyMessagesCache,
+  incrementUsageMessageDataBySixMonthsCache,
+} from "@/features/usage/usage.cache";
+import usageKeys from "@/features/usage/usage.keys";
 import { handleNormalFetchError } from "@/helpers/api-error";
 import { GlobalMessage } from "@/types/global-message";
 import { useQueryClient } from "@tanstack/react-query";
+import dayjs from "dayjs";
 import { useCallback, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
@@ -77,6 +83,19 @@ const useGlobalMessageStream = ({
       );
 
       incrementDashboardMessageCache(queryClient, dashboardKeys.overview());
+
+      incrementUsageMessageDataBySixMonthsCache(
+        queryClient,
+        usageKeys.byUserSixMonths(userId),
+      );
+
+      incrementUsageDailyMessagesCache(
+        queryClient,
+        usageKeys.dailyMessagesByUserAndMonth(
+          userId,
+          dayjs().format("YYYY-MM"),
+        ),
+      );
 
       try {
         await sendGlobalMessageStream(

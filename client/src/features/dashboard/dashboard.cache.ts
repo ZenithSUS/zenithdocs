@@ -28,6 +28,7 @@ export const incrementDashboardMessageCache = (
       ...oldData,
       dailyMessage: oldData.dailyMessage + 1,
       totalMessages: oldData.totalMessages + 1,
+      totalAIRequests: oldData.totalAIRequests + 1,
       usageHistory: oldData.usageHistory.map((usage) => ({
         ...usage,
         dailyMessages: {
@@ -38,6 +39,10 @@ export const incrementDashboardMessageCache = (
               [today]: usage.dailyMessages[today] + 1,
             }),
         },
+        aiRequests:
+          usage.month === currentMonth
+            ? usage.aiRequests + 1
+            : usage.aiRequests,
         totalMessages:
           usage.month === currentMonth
             ? usage.totalMessages + 1
