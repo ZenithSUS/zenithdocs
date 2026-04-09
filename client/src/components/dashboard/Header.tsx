@@ -20,6 +20,8 @@ function Header({ user, title, titleHighlight }: HeaderProps) {
 
   const { data: overview } = useDashboardOverview(user?._id ?? "");
 
+  const storageLimitMB = (user?.storageLimit ?? 0) * 1024 * 1024;
+  const storagePct = calcPct(overview?.storageUsed ?? 0, storageLimitMB);
   const documentPct = calcPct(overview?.documentsUploaded, user?.documentLimit);
 
   return (
@@ -54,7 +56,7 @@ function Header({ user, title, titleHighlight }: HeaderProps) {
             documentPct={documentPct}
             storageUsed={overview?.storageUsed ?? 0}
             storageLimit={user?.storageLimit ?? 0}
-            storagePct={calcPct(overview?.storageUsed, user?.storageLimit)}
+            storagePct={storagePct}
           />
         )}
 

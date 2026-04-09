@@ -1,4 +1,5 @@
 import { Usage } from "@/types/usage";
+import { bytesToMB } from "@/utils/byte-converter";
 
 const formattedStorageTrend = (usageHistory: Usage[]) => {
   return usageHistory
@@ -9,7 +10,7 @@ const formattedStorageTrend = (usageHistory: Usage[]) => {
         month: date.toLocaleDateString("en-US", {
           month: "short",
         }),
-        storage: item.storageUsed,
+        storage: bytesToMB(item.storageAdded).toFixed(2),
       };
     })
     .sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime());

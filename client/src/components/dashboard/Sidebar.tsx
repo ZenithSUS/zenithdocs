@@ -2,6 +2,7 @@
 
 import sizefmt from "@/helpers/size-format";
 import { User } from "@/types/user";
+import { bytesToMB } from "@/utils/byte-converter";
 import {
   LayoutDashboard,
   FileText,
@@ -73,6 +74,8 @@ function DashBoardSidebar({
   messagesPerDay,
   messagePct,
 }: DashboardSidebarProps) {
+  const storageMB = bytesToMB(storageUsed);
+
   return (
     <aside
       className={`fixed inset-y-0 left-0 z-40 w-64 bg-background border-r border-white/6 flex flex-col transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
@@ -140,7 +143,7 @@ function DashBoardSidebar({
               },
               {
                 label: "Storage",
-                value: sizefmt.num(Math.min(storageUsed, storageLimit)),
+                value: sizefmt.bytesToMB(storageUsed),
                 limit: `${sizefmt.num(storageLimit)} MB`,
                 pct: storagePct,
                 suffix: "",

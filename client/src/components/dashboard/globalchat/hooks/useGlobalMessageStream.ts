@@ -1,3 +1,5 @@
+import { incrementDashboardMessageCache } from "@/features/dashboard/dashboard.cache";
+import { dashboardKeys } from "@/features/dashboard/dashboard.keys";
 import useGlobalChat from "@/features/global-chat/useGlobalChat";
 import {
   appendGlobalMessagesToCache,
@@ -74,6 +76,8 @@ const useGlobalMessageStream = ({
         tempMessage,
       );
 
+      incrementDashboardMessageCache(queryClient, dashboardKeys.overview());
+
       try {
         await sendGlobalMessageStream(
           userMessage,
@@ -122,7 +126,7 @@ const useGlobalMessageStream = ({
       sendGlobalMessageStream,
       userId,
       reset,
-      confidence,
+      updateConfidence,
     ],
   );
 

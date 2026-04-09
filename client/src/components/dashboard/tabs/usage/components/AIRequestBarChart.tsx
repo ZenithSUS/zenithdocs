@@ -41,6 +41,19 @@ function AIRequestBarChart({ usage }: AIRequestChartProps) {
           }}
           labelStyle={{ color: "#fff" }}
           itemStyle={{ color: "#fff" }}
+          labelFormatter={(label) => {
+            const date = new Date(`${label} 1, 2000`);
+            return date.toLocaleDateString("en-us", { month: "long" });
+          }}
+          labelClassName="text-primary font-bold"
+          formatter={(value, name) => {
+            const labels: Record<string, string> = {
+              aiRequests: "AI Requests",
+              totalMessages: "Total Messages",
+            };
+
+            return [value, labels[name as keyof typeof labels] ?? name];
+          }}
         />
 
         {/* Bars */}

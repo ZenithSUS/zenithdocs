@@ -69,7 +69,7 @@ function HeaderDropDown({
             STORAGE USED
           </span>
           <span className="text-[11px] text-text/50 font-sans">
-            {storagePct}%
+            {storagePct.toFixed(1)}%
           </span>
         </div>
         <div className="w-full h-1 bg-white/8 rounded-full overflow-hidden">
@@ -82,8 +82,7 @@ function HeaderDropDown({
           />
         </div>
         <div className="text-[11px] text-text/35 font-sans">
-          {sizefmt.num(Math.min(storageUsed, storageLimit))} /{" "}
-          {sizefmt.num(storageLimit)} MB
+          {sizefmt.bytesToMB(storageUsed)} MB / {sizefmt.num(storageLimit)} MB
         </div>
       </div>
 

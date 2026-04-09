@@ -36,7 +36,8 @@ const useDashboardPage = () => {
 
   // ─── Derived usage percentages ────────────────────────────────────────────
   const documentPct = calcPct(overview?.documentsUploaded, user?.documentLimit);
-  const storagePct = calcPct(overview?.storageUsed, user?.storageLimit);
+  const storageLimitBytes = (user?.storageLimit ?? 0) * 1024 * 1024;
+  const storagePct = calcPct(overview?.storageUsed, storageLimitBytes);
   const messagePct = calcPct(overview?.dailyMessage, user?.messagesPerDay);
 
   // ─── Refetch helper ───────────────────────────────────────────────────────

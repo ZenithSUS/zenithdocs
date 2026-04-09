@@ -1,7 +1,7 @@
 import { DashboardOverview } from "@/types/dashboard";
 import { calcPct } from "@/utils/usage";
 import { Mail } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 interface Props {
   overview: DashboardOverview | undefined;
@@ -17,8 +17,11 @@ const AIActivity = ({ overview, messagesPerDay }: Props) => {
     ...(overview?.usageHistory?.map((u) => u.totalMessages) || [1]),
   );
 
-  const totalHistoryMessages =
-    overview?.usageHistory?.reduce((sum, u) => sum + u.totalMessages, 0) ?? 0;
+  const totalHistoryMessages = useMemo(
+    () =>
+      overview?.usageHistory?.reduce((sum, u) => sum + u.totalMessages, 0) ?? 0,
+    [overview],
+  );
 
   const avgMessages = overview?.usageHistory?.length
     ? Math.round(totalHistoryMessages / overview.usageHistory.length)

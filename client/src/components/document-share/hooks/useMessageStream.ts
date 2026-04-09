@@ -11,6 +11,8 @@ import { Message } from "@/types/message";
 import messageKeys from "@/features/message/message.keys";
 import documentKeys from "@/features/documents/document.keys";
 import { handleNormalFetchError } from "@/helpers/api-error";
+import { incrementDashboardMessageCache } from "@/features/dashboard/dashboard.cache";
+import { dashboardKeys } from "@/features/dashboard/dashboard.keys";
 
 export interface MessageFormValues {
   message: string;
@@ -76,6 +78,8 @@ const useMessageStream = ({
         messageKeys.byChat(chatId),
         tempUserMessage,
       );
+
+      incrementDashboardMessageCache(queryClient, dashboardKeys.overview());
 
       try {
         await sendMessageStream(

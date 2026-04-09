@@ -33,6 +33,12 @@ function StorageUsageAreaChart({ usage }: StorageUsageAreaChartProps) {
           }}
           labelStyle={{ color: "#fff" }}
           itemStyle={{ color: "#fff" }}
+          labelFormatter={(label) => {
+            const date = new Date(`${label} 1, 2000`);
+            return date.toLocaleDateString("en-US", { month: "long" });
+          }}
+          labelClassName="text-primary font-bold"
+          formatter={(value) => [`${value} MB`, "Storage Used"]}
         />
 
         <Area

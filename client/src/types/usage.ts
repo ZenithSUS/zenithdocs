@@ -5,7 +5,7 @@ export interface Usage {
   aiRequests: number;
   dailyMessages: Record<string, number>;
   documentsUploaded: number;
-  storageUsed: number;
+  storageAdded: number;
   tokensUsed: number;
   totalMessages: number;
 }

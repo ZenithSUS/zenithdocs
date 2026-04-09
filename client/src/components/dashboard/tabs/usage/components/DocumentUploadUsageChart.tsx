@@ -49,7 +49,7 @@ function DocumentUploadUsageChart({ usage, variant }: Props) {
         <BarChart
           data={data}
           layout="vertical"
-          margin={{ left: 0, right: 20, top: 4, bottom: 4 }}
+          margin={{ left: 10, right: 20, top: 4, bottom: 4 }}
         >
           <XAxis
             type="number"
@@ -63,10 +63,16 @@ function DocumentUploadUsageChart({ usage, variant }: Props) {
             tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }}
             axisLine={false}
             tickLine={false}
-            width={36}
+            width={52}
           />
           <Tooltip
             cursor={{ fill: "rgba(255,255,255,0.04)" }}
+            labelFormatter={(label) => {
+              const date = new Date(`${label}-01`);
+              return date.toLocaleDateString("en-US", { month: "long" });
+            }}
+            labelClassName="text-primary font-bold"
+            formatter={(value) => [`${value}`, "Documents Uploaded"]}
             {...tooltipProps}
           />
           <Bar
@@ -106,7 +112,10 @@ function DocumentUploadUsageChart({ usage, variant }: Props) {
               <Cell key={i} fill={COLORS[i % COLORS.length]} />
             ))}
           </Pie>
-          <Tooltip {...tooltipProps} />
+          <Tooltip
+            formatter={(value) => [value, "Uploaded"]}
+            {...tooltipProps}
+          />
         </PieChart>
       </ResponsiveContainer>
 

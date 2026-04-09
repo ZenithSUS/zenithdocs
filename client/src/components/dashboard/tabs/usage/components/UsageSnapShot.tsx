@@ -19,7 +19,7 @@ const UsageSnapshot = ({
       label: "Documents This Month",
       value: documentsThisMonth ?? "...",
       icon: <File size={22} color="#c9a227" />,
-      sub: `${documentsThisMonth} uploaded`,
+      sub: `${documentsThisMonth} uploaded resets on ${nextMonthLabel}`,
     },
     {
       label: "Total Messages Sent This Month",

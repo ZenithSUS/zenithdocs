@@ -3,6 +3,7 @@ import { Usage } from "./usage";
 import Doc from "./doc";
 
 export type DashboardOverview = {
+  // Overview
   totalAIRequests: number;
   totalMessages: number;
   totalDocuments: number;
@@ -12,13 +13,22 @@ export type DashboardOverview = {
     _id: string;
     count: number;
   }[];
+
+  // Usage
   totalSharedDocuments: number;
-  usageHistory: Usage[];
-  completedDocuments: number;
   documentsUploaded: number;
+  storageAdded: number;
+  usageHistory: Usage[];
   dailyMessage: number;
+
+  // Storage
   storageUsed: number;
+
+  // Totals
+  completedDocuments: number;
   processingDocuments: number;
+
+  // Recents
   recentDocuments: Doc[];
   recentSummary: Summary[];
 };
