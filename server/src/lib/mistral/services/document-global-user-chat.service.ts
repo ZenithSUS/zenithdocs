@@ -80,6 +80,10 @@ If the context is "NO_RELEVANT_DOCUMENT_CONTEXT", respond:
 
 "The uploaded documents do not contain information about this question."
 
+If the context is "ZENITHDOCS_GENERAL_QUESTION", your respond starts with:
+
+"ZenithDocs - AI-Powered Document Manager - General Question:"
+
 Formatting Rules:
 - Use markdown formatting
 - Use **bold** for key terms
@@ -153,7 +157,7 @@ export const streamDocumentUserChat = async ({
   let confidenceScore: number;
 
   if (isAppQuestion) {
-    context = "NO_RELEVANT_DOCUMENT_CONTEXT";
+    context = "ZENITHDOCS_GENERAL_QUESTION";
     confidenceScore = 1.0;
   } else {
     const queries = [
