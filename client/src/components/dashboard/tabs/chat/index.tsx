@@ -61,7 +61,7 @@ function ChatsTab({ userId }: ChatsTabProps) {
   // Error state
   if (documentError) {
     return (
-      <div className="border border-red-500/20 bg-red-500/5 rounded-lg px-8 py-12 text-center">
+      <div className="border border-red-500/20 rounded-lg px-8 py-12 text-center">
         <div className="text-[48px] text-red-400/30 mb-4">
           <FolderOpen />
         </div>
