@@ -2,6 +2,8 @@ import { Usage } from "@/types/usage";
 
 const formatDailyMessages = (dailyMessages: Usage["dailyMessages"]) => {
   return Object.entries(dailyMessages)
+    .slice(-7)
+    .reverse()
     .map(([date, count]) => {
       const d = new Date(date);
 
