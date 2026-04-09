@@ -69,7 +69,14 @@ export const uploadToCloudinary = (
       },
     );
 
-    fs.createReadStream(filePath).pipe(uploadStream);
+    uploadStream.on("error", reject);
+
+    const readStream = fs.createReadStream(filePath).pipe(uploadStream);
+
+    readStream.on("error", (err) => {
+      readStream.destroy();
+      reject(err);
+    });
   });
 };
 
