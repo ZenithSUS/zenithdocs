@@ -125,7 +125,7 @@ function DocumentsTab({ userId, filterFolder, setFilterFolder }: Props) {
               }}
               className={`px-3 py-1.5 text-[10px] tracking-[0.08em] font-sans rounded-sm transition-all duration-150 capitalize ${
                 filterStatus === s
-                  ? "bg-primary text-background font-bold"
+                  ? "bg-primary text-black font-bold"
                   : "text-text/45 hover:text-text/70"
               }`}
             >
