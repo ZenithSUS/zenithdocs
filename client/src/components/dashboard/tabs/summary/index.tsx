@@ -51,7 +51,6 @@ const SummaryTab = ({ userId }: Props) => {
         setSearchQuery={setSearchQuery}
         placeholder="Search Summaries by document title..."
       />
-
       {allSummaries.length > 0 ? (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -76,6 +75,10 @@ const SummaryTab = ({ userId }: Props) => {
 
           <UnusedSummaryTypes unusedTypes={unusedTypes} />
         </>
+      ) : searchQuery.trim() ? (
+        <div className="text-center py-12 text-[12px] text-text/30 font-sans tracking-wider">
+          No summaries found for &quot;{searchQuery}&quot;
+        </div>
       ) : (
         <SummaryEmptyState />
       )}

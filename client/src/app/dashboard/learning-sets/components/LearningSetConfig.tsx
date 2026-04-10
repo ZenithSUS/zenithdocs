@@ -161,7 +161,7 @@ function LearningSetConfig({
 
         <ConfigBlock
           label="Title"
-          hint="Optional — AI will generate one if left blank"
+          hint="Optional — e.g. Midterms Reviewer — Chapter 4"
         >
           <input
             type="text"

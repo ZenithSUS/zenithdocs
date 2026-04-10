@@ -80,7 +80,7 @@ function SharedDocumentEmpty({ setNav }: SharedDocumentEmptyProps) {
       <div className="flex flex-col sm:flex-row gap-2 justify-center items-center mb-5">
         <button
           onClick={() => router.push("/dashboard/upload")}
-          className="px-6 py-2 bg-primary text-background text-[11px] font-bold tracking-wider font-sans rounded-sm hover:bg-[#e0b530] hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2"
+          className="px-6 py-2 bg-primary text-black text-[11px] font-bold tracking-wider font-sans rounded-sm hover:bg-[#e0b530] hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2"
         >
           <Upload className="w-3.5 h-3.5" />
           UPLOAD DOCUMENT

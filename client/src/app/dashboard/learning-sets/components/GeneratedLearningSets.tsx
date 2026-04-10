@@ -122,7 +122,7 @@ function GeneratedLearningSets({
         {/* Single action */}
         <button
           onClick={() => setLearningSet(null)}
-          className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-primary/30 text-text text-sm font-medium hover:bg-primary/10 transition-colors cursor-pointer bg-primary"
+          className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-primary/30 text-black text-xs uppercase tracking-wide font-bold hover:bg-primary/10 transition-colors cursor-pointer bg-primary"
         >
           <RotateCcw className="w-4 h-4" />
           Generate new set

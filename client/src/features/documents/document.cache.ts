@@ -105,6 +105,23 @@ export const updateInfiniteDocumentStatus = (
   });
 };
 
+export const updateDocumentStatus = (
+  queryClient: QueryClient,
+  querykey: readonly unknown[],
+  updatedDoc: {
+    documentId: string;
+    status: "uploaded" | "processing" | "completed" | "failed";
+  },
+) =>
+  queryClient.setQueryData<Doc>(querykey, (oldData) => {
+    if (!oldData) return oldData;
+
+    return {
+      ...oldData,
+      status: updatedDoc.status,
+    };
+  });
+
 export const removeInfiniteDocument = (
   queryClient: QueryClient,
   querykey: readonly unknown[],

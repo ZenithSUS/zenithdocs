@@ -1,10 +1,11 @@
+import { Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 function EmptyDocument() {
   const router = useRouter();
 
   return (
-    <div className="border border-white/8 rounded-sm px-8 py-16 text-center">
+    <div className="border border-white/8 rounded-sm px-8 py-16 text-center flex flex-col items-center">
       <div className="text-[48px] text-text/10 mb-4">▣</div>
       <h3 className="text-[18px] font-serif text-text/60 mb-2">
         No documents yet
@@ -16,8 +17,9 @@ function EmptyDocument() {
       <button
         type="button"
         onClick={() => router.replace("/dashboard/upload")}
-        className="px-6 py-3 bg-primary text-background text-[12px] font-bold tracking-[0.12em] font-sans rounded-sm transition-all duration-200 hover:bg-[#e0b530] hover:-translate-y-0.5 cursor-pointer"
+        className="px-6 py-3 bg-primary text-black text-[12px] font-bold tracking-[0.12em] font-sans rounded-sm transition-all duration-200 hover:bg-[#e0b530] hover:-translate-y-0.5 cursor-pointer flex items-center gap-2"
       >
+        <Upload />
         UPLOAD DOCUMENT
       </button>
     </div>

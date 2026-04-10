@@ -3,7 +3,10 @@ import { useEffect, useState } from "react";
 import io from "socket.io-client";
 import { useQueryClient } from "@tanstack/react-query";
 import documentKeys from "./document.keys";
-import { updateInfiniteDocumentStatus } from "./document.cache";
+import {
+  updateDocumentStatus,
+  updateInfiniteDocumentStatus,
+} from "./document.cache";
 import { toast } from "sonner";
 import useAuthStore from "../auth/auth.store";
 import { dashboardKeys } from "../dashboard/dashboard.keys";
@@ -75,6 +78,11 @@ const useDocumentStatus = () => {
         documentKeys.byUserPage(userId, documentLimit),
         data,
       );
+      updateDocumentStatus(
+        queryClient,
+        documentKeys.byId(data.documentId),
+        data,
+      );
       queryClient.refetchQueries({ queryKey: dashboardKeys.overview() });
     });
 
@@ -82,6 +90,11 @@ const useDocumentStatus = () => {
       updateInfiniteDocumentStatus(
         queryClient,
         documentKeys.byUserPage(userId, documentLimit),
+        data,
+      );
+      updateDocumentStatus(
+        queryClient,
+        documentKeys.byId(data.documentId),
         data,
       );
       queryClient.refetchQueries({ queryKey: dashboardKeys.overview() });
@@ -92,6 +105,11 @@ const useDocumentStatus = () => {
       updateInfiniteDocumentStatus(
         queryClient,
         documentKeys.byUserPage(userId, documentLimit),
+        data,
+      );
+      updateDocumentStatus(
+        queryClient,
+        documentKeys.byId(data.documentId),
         data,
       );
       queryClient.refetchQueries({ queryKey: dashboardKeys.overview() });

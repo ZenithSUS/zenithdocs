@@ -34,13 +34,13 @@ function Pricing() {
         <div className="inline-flex items-center gap-3 p-1 bg-white/4 border border-white/8 rounded-sm">
           <button
             onClick={() => setBillingAnnual(false)}
-            className={`px-4 py-2 text-[11px] tracking-widest font-sans rounded-sm transition-all ${!billingAnnual ? "bg-primary text-black font-bold" : "text-text/50 hover:text-text/70"}`}
+            className={`px-4 py-2 text-[11px] tracking-widest font-sans rounded-sm transition-all cursor-pointer ${!billingAnnual ? "bg-primary text-black font-bold" : "text-text/50 hover:text-text/70"}`}
           >
             MONTHLY
           </button>
           <button
             onClick={() => setBillingAnnual(true)}
-            className={`flex items-center gap-2 px-4 py-2 text-[11px] tracking-widest font-sans rounded-sm transition-all ${billingAnnual ? "bg-primary text-black font-bold" : "text-text/50 hover:text-text/70"}`}
+            className={`flex items-center gap-2 px-4 py-2 text-[11px] tracking-widest font-sans rounded-sm transition-all cursor-pointer ${billingAnnual ? "bg-primary text-black font-bold" : "text-text/50 hover:text-text/70"}`}
           >
             ANNUAL
             <span

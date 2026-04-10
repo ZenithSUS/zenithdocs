@@ -14,6 +14,7 @@ import useAuthStore from "@/features/auth/auth.store";
 import useAuth from "@/features/auth/useAuth";
 import { handleApiError } from "@/helpers/api-error";
 import { AxiosError } from "@/types/api";
+import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 
@@ -39,7 +40,10 @@ export function LogoutModal() {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button className="text-black">Sign out</Button>
+        <Button className="text-black cursor-pointer font-sans">
+          <LogOut size={20} />
+          Sign out
+        </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

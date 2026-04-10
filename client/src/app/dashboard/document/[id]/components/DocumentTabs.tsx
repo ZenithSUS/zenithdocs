@@ -12,7 +12,7 @@ const DocumentTabs = ({ active, summaryCount, onSelect }: Props) => (
       onClick={() => onSelect("details")}
       className={`flex items-center gap-2 px-4 py-2 text-[11px] tracking-widest font-sans rounded-sm transition-all ${
         active === "details"
-          ? "bg-primary text-background font-bold"
+          ? "bg-primary text-black font-bold"
           : "text-text/50 hover:text-text/70"
       }`}
     >
@@ -23,7 +23,7 @@ const DocumentTabs = ({ active, summaryCount, onSelect }: Props) => (
       onClick={() => onSelect("summaries")}
       className={`flex items-center gap-2 px-4 py-2 text-[11px] tracking-widest font-sans rounded-sm transition-all ${
         active === "summaries"
-          ? "bg-primary text-background font-bold"
+          ? "bg-primary text-black font-bold"
           : "text-text/50 hover:text-text/70"
       }`}
     >

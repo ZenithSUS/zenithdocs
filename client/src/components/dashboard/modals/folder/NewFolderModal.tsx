@@ -13,6 +13,7 @@ import useFolder from "@/features/folder/useFolder";
 import { handleApiError, handleFormError } from "@/helpers/api-error";
 import { AxiosError } from "@/types/api";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Folder } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -79,7 +80,11 @@ const NewFolderModal = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant={variant} className="text-black font-semibold">
+        <Button
+          variant={variant}
+          className="text-black font-bold cursor-pointer font-sans tracking-widest text-[12px]"
+        >
+          <Folder size={16} />
           {text || "New Folder"}
         </Button>
       </DialogTrigger>

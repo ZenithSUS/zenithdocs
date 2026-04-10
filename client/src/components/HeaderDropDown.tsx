@@ -32,7 +32,9 @@ function HeaderDropDown({
         </div>
         <div className="flex flex-col items-start gap-1 min-w-0">
           <p className="text-sm font-semibold truncate w-full">{email}</p>
-          <p className="text-xs text-text/50">{plan.toUpperCase()} PLAN</p>
+          <p className="text-xs text-text/50 font-sans tracking-wider">
+            {plan.toUpperCase()} PLAN
+          </p>
         </div>
       </div>
 
