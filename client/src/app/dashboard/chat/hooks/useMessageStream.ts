@@ -85,21 +85,6 @@ const useMessageStream = ({
         tempUserMessage,
       );
 
-      incrementDashboardMessageCache(queryClient, dashboardKeys.overview());
-
-      incrementUsageMessageDataBySixMonthsCache(
-        queryClient,
-        usageKeys.byUserSixMonths(userId),
-      );
-
-      incrementUsageDailyMessagesCache(
-        queryClient,
-        usageKeys.dailyMessagesByUserAndMonth(
-          userId,
-          dayjs().format("YYYY-MM"),
-        ),
-      );
-
       try {
         await sendMessageStream(
           { documentId: docId, question: userMessage },
@@ -128,6 +113,24 @@ const useMessageStream = ({
               queryClient,
               messageKeys.byChat(chatId),
               aiMessage,
+            );
+
+            incrementDashboardMessageCache(
+              queryClient,
+              dashboardKeys.overview(),
+            );
+
+            incrementUsageMessageDataBySixMonthsCache(
+              queryClient,
+              usageKeys.byUserSixMonths(userId),
+            );
+
+            incrementUsageDailyMessagesCache(
+              queryClient,
+              usageKeys.dailyMessagesByUserAndMonth(
+                userId,
+                dayjs().format("YYYY-MM"),
+              ),
             );
           },
           updateConfidence,

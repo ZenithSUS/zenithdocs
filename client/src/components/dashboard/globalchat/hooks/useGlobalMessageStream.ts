@@ -82,21 +82,6 @@ const useGlobalMessageStream = ({
         tempMessage,
       );
 
-      incrementDashboardMessageCache(queryClient, dashboardKeys.overview());
-
-      incrementUsageMessageDataBySixMonthsCache(
-        queryClient,
-        usageKeys.byUserSixMonths(userId),
-      );
-
-      incrementUsageDailyMessagesCache(
-        queryClient,
-        usageKeys.dailyMessagesByUserAndMonth(
-          userId,
-          dayjs().format("YYYY-MM"),
-        ),
-      );
-
       try {
         await sendGlobalMessageStream(
           userMessage,
@@ -123,6 +108,24 @@ const useGlobalMessageStream = ({
               queryClient,
               globalMessageKeys.byChatPage(chatId),
               aiMessage,
+            );
+
+            incrementDashboardMessageCache(
+              queryClient,
+              dashboardKeys.overview(),
+            );
+
+            incrementUsageMessageDataBySixMonthsCache(
+              queryClient,
+              usageKeys.byUserSixMonths(userId),
+            );
+
+            incrementUsageDailyMessagesCache(
+              queryClient,
+              usageKeys.dailyMessagesByUserAndMonth(
+                userId,
+                dayjs().format("YYYY-MM"),
+              ),
             );
           },
           updateConfidence,
