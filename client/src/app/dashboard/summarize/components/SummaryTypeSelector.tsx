@@ -21,7 +21,7 @@ const SummaryTypeSelector = ({ selected, disabled, onSelect }: Props) => (
           className={`p-4 rounded-lg border-2 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed group ${
             selected === type
               ? "border-[#C9A227] bg-[#C9A227]/8"
-              : "border-white/8 bg-[rgba(31,41,55,0.3)] hover:border-white/18"
+              : "border-white/8 bg-white/5 hover:border-white/18"
           }`}
         >
           <div

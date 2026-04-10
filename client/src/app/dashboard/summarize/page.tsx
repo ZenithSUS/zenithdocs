@@ -103,7 +103,7 @@ function SummarizePageContent() {
 
       <main className="pt-24 pb-16 px-5 sm:px-8 md:px-12 max-w-5xl mx-auto">
         {/* Document info */}
-        <div className="bg-[rgba(31,41,55,0.4)] border border-[#C9A227]/15 rounded-lg p-4 mb-8 flex items-center gap-4">
+        <div className="bg-white/5 border border-[#C9A227]/15 rounded-lg p-4 mb-8 flex items-center gap-4">
           <FileIcon type={document.fileType} />
           <div className="flex-1 min-w-0">
             <div className="text-[14px] font-sans text-text/80 truncate">

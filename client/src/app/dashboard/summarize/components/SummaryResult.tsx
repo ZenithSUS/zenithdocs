@@ -41,7 +41,7 @@ const SummaryResult = ({
   return (
     <div className="space-y-3">
       {/* Summary card */}
-      <div className="bg-[rgba(31,41,55,0.4)] border border-[#C9A227]/15 rounded-lg overflow-hidden">
+      <div className="bg-white/5 border border-[#C9A227]/15 rounded-lg overflow-hidden">
         {/* Header strip */}
         <div className="flex items-center justify-between px-6 py-3.5 border-b border-white/6">
           <div className="flex items-center gap-2">
