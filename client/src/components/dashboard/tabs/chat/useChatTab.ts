@@ -1,3 +1,4 @@
+import { useState, useMemo } from "react";
 import { useDocumentByUserWithChatsPage } from "@/features/documents/useDocumentByUserWithChatsPage";
 
 interface useChatTabProps {
@@ -5,6 +6,8 @@ interface useChatTabProps {
 }
 
 const useChatTab = ({ userId }: useChatTabProps) => {
+  const [searchQuery, setSearchQuery] = useState("");
+
   const {
     data: documentsWithChats,
     hasNextPage: hasNextDocumentPage,
@@ -16,11 +19,23 @@ const useChatTab = ({ userId }: useChatTabProps) => {
     refetch: refetchDocumentChats,
   } = useDocumentByUserWithChatsPage(userId);
 
-  const allDocumentChats =
-    documentsWithChats?.pages.flatMap((page) => page.documents) ?? [];
+  const allDocumentChats = useMemo(
+    () => documentsWithChats?.pages.flatMap((page) => page.documents) ?? [],
+    [documentsWithChats],
+  );
+
+  const filteredChats = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return allDocumentChats;
+    return allDocumentChats.filter((doc) =>
+      doc.title?.toLowerCase().includes(q),
+    );
+  }, [allDocumentChats, searchQuery]);
 
   return {
-    allDocumentChats,
+    allDocumentChats: filteredChats,
+    searchQuery,
+    setSearchQuery,
     hasNextDocumentPage,
     fetchNextDocumentPage,
     isFetchingNextDocumentPage,

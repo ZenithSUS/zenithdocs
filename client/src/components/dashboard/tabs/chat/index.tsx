@@ -1,11 +1,12 @@
 import { useRef, useEffect } from "react";
-import { FolderOpen } from "lucide-react";
+import { FolderOpen, Search, X } from "lucide-react";
 
 import ChatCard from "@/components/dashboard/cards/ChatCard";
 import useChatTab from "./useChatTab";
 import { ThreeDot } from "react-loading-indicators";
 import DocumentChatLoading from "./components/DocumentChatLoading";
 import EmptyDocumentChats from "./components/EmptyDocumentChats";
+import SearchBar from "../../SearchBar";
 
 interface ChatsTabProps {
   userId: string;
@@ -16,6 +17,8 @@ function ChatsTab({ userId }: ChatsTabProps) {
 
   const {
     allDocumentChats,
+    searchQuery,
+    setSearchQuery,
     hasNextDocumentPage,
     fetchNextDocumentPage,
     isFetchingNextDocumentPage,
@@ -24,7 +27,6 @@ function ChatsTab({ userId }: ChatsTabProps) {
     refetchDocumentChats,
   } = useChatTab({ userId });
 
-  // Intersection observer for infinite scroll
   useEffect(() => {
     if (
       !loadMoreRef.current ||
@@ -35,7 +37,6 @@ function ChatsTab({ userId }: ChatsTabProps) {
 
     const observer = new IntersectionObserver(
       (entries) => {
-        // If the first entry is intersecting, fetch the next page
         if (entries[0].isIntersecting) {
           fetchNextDocumentPage();
         }
@@ -43,7 +44,6 @@ function ChatsTab({ userId }: ChatsTabProps) {
       { threshold: 0.1 },
     );
 
-    // Observe the load more element
     observer.observe(loadMoreRef.current);
 
     return () => {
@@ -53,12 +53,10 @@ function ChatsTab({ userId }: ChatsTabProps) {
     };
   }, [hasNextDocumentPage, isFetchingNextDocumentPage, fetchNextDocumentPage]);
 
-  // Loading state
   if (documentLoading) {
     return <DocumentChatLoading />;
   }
 
-  // Error state
   if (documentError) {
     return (
       <div className="border border-red-500/20 rounded-lg px-8 py-12 text-center">
@@ -81,36 +79,52 @@ function ChatsTab({ userId }: ChatsTabProps) {
     );
   }
 
-  // Empty state
-  if (allDocumentChats.length === 0) {
+  if (allDocumentChats.length === 0 && !searchQuery) {
     return <EmptyDocumentChats />;
   }
 
-  // Chat list
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-[24px] font-serif text-text/90 mb-1">
-            Your Conversations
-          </h2>
-          <p className="text-[13px] text-text/40 font-sans">
-            Continue chatting with your documents
-          </p>
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-[24px] font-serif text-text/90 mb-1">
+              Your Conversations
+            </h2>
+            <p className="text-[13px] text-text/40 font-sans">
+              Continue chatting with your documents
+            </p>
+          </div>
+          <div className="text-[11px] text-text/25 font-sans tracking-wider">
+            {allDocumentChats.length} conversation
+            {allDocumentChats.length !== 1 ? "s" : ""}
+          </div>
         </div>
-        <div className="text-[11px] text-text/25 font-sans tracking-wider">
-          {allDocumentChats.length} conversation
-          {allDocumentChats.length !== 1 ? "s" : ""}
-        </div>
+
+        {/* Search bar */}
+        <SearchBar
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          placeholder="Search Chats by document title..."
+        />
       </div>
 
+      {/* No search results */}
+      {allDocumentChats.length === 0 && searchQuery && (
+        <p className="text-center text-[13px] text-text/40 font-sans py-12">
+          No conversations match &quot;{searchQuery}&quot;
+        </p>
+      )}
+
       {/* Chat Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {allDocumentChats.map((docChat) => (
-          <ChatCard key={docChat._id} documentChat={docChat} />
-        ))}
-      </div>
+      {allDocumentChats.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {allDocumentChats.map((docChat) => (
+            <ChatCard key={docChat._id} documentChat={docChat} />
+          ))}
+        </div>
+      )}
 
       {/* Load more */}
       {hasNextDocumentPage && (

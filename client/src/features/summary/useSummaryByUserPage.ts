@@ -1,6 +1,6 @@
 import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
 import { SummaryPage } from "./useSummary";
-import { AxiosError } from "axios";
+import { AxiosError } from "@/types/api";
 import summaryKeys from "./summary.keys";
 import { fetchSummaryByUserPaginated } from "./summary.api";
 import fetchLimits from "@/constants/fetch-limits";

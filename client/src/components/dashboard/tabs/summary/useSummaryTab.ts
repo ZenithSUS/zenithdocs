@@ -1,12 +1,21 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { SummaryType } from "@/types/summary";
 import { useSummaryByUserPage } from "@/features/summary/useSummaryByUserPage";
 
 const ALL_TYPES: SummaryType[] = ["short", "bullet", "detailed", "executive"];
 
 const useSummaryTab = (userId: string) => {
-  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
-    useSummaryByUserPage(userId);
+  const [searchQuery, setSearchQuery] = useState("");
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    isError,
+    error,
+    refetch,
+  } = useSummaryByUserPage(userId);
 
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
@@ -28,17 +37,36 @@ const useSummaryTab = (userId: string) => {
 
   const allSummaries = data?.pages.flatMap((page) => page.summaries) ?? [];
 
+  const filteredSummaries = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return allSummaries;
+
+    return allSummaries.filter((summary) => {
+      const title =
+        typeof summary.document === "object"
+          ? summary.document.title
+          : "Unknown Document";
+
+      return title.toLowerCase().includes(q);
+    });
+  }, [allSummaries, searchQuery]);
+
   const existingTypes = new Set(allSummaries.map((s) => s.type));
   const unusedTypes = ALL_TYPES.filter((t) => !existingTypes.has(t));
 
   return {
-    allSummaries,
+    allSummaries: filteredSummaries,
     unusedTypes,
     isLoading,
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
     loadMoreRef,
+    searchQuery,
+    setSearchQuery,
+    isError,
+    error,
+    refetch,
   };
 };
 
