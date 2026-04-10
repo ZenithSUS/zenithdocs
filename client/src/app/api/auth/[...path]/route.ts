@@ -135,7 +135,7 @@ async function handler(
               httpOnly: true,
               secure: true,
               sameSite: "strict",
-              maxAge: 7 * 24 * 60 * 60 * 60, // 7 days
+              maxAge: 7 * 24 * 60 * 60, // 7 days
               path: "/",
             });
           }
@@ -182,7 +182,7 @@ async function handler(
         httpOnly: true,
         secure: true,
         sameSite: "strict",
-        maxAge: 7 * 24 * 60 * 60 * 60, // 7 days
+        maxAge: 7 * 24 * 60 * 60, // 7 days
         path: "/",
       });
     }
