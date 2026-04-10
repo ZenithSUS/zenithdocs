@@ -90,7 +90,7 @@ export default function DocumentViewerDocx({
               </div>
               {/* Folded corner */}
               <div className="absolute top-0 right-0 w-3 h-3 bg-[#1a1a1a]">
-                <div className="absolute bottom-0 left-0 w-0 h-0 border-b-[12px] border-b-white/20 border-r-[12px] border-r-transparent" />
+                <div className="absolute bottom-0 left-0 w-0 h-0 border-b-12 border-b-white/20 border-r-12 border-r-transparent" />
               </div>
             </div>
             <span className="text-sm text-white/40 tracking-wide">
