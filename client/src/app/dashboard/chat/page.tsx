@@ -148,10 +148,10 @@ function DocumentChatContent() {
         className={`
     fixed z-45 bg-background border-white/6 flex flex-col
     transition-all duration-300 ease-in-out
-    bottom-0 left-0 right-0 border-t
-    ${panelOpen ? "h-[60vh]" : "h-0 overflow-hidden border-t-0"}
-    md:bottom-auto md:right-auto md:inset-y-0 md:left-0 md:border-t-0 md:border-r md:h-screen
-    ${panelOpen ? "md:w-72 lg:w-120 xl:w-1/2" : "md:w-0 md:overflow-hidden md:border-r-0"}
+    inset-0
+    ${panelOpen ? "h-screen" : "h-0 overflow-hidden"}
+    lg:bottom-auto lg:right-auto lg:inset-y-0 lg:left-0 lg:border-t-0 lg:border-r lg:h-screen
+    ${panelOpen ? "lg:w-1/2" : "lg:w-0 lg:overflow-hidden lg:border-r-0"}
   `}
       >
         <div className="px-4 py-3 border-b border-white/6 shrink-0 flex items-center justify-between">
@@ -166,7 +166,7 @@ function DocumentChatContent() {
           {/* Close button visible on mobile */}
           <button
             onClick={() => setPanelOpen(false)}
-            className="md:hidden p-1.5 rounded hover:bg-white/10 text-[#F5F5F5]/50"
+            className="lg:hidden p-1.5 rounded hover:bg-white/10 text-[#F5F5F5]/50"
           >
             <ChevronLeft size={16} className="-rotate-90" />
           </button>
@@ -176,13 +176,13 @@ function DocumentChatContent() {
         </div>
       </div>
 
-      {/* Toggle Tab button */}
+      {/* Toggle Tab button — hidden on mobile when panel is open (close button in header handles it) */}
       <button
         onClick={() => setPanelOpen((v) => !v)}
         className={`fixed top-1/2 -translate-y-1/2 z-40 transition-all duration-300 ease-in-out
     bg-background border border-white/10 hover:bg-white/5
     rounded-r-lg px-1 py-4 flex flex-col items-center gap-1.5
-    ${panelOpen ? "md:left-72 lg:left-120 xl:left-1/2" : "left-0"}`}
+    ${panelOpen ? "hidden lg:flex lg:left-1/2" : "left-0 flex"}`}
       >
         {/* Animated chevron */}
         <ChevronLeft
@@ -202,7 +202,7 @@ function DocumentChatContent() {
       {/* Main content */}
       <div
         className={`flex flex-col flex-1 min-h-0 transition-all duration-300 ease-in-out ${
-          panelOpen ? "md:ml-72 lg:ml-120 xl:ml-200" : "md:ml-0"
+          panelOpen ? "lg:ml-[50%]" : "lg:ml-0"
         }`}
       >
         {/* ── Header ─────────────────────────────────────────────────────────── */}

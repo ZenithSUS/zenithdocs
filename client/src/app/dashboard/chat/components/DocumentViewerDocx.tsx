@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { renderAsync } from "docx-preview";
 
 interface DocumentViewerDocxProps {
@@ -8,10 +8,7 @@ interface DocumentViewerDocxProps {
   scale: number;
 }
 
-export default function DocumentViewerDocx({
-  fileUrl,
-  scale,
-}: DocumentViewerDocxProps) {
+function DocumentViewerDocx({ fileUrl, scale }: DocumentViewerDocxProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
 
@@ -110,25 +107,55 @@ export default function DocumentViewerDocx({
       >
         <div
           style={{
-            display: "inline-block",
-            minWidth: "100%",
-            paddingTop: "24px",
-            paddingBottom: "24px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "flex-start",
+            minHeight: "100%",
+            padding: "24px 16px",
             boxSizing: "border-box",
           }}
         >
           <div
             style={{
-              transform: `scale(${scale})`,
+              width: "100%",
+              maxWidth: "860px",
               transformOrigin: "top center",
-              width: "fit-content",
-              margin: "0 auto",
+              transform: `scale(${scale})`,
+              paddingTop: scale < 1 ? `${((1 - scale) / 2) * 100}px` : "0px",
             }}
           >
-            <div ref={containerRef} className="bg-white text-black shadow-lg" />
+            <div
+              ref={containerRef}
+              className="bg-white text-black shadow-lg"
+              style={{ width: "100%" }}
+            />
           </div>
         </div>
       </div>
+
+      <style>{`
+        /* Force docx-preview sections to fill available width */
+        .docx-wrapper {
+          padding: 0 !important;
+          background: transparent !important;
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: center !important;
+          gap: 16px !important;
+          width: 100% !important;
+        }
+        .docx-wrapper > section.docx {
+          width: 100% !important;
+          max-width: 100% !important;
+          min-height: auto !important;
+          box-shadow: 0 2px 12px rgba(0,0,0,0.15) !important;
+          margin: 0 !important;
+          padding: clamp(16px, 5%, 96px) !important;
+          box-sizing: border-box !important;
+        }
+      `}</style>
     </div>
   );
 }
+
+export default memo(DocumentViewerDocx);
