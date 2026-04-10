@@ -30,6 +30,7 @@ function DocumentPublicChat({
 
     // Message States
     messages,
+    resetMessages,
     textareaRef,
     messagesEndRef,
   } = usePublicChatScreen(shareToken);
@@ -44,7 +45,7 @@ function DocumentPublicChat({
 
   return (
     <div className="h-full flex flex-col bg-background">
-      <DocumentChatHeader isTyping={isTyping} />
+      <DocumentChatHeader isTyping={isTyping} onResetMessages={resetMessages} />
 
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto px-4 py-6">

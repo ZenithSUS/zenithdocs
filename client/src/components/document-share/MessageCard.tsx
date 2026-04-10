@@ -1,6 +1,6 @@
 import { Message } from "@/types/message";
 import { markdownComponents, remarkGfm } from "../ui/markdownComponents";
-import { Sparkles, TrendingUp } from "lucide-react";
+import { Sparkles, TrendingUp, User2Icon } from "lucide-react";
 
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
@@ -70,7 +70,11 @@ function MessageCard({ message: msg, email }: MessageCardProps) {
       {msg.role === "user" && (
         <div className="w-7 h-7 rounded-full bg-white/10 border border-white/20 flex items-center justify-center shrink-0 mt-1">
           <span className="text-[11px] text-text/70 font-sans font-medium">
-            {email ? email.slice(0, 1).toUpperCase() : "YOU"}
+            {email ? (
+              email.slice(0, 1).toUpperCase()
+            ) : (
+              <User2Icon className="w-4 h-4" color="#c9a227" />
+            )}
           </span>
         </div>
       )}

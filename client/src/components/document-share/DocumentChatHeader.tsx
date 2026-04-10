@@ -2,17 +2,20 @@ import DeleteMessagesModal from "@/components/dashboard/modals/chat/DeleteMessag
 import useDropdown from "@/features/ui/useDropdown";
 import { Link2, MessageSquare, MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
+import ResetPublicMessagesModal from "../dashboard/modals/chat/ResetPublicMessagesModal";
 
 interface DocumentPrivateChatHeaderProps {
   documentId?: string;
   chatId?: string;
   isTyping: boolean;
+  onResetMessages?: () => void;
 }
 
 function DocumentChatHeader({
   documentId,
   chatId,
   isTyping,
+  onResetMessages,
 }: DocumentPrivateChatHeaderProps) {
   const options = useDropdown();
   const { ref: optionsRef, isOpen, setIsOpen } = options;
@@ -72,6 +75,12 @@ function DocumentChatHeader({
                     documentId={documentId}
                     chatId={chatId}
                   />
+                </div>
+              )}
+
+              {onResetMessages && (
+                <div className="hover:bg-red-500/8 transition-all duration-150 py-2 px-3 rounded-sm">
+                  <ResetPublicMessagesModal onAction={onResetMessages} />
                 </div>
               )}
             </div>

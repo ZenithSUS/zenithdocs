@@ -17,6 +17,10 @@ const usePublicChatScreen = (shareToken: string) => {
     );
   };
 
+  const resetMessages = () => {
+    setMessages([]);
+  };
+
   const stream = usePublicMessageStream({
     shareToken,
     messages,
@@ -27,7 +31,7 @@ const usePublicChatScreen = (shareToken: string) => {
   const textareaRef = useAutoResizeTextarea("");
   const messagesEndRef = useChatScroll(messages, null);
 
-  return { ...stream, messages, textareaRef, messagesEndRef };
+  return { ...stream, messages, resetMessages, textareaRef, messagesEndRef };
 };
 
 export default usePublicChatScreen;
