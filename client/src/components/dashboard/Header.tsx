@@ -23,6 +23,7 @@ function Header({ user, title, titleHighlight }: HeaderProps) {
   const storageLimitMB = (user?.storageLimit ?? 0) * 1024 * 1024;
   const storagePct = calcPct(overview?.storageUsed ?? 0, storageLimitMB);
   const documentPct = calcPct(overview?.documentsUploaded, user?.documentLimit);
+  const messagePct = calcPct(overview?.dailyMessage, user?.messagesPerDay);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-45 px-5 sm:-px-8 md:px-12 py-5 bg-[#111111]/92 backdrop-blur-xl border-b border-[#C9A227]/12 flex items-center justify-between">
@@ -57,6 +58,9 @@ function Header({ user, title, titleHighlight }: HeaderProps) {
             storageUsed={overview?.storageUsed ?? 0}
             storageLimit={user?.storageLimit ?? 0}
             storagePct={storagePct}
+            messages={overview?.dailyMessage ?? 0}
+            messagesPerDay={user?.messagesPerDay ?? 0}
+            messagePct={messagePct}
           />
         )}
 

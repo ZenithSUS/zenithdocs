@@ -19,6 +19,9 @@ interface DashboardHeaderProps {
   storageLimit: number;
   storageUsed: number;
   storagePct: number;
+  messages: number;
+  messagesPerDay: number;
+  messagePct: number;
 }
 
 function DashboardHeader({
@@ -35,6 +38,9 @@ function DashboardHeader({
   storageLimit,
   storageUsed,
   storagePct,
+  messages,
+  messagesPerDay,
+  messagePct,
 }: DashboardHeaderProps) {
   const router = useRouter();
   const options = useDropdown();
@@ -118,13 +124,16 @@ function DashboardHeader({
               storageLimit={storageLimit}
               storageUsed={storageUsed}
               storagePct={storagePct}
+              messages={messages}
+              messagesPerDay={messagesPerDay}
+              messagePct={messagePct}
             />
           )}
 
           <div
-            className="w-8 h-8 rounded-full cursor-pointer bg-primary/20 border border-primary/30
+            className="w-8 h-8 rounded-full  bg-[#C9A227]/12 border-primary/30
               flex items-center justify-center text-[11px] text-primary font-bold font-sans
-              hover:bg-primary/30 transition-colors duration-150 select-none hover:bg-white/4 hover:border-2"
+              border-2 border-[#C9A227]/30 cursor-pointer transition-colors duration-150 select-none"
             onClick={() => options.setIsOpen((prev) => !prev)}
           >
             {email.slice(0, 1).toUpperCase()}

@@ -146,6 +146,9 @@ export default function DashboardPage() {
           storageLimit={user?.storageLimit || 0}
           storageUsed={overview?.storageUsed || 0}
           storagePct={storagePct}
+          messages={overview?.dailyMessage || 0}
+          messagesPerDay={user?.messagesPerDay || 0}
+          messagePct={messagePct}
         />
 
         {/* Page content — this is the ONLY scrollable area */}
