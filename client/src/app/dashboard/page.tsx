@@ -57,6 +57,8 @@ export default function DashboardPage() {
     // Overview
     overview,
     overviewLoading,
+    overviewError,
+    overviewErrorData,
 
     // Filters
     filterFolder,
@@ -161,6 +163,9 @@ export default function DashboardPage() {
                 completedDocs={overview?.completedDocuments || 0}
                 overview={overview}
                 overviewLoading={overviewLoading}
+                overviewError={overviewError}
+                overViewErrorData={overviewErrorData}
+                refetch={() => handleRefetch("overview")}
               />
             </Suspense>
           )}

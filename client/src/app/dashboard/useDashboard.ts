@@ -31,6 +31,8 @@ const useDashboardPage = () => {
   const {
     data: overview,
     isLoading: overviewLoading,
+    isError: overviewError,
+    error: overviewErrorData,
     refetch: overViewRefetch,
   } = useDashboardOverview(user?._id ?? "");
 
@@ -108,6 +110,8 @@ const useDashboardPage = () => {
     // Overview
     overview,
     overviewLoading,
+    overviewError,
+    overviewErrorData,
 
     // Filters
     filterFolder,

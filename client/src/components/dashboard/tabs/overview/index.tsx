@@ -7,12 +7,17 @@ import StatCards from "./components/StatCards";
 import RecentDocuments from "./components/RecentDocuments";
 import LatestSummaries from "./components/LatestSummaries";
 import AIActivity from "./components/AIActivity";
+import { AxiosError } from "@/types/api";
+import FetchError from "../../FetchError";
 
-interface Props {
+interface OverViewTabProps {
   setNav: React.Dispatch<React.SetStateAction<NavItem>>;
   completedDocs: number;
   overview: DashboardOverview | undefined;
   overviewLoading: boolean;
+  overviewError: boolean;
+  overViewErrorData: AxiosError | null;
+  refetch: () => void;
   messsagesPerDay: number;
 }
 
@@ -21,30 +26,45 @@ const OverviewTab = ({
   completedDocs,
   overview,
   overviewLoading,
+  overviewError,
+  overViewErrorData,
+  refetch,
   messsagesPerDay,
-}: Props) => (
-  <div className="space-y-6 sm:space-y-8">
-    <StatCards
-      overview={overview}
-      overviewLoading={overviewLoading}
-      completedDocs={completedDocs}
-    />
+}: OverViewTabProps) => {
+  if (overviewError) {
+    return (
+      <FetchError
+        errorTitleMessage="Unable to get overview"
+        refetch={refetch}
+        error={overViewErrorData}
+      />
+    );
+  }
 
-    <div className="grid grid-cols-1 xl:grid-cols-5 gap-4 sm:gap-6">
-      <RecentDocuments
-        recentDocuments={overview?.recentDocuments ?? []}
+  return (
+    <div className="space-y-6 sm:space-y-8">
+      <StatCards
+        overview={overview}
         overviewLoading={overviewLoading}
-        onViewAll={() => setNav("documents")}
+        completedDocs={completedDocs}
       />
 
-      <AIActivity overview={overview} messagesPerDay={messsagesPerDay} />
-    </div>
+      <div className="grid grid-cols-1 xl:grid-cols-5 gap-4 sm:gap-6">
+        <RecentDocuments
+          recentDocuments={overview?.recentDocuments ?? []}
+          overviewLoading={overviewLoading}
+          onViewAll={() => setNav("documents")}
+        />
 
-    <LatestSummaries
-      overview={overview}
-      onViewAll={() => setNav("summaries")}
-    />
-  </div>
-);
+        <AIActivity overview={overview} messagesPerDay={messsagesPerDay} />
+      </div>
+
+      <LatestSummaries
+        overview={overview}
+        onViewAll={() => setNav("summaries")}
+      />
+    </div>
+  );
+};
 
 export default OverviewTab;
