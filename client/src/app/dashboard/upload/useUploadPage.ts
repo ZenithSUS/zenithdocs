@@ -48,6 +48,7 @@ const useUploadPage = () => {
   // ─── Derived ──────────────────────────────────────────────────────────────
   const hasValidFiles = files.some((f) => f.status === "processing");
   const hasUploadingFiles = files.some((f) => f.status === "uploading");
+  const anyFileSuccess = files.some((f) => f.status === "success");
 
   const removeFile = useCallback((id: string) => {
     setFiles((prev) => prev.filter((f) => f.id !== id));
@@ -88,6 +89,7 @@ const useUploadPage = () => {
     removeFile,
     hasValidFiles,
     hasUploadingFiles,
+    anyFileSuccess,
 
     // Drop (spread so page binds handlers directly)
     ...drop,

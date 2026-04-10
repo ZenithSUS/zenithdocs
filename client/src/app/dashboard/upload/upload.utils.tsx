@@ -1,4 +1,6 @@
+import { JSX } from "react";
 import { ACCEPTED_FORMATS, MAX_FILE_SIZE } from "./upload.types";
+import { FileText, FileType, AlignLeft, Paperclip } from "lucide-react";
 
 export const validateFile = (file: File): string | null => {
   const ext = "." + file.name.split(".").pop()?.toLowerCase();
@@ -11,17 +13,18 @@ export const validateFile = (file: File): string | null => {
   return null;
 };
 
-export const getFileIcon = (fileName: string): string => {
+export const getFileIcon = (fileName: string): JSX.Element => {
   const ext = fileName.split(".").pop()?.toLowerCase();
+  const props = { size: 24, strokeWidth: 1.5 };
   switch (ext) {
     case "pdf":
-      return "📄";
+      return <FileType {...props} className="text-[#ef4444]/70" />;
     case "docx":
-      return "📝";
+      return <FileText {...props} className="text-[#3b82f6]/70" />;
     case "txt":
-      return "📃";
+      return <AlignLeft {...props} className="text-[#F5F5F5]/50" />;
     default:
-      return "📎";
+      return <Paperclip {...props} className="text-[#C9A227]/70" />;
   }
 };
 

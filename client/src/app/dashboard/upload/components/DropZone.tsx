@@ -28,7 +28,7 @@ const DropZone = ({
     className={`relative border-2 border-dashed rounded-lg transition-all duration-300 ${
       isDragging
         ? "border-[#C9A227] bg-[#C9A227]/5 scale-[1.02]"
-        : "border-[#C9A227]/30 bg-[rgba(31,41,55,0.2)] hover:border-[#C9A227]/50"
+        : "border-[#C9A227]/30 bg-white/8 hover:border-[#C9A227]/50"
     }`}
   >
     <input

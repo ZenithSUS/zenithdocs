@@ -1,5 +1,6 @@
 import { UploadFile } from "../upload.types";
 import { getFileIcon, formatFileSize } from "../upload.utils";
+import { CheckCircle, AlertTriangle, X, AlertCircle } from "lucide-react";
 
 interface Props {
   files: UploadFile[];
@@ -9,9 +10,9 @@ interface Props {
 
 const StatusIcon = ({ status }: { status: UploadFile["status"] }) => {
   if (status === "success")
-    return <span className="text-[#10b981] text-sm shrink-0">✓</span>;
+    return <CheckCircle size={15} className="text-[#10b981] shrink-0" />;
   if (status === "error")
-    return <span className="text-[#ef4444] text-sm shrink-0">⚠</span>;
+    return <AlertTriangle size={15} className="text-[#ef4444] shrink-0" />;
   return null;
 };
 
@@ -33,7 +34,7 @@ const FileListItem = ({
           ? "bg-[rgba(239,68,68,0.06)] border-[#ef4444]/25"
           : isSuccess
             ? "bg-[rgba(16,185,129,0.06)] border-[#10b981]/25"
-            : "bg-[rgba(31,41,55,0.4)] border-[#C9A227]/12 hover:border-[#C9A227]/25"
+            : "bg-white/8 border-[#C9A227]/12 hover:border-[#C9A227]/25"
       }`}
     >
       <div className="flex items-start gap-4">
@@ -61,7 +62,7 @@ const FileListItem = ({
                 onClick={() => onRemove(uploadFile.id)}
                 className="text-[#F5F5F5]/40 hover:text-[#ef4444] transition-colors shrink-0"
               >
-                ✕
+                <X size={14} />
               </button>
             ) : (
               <StatusIcon status={uploadFile.status} />
@@ -87,7 +88,8 @@ const FileListItem = ({
           {uploadFile.error && (
             <div className="flex items-center justify-between mt-2">
               <p className="text-[11px] text-[#ef4444] font-sans flex items-center gap-1">
-                <span>⚠</span> {uploadFile.error}
+                <AlertCircle size={11} />
+                {uploadFile.error}
               </p>
               <button
                 onClick={() => onRemove(uploadFile.id)}
@@ -116,7 +118,6 @@ const FileList = ({ files, onRemove, onClear }: Props) => {
           <h3 className="text-[11px] tracking-[0.15em] text-[#C9A227] font-sans">
             FILES ({files.length})
           </h3>
-          {/* Summary badges */}
           {successCount > 0 && (
             <span className="text-[10px] text-[#10b981] font-sans tracking-wide">
               {successCount} done

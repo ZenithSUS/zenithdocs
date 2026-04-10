@@ -24,7 +24,9 @@ const DocumentRowCard = ({
       className="flex items-center gap-3 sm:contents cursor-pointer hover:bg-white/3 transition-colors duration-150"
       onClick={() => setSelectedDoc(isSelected ? null : doc)}
     >
-      <FileIcon type={doc.fileType} />
+      <div className="shrink-0">
+        <FileIcon type={doc.fileType} />
+      </div>
 
       <div className="sm:col-start-2 min-w-0">
         <div className="text-[13px] font-sans text-text/80 truncate">

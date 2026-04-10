@@ -9,11 +9,12 @@ import FolderSelect from "./components/FolderSelect";
 import DropZone from "./components/DropZone";
 import FileList from "./components/FileList";
 import UploadActions from "./components/UploadActions";
-import { useState } from "react";
 import Header from "@/components/dashboard/Header";
 import GlobalChatUI from "@/components/dashboard/GlobalChatUI";
+import { useRouter } from "next/navigation";
 
 export default function UploadPage() {
+  const router = useRouter();
   const {
     // Auth
     user,
@@ -46,6 +47,7 @@ export default function UploadPage() {
     handleDragOver,
     handleDrop,
     handleFileInput,
+    anyFileSuccess,
 
     // Upload
     uploadFiles,
@@ -115,6 +117,15 @@ export default function UploadPage() {
             isReady={!!user}
             onUpload={uploadFiles}
           />
+        )}
+
+        {anyFileSuccess && (
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="mt-4 w-full text-[11px] tracking-[0.15em] text-[#C9A227] hover:text-[#F5F5F5] transition-colors font-sans"
+          >
+            GO TO DASHBOARD →
+          </button>
         )}
       </main>
 
