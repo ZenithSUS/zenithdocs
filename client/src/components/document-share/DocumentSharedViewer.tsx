@@ -4,6 +4,7 @@ import { useState, useCallback, useRef } from "react";
 import { pdfjs } from "react-pdf";
 import DocumentViewerControls from "./DocumentViewerControls";
 import DocumentViewerCanvas from "./DocumentViewerCanvas";
+import DocumentViewerDocx from "./DocumentViewerDocx";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
@@ -73,10 +74,26 @@ export default function DocumentSharedViewer({
   const isPdf =
     document?.fileType === "application/pdf" || document?.fileType === "pdf";
 
-  if (!isPdf) {
+  const isDocx =
+    document?.fileType ===
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+    document?.fileType ===
+      "vnd.openxmlformats-officedocument.wordprocessingml.document";
+
+  if (!isPdf && !isDocx) {
     return (
       <div className="h-full overflow-y-auto p-6 text-sm text-[#F5F5F5]/80 font-mono leading-relaxed whitespace-pre-wrap">
         {document?.rawText || "No preview available."}
+      </div>
+    );
+  }
+
+  if (isDocx && document.fileUrl) {
+    return (
+      <div className="flex flex-col h-full min-h-0">
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <DocumentViewerDocx fileUrl={document.fileUrl} scale={scale} />
+        </div>
       </div>
     );
   }
