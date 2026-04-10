@@ -19,6 +19,7 @@ const useDocumentPage = () => {
   // ─── UI state ─────────────────────────────────────────────────────────────
   const mousePos = useMousePosition();
   const [chatBotOpen, setChatBotOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"details" | "summaries">(
     "details",
   );
@@ -163,6 +164,10 @@ const useDocumentPage = () => {
     mousePos,
     chatBotOpen,
     setChatBotOpen,
+
+    // Modals
+    deleteModalOpen,
+    setDeleteModalOpen,
   };
 };
 

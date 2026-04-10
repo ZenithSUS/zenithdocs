@@ -6,10 +6,12 @@ import {
   CalendarDays,
   Folder,
   HardDrive,
+  Trash2Icon,
 } from "lucide-react";
 
 import FileIcon from "@/components/FileIcon";
 import sizefmt from "@/helpers/size-format";
+import React from "react";
 
 interface StatusMeta {
   text: string;
@@ -35,9 +37,16 @@ interface Props {
   document: Document;
   folder: DocumentFolder | null;
   statusMeta: StatusMeta;
+  setDeleteModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const DocumentInfo = ({ documentId, document, folder, statusMeta }: Props) => {
+const DocumentInfo = ({
+  documentId,
+  document,
+  folder,
+  statusMeta,
+  setDeleteModalOpen,
+}: Props) => {
   const router = useRouter();
 
   return (
@@ -91,7 +100,7 @@ const DocumentInfo = ({ documentId, document, folder, statusMeta }: Props) => {
               href={document.fileUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-4 py-2 bg-green-500 border border-white/10 font-bold text-black rounded-sm text-[11px] tracking-widest font-sans hover:bg-white/8 transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 bg-green-500 border border-white/10 font-bold text-black rounded-sm text-[11px] tracking-widest font-sans hover:bg-green-500/80 transition-colors"
             >
               <Download size={12} />
               DOWNLOAD
@@ -101,17 +110,25 @@ const DocumentInfo = ({ documentId, document, folder, statusMeta }: Props) => {
             onClick={() =>
               router.push(`/dashboard/summarize?doc=${documentId}`)
             }
-            className="flex items-center gap-1.5 px-4 py-2 bg-[#C9A227] text-[#111111] rounded-sm text-[11px] font-bold tracking-widest font-sans hover:bg-[#e0b530] transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 bg-[#C9A227] text-[#111111] rounded-sm text-[11px] font-bold tracking-widest font-sans hover:bg-[#e0b530] transition-colors cursor-pointer"
           >
             <Sparkles size={12} />
             SUMMARIZE
           </button>
           <button
             onClick={() => router.push(`/dashboard/chat?doc=${documentId}`)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-accent text-text font-sans hover:bg-accent rounded-sm text-[11px] font-bold tracking-widest transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 bg-accent text-text font-sans hover:bg-accent rounded-sm text-[11px] font-bold tracking-widest transition-colors cursor-pointer"
           >
             <MessageCircle size={12} />
             CHAT
+          </button>
+
+          <button
+            onClick={() => setDeleteModalOpen(true)}
+            className="flex items-center gap-1.5 px-4 py-2 bg-red-500 text-text rounded-sm text-[11px] font-bold tracking-widest font-sans hover:bg-red-500/80 transition-colors cursor-pointer"
+          >
+            <Trash2Icon size={12} />
+            DELETE
           </button>
         </div>
       </div>

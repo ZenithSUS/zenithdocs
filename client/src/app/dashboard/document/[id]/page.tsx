@@ -10,8 +10,9 @@ import DocumentTabs from "./components/DocumentTabs";
 import DocumentDetailsTab from "./components/DocumentDetailsTab";
 import DocumentSummariesTab from "./components/DocumentSummariesTab";
 import GlobalChatUI from "@/components/dashboard/GlobalChatUI";
-import DocumentHeader from "./components/DoocumentHeader";
 import DocumentNotFound from "./components/DocumentNotFound";
+import Header from "@/components/dashboard/Header";
+import DeleteDocumentModal from "@/components/dashboard/modals/document/DeleteDocumentModal";
 
 export default function DocumentViewPage() {
   const {
@@ -54,6 +55,10 @@ export default function DocumentViewPage() {
     mousePos,
     chatBotOpen,
     setChatBotOpen,
+
+    // Modals
+    deleteModalOpen,
+    setDeleteModalOpen,
   } = useDocumentPage();
 
   // ─── Guards ───────────────────────────────────────────────────────────────
@@ -95,8 +100,18 @@ export default function DocumentViewPage() {
         setChatBotOpen={setChatBotOpen}
       />
 
+      {deleteModalOpen && (
+        <DeleteDocumentModal
+          documentId={documentId}
+          documentTitle={document.title}
+          userId={userId}
+          open={deleteModalOpen}
+          onOpenChange={setDeleteModalOpen}
+        />
+      )}
+
       {/* Header */}
-      <DocumentHeader documentId={documentId} />
+      <Header user={user} title="DOCUMENT" titleHighlight="VIEW" />
 
       {/* Main */}
       <main className="pt-24 pb-12 px-5 sm:px-8 md:px-12 max-w-5xl mx-auto">
@@ -105,6 +120,7 @@ export default function DocumentViewPage() {
           document={document}
           folder={folder}
           statusMeta={statusMeta!}
+          setDeleteModalOpen={setDeleteModalOpen}
         />
 
         <DocumentTabs
