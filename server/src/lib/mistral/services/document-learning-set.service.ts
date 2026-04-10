@@ -1,5 +1,8 @@
 import { IDocumentChunk } from "../../../models/document-chunk.model.js";
-import { ILearningItem } from "../../../models/learning-set.model.js";
+import {
+  ILearningItem,
+  ILearningSet,
+} from "../../../models/learning-set.model.js";
 import { getDocumentChunksByDocumentId } from "../../../repositories/document-chunk.repository.js";
 import { getDocumentById } from "../../../repositories/document.repository.js";
 import { incrementOnlyAIRequests } from "../../../repositories/usage.repository.js";
@@ -191,7 +194,7 @@ const callModel = async (
   difficulty: "easy" | "medium" | "hard",
   documentId: string,
   ownerId: string,
-) => {
+): Promise<ILearningSet & { tokenUsed: number }> => {
   const userMessage = JSON.stringify({
     documentId,
     ownerId,
@@ -213,13 +216,18 @@ const callModel = async (
     temperature: 0.4,
   });
 
+  const tokenUsed = response.usage?.totalTokens ?? 0;
+
   const raw = response.choices?.[0]?.message?.content;
   if (!raw) {
     throw new AppError("No response from model", 500);
   }
 
   const parsed = JSON.parse(raw.toString());
-  return parsed;
+  return {
+    ...parsed,
+    tokenUsed,
+  };
 };
 
 export const generateLearningSets = async ({
@@ -260,10 +268,13 @@ export const generateLearningSets = async ({
   const mergedItems: ILearningItem[] = [];
   const mergedHashes: string[] = [];
 
+  let tokenUsed = 0;
+
   results.forEach((result, index) => {
     if (result.status === "fulfilled") {
       mergedItems.push(...(result.value.items ?? []));
       mergedHashes.push(...(result.value.chunkHashes ?? []));
+      tokenUsed += result.value.tokenUsed;
     } else {
       console.log("=".repeat(50));
       console.log(
@@ -278,7 +289,7 @@ export const generateLearningSets = async ({
     throw new AppError("All batches failed. No items generated.", 500);
   }
 
-  await incrementOnlyAIRequests(ownerId);
+  await incrementOnlyAIRequests(ownerId, tokenUsed);
 
   return {
     documentId,

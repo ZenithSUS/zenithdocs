@@ -243,13 +243,8 @@ async function extractAdditionalDetails(
   }
 }
 
-export const summarizeText = async (
-  content: string,
-  type: SummaryType,
-  currentTokens: number,
-) => {
+export const summarizeText = async (content: string, type: SummaryType) => {
   const systemPrompt = buildSystemPrompt(type);
-  let runningTokenTotal = currentTokens;
 
   // ─── Small content — send directly ───────────────────────────────────────
   if (content.length <= MAX_CHARS_PER_CHUNK) {

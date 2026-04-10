@@ -240,10 +240,14 @@ export const incrementOnlyTokensUsed = async (
 /**
  * Increments the aiRequests count for a given user and month, or creates a new document if it does not exist
  * @param {string} userId - User ID
+ * @param {number} tokensUsed - Amount of tokens used to increment the tokensUsed count by
  * @returns {Promise<IUsage>} Updated or created usage document
  * @throws {MongooseError} If usage data is invalid
  */
-export const incrementOnlyAIRequests = async (userId: string) => {
+export const incrementOnlyAIRequests = async (
+  userId: string,
+  tokensUsed: number,
+) => {
   const month = new Date().toISOString().slice(0, 7); // YYYY-MM
 
   return await Usage.findOneAndUpdate(
@@ -251,6 +255,7 @@ export const incrementOnlyAIRequests = async (userId: string) => {
     {
       $inc: {
         aiRequests: 1,
+        tokensUsed,
       },
     },
     {
@@ -261,7 +266,17 @@ export const incrementOnlyAIRequests = async (userId: string) => {
   );
 };
 
-export const incrementOnlyDailyAndTotalMessages = async (userId: string) => {
+/**
+ * Increments the dailyMessages and totalMessages counts for a given user and month, or creates a new document if it does not exist
+ * @param {string} userId - User ID
+ * @param {number} tokensUsed - Amount of tokens used to increment the tokensUsed count by
+ * @returns {Promise<IUsage>} Updated or created usage document
+ * @throws {MongooseError} If usage data is invalid
+ */
+export const incrementOnlyDailyAndTotalMessages = async (
+  userId: string,
+  tokensUsed: number,
+) => {
   const month = new Date().toISOString().slice(0, 7); // YYYY-MM
   const today = dayjs().format("YYYY-MM-DD");
 
@@ -271,6 +286,39 @@ export const incrementOnlyDailyAndTotalMessages = async (userId: string) => {
       $inc: {
         [`dailyMessages.${today}`]: 1,
         totalMessages: 1,
+        tokensUsed,
+      },
+    },
+    {
+      returnDocument: "after",
+      upsert: true,
+      setDefaultsOnInsert: true,
+    },
+  );
+};
+
+/**
+ * Increments the aiRequests, dailyMessages, totalMessages and tokensUsed counts for a given user and month, or creates a new document if it does not exist
+ * @param {string} userId - User ID
+ * @param {number} tokensUsed - Amount of tokens used
+ * @returns {Promise<IUsage>} Updated or created usage document
+ * @throws {MongooseError} If usage data is invalid
+ */
+export const incrementAIMessagesUsage = async (
+  userId: string,
+  tokensUsed: number,
+) => {
+  const month = new Date().toISOString().slice(0, 7); // YYYY-MM
+  const today = dayjs().format("YYYY-MM-DD");
+
+  return await Usage.findOneAndUpdate(
+    { user: userId, month },
+    {
+      $inc: {
+        [`dailyMessages.${today}`]: 1,
+        aiRequests: 1,
+        totalMessages: 1,
+        tokensUsed,
       },
     },
     {

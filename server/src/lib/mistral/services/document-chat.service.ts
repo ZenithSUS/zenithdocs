@@ -17,10 +17,7 @@ import redis from "../../../config/redis.js";
 import queryEmbedding from "../utils/query-embedding.js";
 import { streamDocumentChatSchema } from "../../../schemas/chat.schema.js";
 import { userTokenSchema } from "../../../utils/zod.utils.js";
-import {
-  incrementOnlyAIRequests,
-  incrementOnlyDailyAndTotalMessages,
-} from "../../../repositories/usage.repository.js";
+import { incrementAIMessagesUsage } from "../../../repositories/usage.repository.js";
 
 interface StreamChatPayload {
   question: string;
@@ -122,11 +119,6 @@ ${context}`;
     maxTokens: 2000,
   });
 
-  await Promise.all([
-    incrementOnlyAIRequests(authUser.userId),
-    incrementOnlyDailyAndTotalMessages(authUser.userId),
-  ]);
-
   await createMessage({
     chatId: chat._id.toString(),
     userId: authUser.userId,
@@ -136,6 +128,7 @@ ${context}`;
   });
 
   let fullResponse = "";
+  let finalUsage = null;
 
   res.write(
     `data: [CONFIDENCE]:${JSON.stringify({ score: confidenceScore })}\n\n`,
@@ -143,6 +136,10 @@ ${context}`;
 
   for await (const chunk of stream) {
     const token = chunk.data.choices[0]?.delta?.content;
+
+    if (chunk.data?.usage) {
+      finalUsage = chunk.data.usage;
+    }
 
     if (token) {
       fullResponse += token;
@@ -153,6 +150,10 @@ ${context}`;
   }
   res.write(`data: [DONE]\n\n`);
   res.end();
+
+  const tokenUsed = finalUsage?.totalTokens || 0;
+
+  await incrementAIMessagesUsage(authUser.userId, tokenUsed);
 
   await createMessage({
     chatId: chat._id.toString(),

@@ -78,10 +78,9 @@ export const createSummaryService = async (data: Partial<ISummary>) => {
   const { content, tokensUsed, additionalDetails } = await summarizeText(
     contentToSummarize,
     validated.type,
-    usageLimit.tokensUsed,
   );
 
-  await incrementOnlyAIRequests(validated.user);
+  await incrementOnlyAIRequests(validated.user, tokensUsed);
 
   const summary = await createSummary({
     user: validated.user,

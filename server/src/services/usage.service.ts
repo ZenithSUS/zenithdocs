@@ -163,7 +163,16 @@ export const updateUsageService = async (
   return usage;
 };
 
-export const updateUsageByUserAndMonthService = async (
+/**
+ * Increments the tokensUsed count for a given user, or creates a new document if it does not exist
+ * @param {string} userId - User ID
+ * @param {number} tokensUsed - Amount of tokens used to increment the tokensUsed count by
+ * @param {string} currentUserId - ID of the user making the request (for authorization)
+ * @param {"user" | "admin"} role - Role of the user making the request (for authorization)
+ * @returns {Promise<IUsage>} Updated or created usage document
+ * @throws {AppError} If usage data is invalid or if user or month is missing
+ */
+export const updateUsageByUserService = async (
   userId: string,
   tokensUsed: number,
   currentUserId: string,

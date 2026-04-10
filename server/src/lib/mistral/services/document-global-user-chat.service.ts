@@ -16,10 +16,8 @@ import { IDocumentChunkOutput } from "../../../models/document-chunk.model.js";
 import { globalChatUserSchema } from "../../../schemas/global-chat.schema.js";
 import isZenithDocsQuestion from "../../../utils/zenithdocs-question.js";
 import redis from "../../../config/redis.js";
-import {
-  incrementOnlyAIRequests,
-  incrementOnlyDailyAndTotalMessages,
-} from "../../../repositories/usage.repository.js";
+import { incrementAIMessagesUsage } from "../../../repositories/usage.repository.js";
+
 interface streamDocumentUserChatPayload {
   userId: string;
   question: string;
@@ -224,11 +222,6 @@ export const streamDocumentUserChat = async ({
     filteredChunks.map((chunk) => chunk.documentId.toString()),
   );
 
-  await Promise.all([
-    incrementOnlyAIRequests(validated.userId),
-    incrementOnlyDailyAndTotalMessages(validated.userId),
-  ]);
-
   await createGlobalMessage({
     role: "user",
     content: validated.question,
@@ -239,6 +232,7 @@ export const streamDocumentUserChat = async ({
   });
 
   let fullResponse = "";
+  let finalUsage = null;
 
   // Write the initial confidence score
   res.write(
@@ -247,6 +241,10 @@ export const streamDocumentUserChat = async ({
 
   for await (const chunk of stream) {
     const token = chunk.data.choices[0].delta.content;
+
+    if (chunk.data?.usage) {
+      finalUsage = chunk.data.usage;
+    }
 
     if (token) {
       fullResponse += token;
@@ -258,6 +256,10 @@ export const streamDocumentUserChat = async ({
 
   res.write("data: [DONE]\n\n");
   res.end();
+
+  const tokenUsed = finalUsage?.totalTokens || 0;
+
+  await incrementAIMessagesUsage(validated.userId, tokenUsed);
 
   await createGlobalMessage({
     role: "assistant",
