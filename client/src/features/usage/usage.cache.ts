@@ -48,3 +48,16 @@ export const incrementUsageDailyMessagesCache = (
     };
   });
 };
+
+export const incrementAIRequestsCache = (
+  queryClient: QueryClient,
+  queryKey: readonly unknown[],
+) => {
+  queryClient.setQueryData<Usage[]>(queryKey, (oldData) => {
+    if (!oldData) return oldData;
+    return oldData.map((usage) => ({
+      ...usage,
+      aiRequests: usage.aiRequests + 1,
+    }));
+  });
+};

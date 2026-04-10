@@ -4,6 +4,10 @@ import { QueryClient, useMutation } from "@tanstack/react-query";
 import summaryKeys from "./summary.keys";
 import { createSummary } from "./summary.api";
 import { addInfiniteSummary } from "./summary.cache";
+import { incrementAIRequestsCache } from "../usage/usage.cache";
+import usageKeys from "../usage/usage.keys";
+import { incrementDashboardAIRequestCache } from "../dashboard/dashboard.cache";
+import { dashboardKeys } from "../dashboard/dashboard.keys";
 
 export const useSummaryCreate = (
   queryClient: QueryClient,
@@ -28,5 +32,9 @@ export const useSummaryCreate = (
           newSummary,
         );
       }
+
+      incrementAIRequestsCache(queryClient, usageKeys.byUserSixMonths(userId));
+
+      incrementDashboardAIRequestCache(queryClient, dashboardKeys.overview());
     },
   });

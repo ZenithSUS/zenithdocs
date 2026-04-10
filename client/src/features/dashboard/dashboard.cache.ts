@@ -51,3 +51,26 @@ export const incrementDashboardMessageCache = (
     };
   });
 };
+
+export const incrementDashboardAIRequestCache = (
+  queryClient: QueryClient,
+  queryKey: readonly unknown[],
+) => {
+  queryClient.setQueryData<DashboardOverview>(queryKey, (oldData) => {
+    if (!oldData) return oldData;
+
+    const currentMonth = dayjs().format("YYYY-MM");
+
+    return {
+      ...oldData,
+      totalAIRequests: oldData.totalAIRequests + 1,
+      usageHistory: oldData.usageHistory.map((usage) => ({
+        ...usage,
+        aiRequests:
+          usage.month === currentMonth
+            ? usage.aiRequests + 1
+            : usage.aiRequests,
+      })),
+    };
+  });
+};
