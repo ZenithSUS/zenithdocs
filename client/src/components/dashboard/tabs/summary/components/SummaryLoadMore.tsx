@@ -13,13 +13,11 @@ const SummaryLoadMore = ({
 }: Props) => (
   <div ref={loadMoreRef} className="flex items-center justify-center py-8">
     {isFetchingNextPage ? (
-      <div className="flex items-center gap-2 text-[12px] text-text/40 font-sans">
-        <ThreeDot
-          color="#c9a227"
-          size="small"
-          text="Loading more summaries..."
-          textColor=""
-        />
+      <div className="flex items-center gap-2">
+        <p className="text-[12px] text-primary font-sans tracking-widest">
+          Loading more summaries
+        </p>
+        <ThreeDot color="#c9a227" size="small" />
       </div>
     ) : (
       <button

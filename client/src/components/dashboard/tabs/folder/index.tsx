@@ -110,12 +110,10 @@ function FolderTab({
         >
           {isFetchingNextFolderPage ? (
             <div className="flex items-center gap-2 text-[12px] text-text/40 font-sans">
-              <ThreeDot
-                color="#c9a227"
-                size="small"
-                text="Loading more folders..."
-                textColor=""
-              />
+              <p className="text-[12px] text-primary font-sans tracking-widest">
+                Loading more folders
+              </p>
+              <ThreeDot color="#c9a227" size="small" />
             </div>
           ) : (
             <button

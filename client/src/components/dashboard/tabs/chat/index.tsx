@@ -134,7 +134,7 @@ function ChatsTab({ userId }: ChatsTabProps) {
         >
           {isFetchingNextDocumentPage ? (
             <div className="flex items-center gap-2">
-              <span className="text-sm font-sans text-primary tracking-wider">
+              <span className="text-[11px] font-sans text-primary tracking-widest">
                 Loading more conversations
               </span>
               <ThreeDot color="#c9a227" size="small" />
