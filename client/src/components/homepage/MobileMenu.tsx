@@ -30,7 +30,7 @@ function MobileMenu({ scrollTo, handleLogin, handleRegister }: Props) {
         </button>
         <button
           type="button"
-          className="flex-1 py-2.5 bg-primary border-none text-background rounded-sm cursor-pointer text-[12px] font-bold tracking-widest font-sans transition-all duration-200 hover:bg-[#e0b530]"
+          className="flex-1 py-2.5 bg-primary border-none text-black rounded-sm cursor-pointer text-[12px] font-bold tracking-widest font-sans transition-all duration-200 hover:bg-[#e0b530]"
           onClick={handleRegister}
         >
           GET STARTED

@@ -54,7 +54,7 @@ function DocumentSummaryCard({
   return (
     <div
       key={summary._id}
-      className="bg-[rgba(31,41,55,0.4)] border border-[#C9A227]/12 rounded-lg p-6 transition-all duration-200 hover:border-[#C9A227]/25"
+      className="bg-white/8 border border-[#C9A227]/12 rounded-lg p-6 transition-all duration-200 hover:border-[#C9A227]/25"
       style={{ animationDelay: `${idx * 60}ms` }}
     >
       {/* Summary header */}

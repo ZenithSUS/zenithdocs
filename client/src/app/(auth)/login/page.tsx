@@ -12,6 +12,28 @@ import { toast } from "sonner";
 import { AxiosError } from "@/types/api";
 import { useRouter } from "next/navigation";
 import config from "@/config/env";
+import { AlertTriangle, CheckCircle2, Building2 } from "lucide-react";
+
+const insights = [
+  {
+    icon: AlertTriangle,
+    label: "Risk",
+    text: "Liability clause (§7.1)",
+    color: "text-red-400",
+  },
+  {
+    icon: CheckCircle2,
+    label: "Action",
+    text: "Review by April 15",
+    color: "text-green-400",
+  },
+  {
+    icon: Building2,
+    label: "Entity",
+    text: "GlobalCorp, Sarah Chen",
+    color: "text-blue-300",
+  },
+];
 
 const loginSchema = z.object({
   email: z
@@ -138,7 +160,8 @@ export default function LoginPage() {
 
         {/* Centre visual */}
         <div className="relative z-10 flex-1 flex flex-col items-center justify-center text-center px-8">
-          <div className="w-full max-w-sm border border-primary/20 rounded-md bg-[rgba(31,41,55,0.5)] backdrop-blur-xl overflow-hidden mb-10">
+          <div className="w-full max-w-sm border border-primary/20 rounded-md bg-white/5 backdrop-blur-xl overflow-hidden mb-10">
+            {/* Window chrome */}
             <div className="px-4 py-3 border-b border-white/6 flex items-center gap-2 bg-black/20">
               {["#ff5f57", "#ffbd2e", "#28ca41"].map((c) => (
                 <div
@@ -151,37 +174,30 @@ export default function LoginPage() {
                 quarterly_report.pdf
               </span>
             </div>
+
             <div className="p-5">
-              <div className="text-[10px] tracking-widest text-primary mb-3 font-sans">
-                AI ANALYSIS
+              <p className="text-[10px] tracking-widest text-primary mb-4 font-sans uppercase">
+                AI analysis
+              </p>
+
+              <div className="flex flex-col gap-2.5">
+                {insights.map(({ icon: Icon, label, text, color }) => (
+                  <div
+                    key={label}
+                    className="flex items-center gap-2.5 text-[11px] font-sans"
+                  >
+                    <div
+                      className={`flex items-center gap-1.5 min-w-16 shrink-0 ${color}`}
+                    >
+                      <Icon size={11} />
+                      <span className="text-[10px] tracking-[0.06em]">
+                        {label}
+                      </span>
+                    </div>
+                    <span className="text-white/45">{text}</span>
+                  </div>
+                ))}
               </div>
-              {[
-                {
-                  label: "⚠ Risk",
-                  text: "Liability clause (§7.1)",
-                  color: "text-red-400",
-                },
-                {
-                  label: "✓ Action",
-                  text: "Review by April 15",
-                  color: "text-green-400",
-                },
-                {
-                  label: "◆ Entity",
-                  text: "GlobalCorp, Sarah Chen",
-                  color: "text-blue-300",
-                },
-              ].map((item) => (
-                <div
-                  key={item.label}
-                  className="flex items-center gap-2 text-[11px] font-sans mb-2"
-                >
-                  <span className={`${item.color} min-w-13 tracking-[0.04em]`}>
-                    {item.label}
-                  </span>
-                  <span className="text-text/50">{item.text}</span>
-                </div>
-              ))}
             </div>
           </div>
 
@@ -338,7 +354,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isSubmitting || isPending}
-              className="mt-2 w-full py-4 bg-primary border-none text-background rounded-sm cursor-pointer text-[12px] font-bold tracking-[0.14em] font-sans transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed hover:bg-[#e0b530] hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(201,162,39,0.35)] flex items-center justify-center gap-2.5"
+              className="mt-2 w-full py-4 bg-primary border-none text-background rounded-sm cursor-pointer text-black text-[12px] font-bold tracking-[0.14em] font-sans transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed hover:bg-[#e0b530] hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(201,162,39,0.35)] flex items-center justify-center gap-2.5"
             >
               {isSubmitting || isPending ? (
                 <>

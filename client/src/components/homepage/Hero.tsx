@@ -46,7 +46,7 @@ function Hero({ heroRef, handleRegister, scrollTo }: Props) {
         <div className="flex gap-3 sm:gap-4 justify-center items-center flex-wrap">
           <button
             onClick={handleRegister}
-            className="px-7 sm:px-9 py-3.5 sm:py-4 bg-primary border-none text-background rounded-sm cursor-pointer text-[12px] sm:text-[13px] font-bold tracking-[0.12em] font-sans transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(201,162,39,0.35)]"
+            className="px-7 sm:px-9 py-3.5 sm:py-4 bg-primary border-none text-black rounded-sm cursor-pointer text-[12px] sm:text-[13px] font-bold tracking-[0.12em] font-sans transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(201,162,39,0.35)]"
           >
             START FREE →
           </button>

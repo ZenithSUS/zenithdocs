@@ -50,7 +50,7 @@ function CTA() {
         <div className="flex gap-4 justify-center items-center">
           <button
             type="button"
-            className="px-8 sm:px-11 py-4 sm:py-4.5 bg-primary text-background rounded-sm cursor-pointer text-[12px] sm:text-[13px] font-bold tracking-[0.12em] font-sans transition-all duration-200 hover:-translate-y-0.75 hover:shadow-[0_16px_50px_rgba(201,162,39,0.4)]"
+            className="px-8 sm:px-11 py-4 sm:py-4.5 bg-primary text-black rounded-sm cursor-pointer text-[12px] sm:text-[13px] font-bold tracking-[0.12em] font-sans transition-all duration-200 hover:-translate-y-0.75 hover:shadow-[0_16px_50px_rgba(201,162,39,0.4)]"
             onClick={handleLogin}
           >
             START FREE →

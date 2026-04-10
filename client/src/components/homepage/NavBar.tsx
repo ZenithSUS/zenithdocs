@@ -58,7 +58,7 @@ function NavBar({
         </button>
         <button
           type="button"
-          className="px-4 md:px-5 py-2 bg-primary border-none text-background rounded-sm cursor-pointer text-[11px] md:text-[12px] font-bold tracking-widest font-sans transition-all duration-200 hover:bg-[#e0b530]"
+          className="px-4 md:px-5 py-2 bg-primary border-none text-black rounded-sm cursor-pointer text-[11px] md:text-[12px] font-bold tracking-widest font-sans transition-all duration-200 hover:bg-[#e0b530]"
           onClick={handleRegister}
         >
           GET STARTED

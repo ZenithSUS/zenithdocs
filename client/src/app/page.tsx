@@ -17,6 +17,8 @@ import Footer from "@/components/homepage/Footer";
 import MobileMenu from "@/components/homepage/MobileMenu";
 import useMousePosition from "@/features/ui/useMousePostion";
 import LineBackground from "@/components/homepage/LineBackground";
+import LearningSetCreator from "@/components/homepage/LearningSetCreator";
+import DocumentChat from "@/components/homepage/DocumentChat";
 
 export default function Home() {
   const [scrollY, setScrollY] = useState(0);
@@ -77,9 +79,11 @@ export default function Home() {
         handleRegister={handleRegister}
         scrollTo={scrollTo}
       />
-      <DocumentPreview />
       <HowItWorks />
       <Features />
+      <DocumentChat />
+      <DocumentPreview />
+      <LearningSetCreator />
       <UseCases />
       <Pricing />
       <CTA />

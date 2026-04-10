@@ -8,18 +8,7 @@ function Footer() {
         </span>
       </div>
       <div className="text-[11px] sm:text-[12px] text-text/25 font-sans tracking-[0.05em] order-last sm:order-0">
-        © 2024 ZENITHDOCS · AI DOCUMENT SUMMARIZATION
-      </div>
-      <div className="flex gap-4 sm:gap-6 text-[12px] text-text/30 font-sans tracking-[0.08em]">
-        {["Privacy", "Terms", "Contact"].map((item) => (
-          <a
-            key={item}
-            href="#"
-            className="text-inherit no-underline transition-colors duration-200 hover:text-primary"
-          >
-            {item.toUpperCase()}
-          </a>
-        ))}
+        © {new Date().getFullYear()} ZENITHDOCS · AI DOCUMENT SUMMARIZATION
       </div>
     </footer>
   );

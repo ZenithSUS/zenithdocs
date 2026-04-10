@@ -1,3 +1,5 @@
+"use client";
+
 import plans from "@/constants/plans";
 import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -32,13 +34,13 @@ function Pricing() {
         <div className="inline-flex items-center gap-3 p-1 bg-white/4 border border-white/8 rounded-sm">
           <button
             onClick={() => setBillingAnnual(false)}
-            className={`px-4 py-2 text-[11px] tracking-widest font-sans rounded-sm transition-all ${!billingAnnual ? "bg-primary text-background font-bold" : "text-text/50 hover:text-text/70"}`}
+            className={`px-4 py-2 text-[11px] tracking-widest font-sans rounded-sm transition-all ${!billingAnnual ? "bg-primary text-black font-bold" : "text-text/50 hover:text-text/70"}`}
           >
             MONTHLY
           </button>
           <button
             onClick={() => setBillingAnnual(true)}
-            className={`flex items-center gap-2 px-4 py-2 text-[11px] tracking-widest font-sans rounded-sm transition-all ${billingAnnual ? "bg-primary text-background font-bold" : "text-text/50 hover:text-text/70"}`}
+            className={`flex items-center gap-2 px-4 py-2 text-[11px] tracking-widest font-sans rounded-sm transition-all ${billingAnnual ? "bg-primary text-black font-bold" : "text-text/50 hover:text-text/70"}`}
           >
             ANNUAL
             <span
@@ -68,7 +70,7 @@ function Pricing() {
             >
               {/* Popular badge */}
               {plan.highlight && (
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1 bg-primary text-background text-[10px] font-bold tracking-[0.15em] font-sans rounded-full whitespace-nowrap">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1 bg-primary text-black text-[10px] font-bold tracking-[0.15em] font-sans rounded-full whitespace-nowrap">
                   MOST POPULAR
                 </div>
               )}
@@ -150,7 +152,7 @@ function Pricing() {
                 onClick={plan.key === "enterprise" ? undefined : handleRegister}
                 className={`w-full py-3 rounded-sm text-[12px] font-bold tracking-widest font-sans transition-all duration-200 ${
                   plan.highlight
-                    ? "bg-primary text-background hover:bg-[#e0b530] hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(201,162,39,0.3)]"
+                    ? "bg-primary text-black hover:bg-[#e0b530] hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(201,162,39,0.3)]"
                     : "bg-white/5 border border-white/10 text-text/60 hover:bg-white/10 hover:text-text/80"
                 }`}
               >
@@ -163,7 +165,7 @@ function Pricing() {
 
       {/* Plan comparison callout */}
       <p className="text-center text-[11px] text-text/25 font-sans tracking-widest mt-8">
-        ALL PLANS INCLUDE SSL ENCRYPTION · GDPR COMPLIANT · CANCEL ANYTIME
+        ALL PLANS INCLUDE 24/7 SUPPORT · GDPR COMPLIANT · CANCEL ANYTIME
       </p>
     </section>
   );

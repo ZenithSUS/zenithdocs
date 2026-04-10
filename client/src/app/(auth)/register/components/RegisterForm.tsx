@@ -226,7 +226,7 @@ function RegisterForm({
       <button
         type="submit"
         disabled={isSubmitting || isPending}
-        className="mt-1 w-full py-4 bg-primary border-none text-background rounded-sm cursor-pointer text-[12px] font-bold tracking-[0.14em] font-sans transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed hover:bg-[#e0b530] hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(201,162,39,0.35)] flex items-center justify-center gap-2.5"
+        className="mt-1 w-full py-4 bg-primary border-none text-black rounded-sm cursor-pointer text-[12px] font-bold tracking-[0.14em] font-sans transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed hover:bg-[#e0b530] hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(201,162,39,0.35)] flex items-center justify-center gap-2.5"
       >
         {isSubmitting || isPending ? (
           <>
