@@ -73,7 +73,12 @@ function RenameFolderModal({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Pencil className="text-text/40 hover:text-text/70 text-xl" size={20} />
+        <div className="p-2 border border-white/20 rounded-lg">
+          <Pencil
+            className="text-text/40 hover:text-text/70 text-xl"
+            size={20}
+          />
+        </div>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

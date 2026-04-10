@@ -14,34 +14,31 @@ interface FolderCardProps {
 const FolderCard = ({ folder, docs, handleFolderClick }: FolderCardProps) => {
   const completed = docs.filter((d) => d.status === "completed").length;
   const totalSize = docs.reduce((acc, d) => acc + d.fileSize, 0);
-
   const userId =
     typeof folder.user === "object" ? folder.user._id : folder.user;
 
   return (
-    <div
-      key={folder._id}
-      className="border border-white/8 rounded-sm px-6 py-6  hover:border-primary/25 hover:bg-primary/3 transition-all duration-200 group"
-    >
-      <div className="flex items-start justify-between mb-5">
-        <span className="text-[28px] text-primary/70 group-hover:text-primary transition-colors">
+    <div className="border border-white/8 rounded-[10px] px-5 py-5 hover:border-primary/25 hover:bg-primary/3 transition-all duration-200 group">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3.5">
+        <span className="text-[22px] leading-none text-primary/60 group-hover:text-primary/90 transition-colors">
           ⬡
         </span>
-        <span className="text-[10px] text-text/20 font-sans tracking-wider">
+        <span className="text-[10px] text-text/20 font-sans tracking-wider tabular-nums">
           {sizefmt.date(folder.createdAt)}
         </span>
       </div>
 
-      <div className="flex justify-between items-center">
-        <div
-          className="text-[16px] font-serif mb-1 truncate cursor-pointer w-fit hover:text-[#C9A227] transition-colors duration-150"
+      {/* Title + Actions */}
+      <div className="flex items-center justify-between gap-2 mb-1">
+        <span
+          className="text-[15px] font-medium truncate cursor-pointer hover:text-[#C9A227] transition-colors duration-150 flex-1"
           title={folder.name}
           onClick={() => handleFolderClick(folder._id)}
         >
           {folder.name}
-        </div>
-
-        <div className="flex items-center gap-2">
+        </span>
+        <div className="flex items-center gap-1.5 shrink-0">
           <RenameFolderModal
             userId={userId}
             folderId={folder._id}
@@ -51,14 +48,17 @@ const FolderCard = ({ folder, docs, handleFolderClick }: FolderCardProps) => {
         </div>
       </div>
 
-      <div className="text-[12px] text-text/30 font-sans mb-5">
+      {/* Meta */}
+      <p className="text-[11px] text-text/30 font-sans mb-3.5 tracking-wide">
         {docs.length} document{docs.length !== 1 ? "s" : ""}
         {totalSize > 0 && ` · ${sizefmt.bytes(totalSize)}`}
-      </div>
+      </p>
+
+      <hr className="border-t border-white/6 mb-3" />
 
       {/* Status badges */}
       {docs.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex flex-wrap gap-1.5 mb-3.5">
           {(["uploaded", "processing", "completed", "failed"] as DocStatus[])
             .filter((s) => docs.some((d) => d.status === s))
             .map((s) => {
@@ -67,7 +67,7 @@ const FolderCard = ({ folder, docs, handleFolderClick }: FolderCardProps) => {
               return (
                 <span
                   key={s}
-                  className={`flex items-center gap-1 text-[10px] font-sans ${sm.text} px-2 py-0.5 rounded-full border`}
+                  className={`flex items-center gap-1.5 text-[10px] font-sans ${sm.text} px-2 py-0.5 rounded-full border tracking-wide`}
                   style={{
                     borderColor:
                       s === "completed"
@@ -75,7 +75,9 @@ const FolderCard = ({ folder, docs, handleFolderClick }: FolderCardProps) => {
                         : "rgba(255,255,255,0.06)",
                   }}
                 >
-                  <span className={`w-1 h-1 rounded-full ${sm.dot}`} />
+                  <span
+                    className={`w-1.25 h-1.25 rounded-full shrink-0 ${sm.dot}`}
+                  />
                   {cnt} {sm.label}
                 </span>
               );
@@ -83,28 +85,26 @@ const FolderCard = ({ folder, docs, handleFolderClick }: FolderCardProps) => {
         </div>
       )}
 
-      {/* Completion progress bar */}
+      {/* Progress bar */}
       {docs.length > 0 && (
-        <div className="pt-4 border-t border-white/6">
-          <div className="w-full h-1 bg-white/6 rounded-full overflow-hidden">
+        <div>
+          <div className="w-full h-0.75 bg-white/6 rounded-full overflow-hidden mb-1.5">
             <div
               className="h-full bg-green-400/50 rounded-full transition-all duration-300"
-              style={{
-                width: `${(completed / docs.length) * 100}%`,
-              }}
+              style={{ width: `${(completed / docs.length) * 100}%` }}
             />
           </div>
-          <div className="text-[10px] text-text/25 font-sans mt-1.5">
-            {completed}/{docs.length} completed
-          </div>
+          <p className="text-[10px] text-text/22 font-sans tracking-wide">
+            {completed} / {docs.length} completed
+          </p>
         </div>
       )}
 
-      {/* Empty folder indicator */}
+      {/* Empty state */}
       {docs.length === 0 && (
-        <div className="pt-4 border-t border-white/6 text-[11px] text-text/20 font-sans text-center">
-          Empty folder
-        </div>
+        <p className="text-[11px] text-text/20 font-sans text-center py-1.5">
+          No documents yet
+        </p>
       )}
     </div>
   );

@@ -8,6 +8,8 @@ import { addDocumentShareCache } from "./document-share.cache";
 import { changeIsSharedInfiniteDocument } from "../documents/document.cache";
 import documentKeys from "../documents/document.keys";
 import fetchLimits from "@/constants/fetch-limits";
+import { incrementTotalDocumentSharedCache } from "../dashboard/dashboard.cache";
+import { dashboardKeys } from "../dashboard/dashboard.keys";
 
 export const useDocumentShareCreate = (
   queryClient: QueryClient,
@@ -36,6 +38,9 @@ export const useDocumentShareCreate = (
         documentShareKeys.byUser(userId),
         finalDocumentShare,
       );
+
+      // Increment Document Share Dashboard
+      incrementTotalDocumentSharedCache(queryClient, dashboardKeys.overview());
 
       // Optimistically mark document as shared
       changeIsSharedInfiniteDocument(

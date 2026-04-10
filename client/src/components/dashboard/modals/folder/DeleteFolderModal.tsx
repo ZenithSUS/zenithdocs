@@ -47,7 +47,9 @@ function DeleteFolderModal({ userId, folderId }: DeleteFolderModalProps) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Trash2 size={20} className="text-red-600 cursor-pointer" />
+        <div className="p-2 border border-white/20 rounded-lg">
+          <Trash2 size={20} className="text-red-600 cursor-pointer" />
+        </div>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

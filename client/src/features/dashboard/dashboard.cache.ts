@@ -14,6 +14,32 @@ export const updateDashboardOverviewCache = (
   });
 };
 
+export const incrementTotalDocumentSharedCache = (
+  queryClient: QueryClient,
+  queryKey: readonly unknown[],
+) => {
+  queryClient.setQueryData<DashboardOverview>(queryKey, (oldData) => {
+    if (!oldData) return oldData;
+    return {
+      ...oldData,
+      totalSharedDocuments: oldData.totalSharedDocuments + 1,
+    };
+  });
+};
+
+export const decrementTotalDocumentSharedCache = (
+  queryClient: QueryClient,
+  queryKey: readonly unknown[],
+) => {
+  queryClient.setQueryData<DashboardOverview>(queryKey, (oldData) => {
+    if (!oldData) return oldData;
+    return {
+      ...oldData,
+      totalSharedDocuments: oldData.totalSharedDocuments - 1,
+    };
+  });
+};
+
 export const incrementDashboardMessageCache = (
   queryClient: QueryClient,
   queryKey: readonly unknown[],

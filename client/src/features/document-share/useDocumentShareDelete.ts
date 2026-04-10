@@ -8,6 +8,8 @@ import { removeDocumentShareCache } from "./document-share.cache";
 import { changeIsSharedInfiniteDocument } from "../documents/document.cache";
 import documentKeys from "../documents/document.keys";
 import fetchLimits from "@/constants/fetch-limits";
+import { decrementTotalDocumentSharedCache } from "../dashboard/dashboard.cache";
+import { dashboardKeys } from "../dashboard/dashboard.keys";
 
 export const useDocumentShareDelete = (
   queryClient: QueryClient,
@@ -58,6 +60,8 @@ export const useDocumentShareDelete = (
           isShared: false,
         },
       );
+
+      decrementTotalDocumentSharedCache(queryClient, dashboardKeys.overview());
 
       // Invalidate all pages to correct any pagination gaps (e.g. page 2 losing an item)
       queryClient.invalidateQueries({

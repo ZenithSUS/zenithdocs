@@ -15,7 +15,9 @@ export const createDocumentSchema = z.object({
   publicId: z.string().min(1, "Public ID is required."),
 });
 
-export const updateDocumentSchema = createDocumentSchema.partial();
+export const updateDocumentSchema = createDocumentSchema.partial().extend({
+  folder: objectId.nullable(),
+});
 
 export const getDocumentsByUserPageSchema = z.object({
   userId: objectId,
