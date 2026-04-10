@@ -16,6 +16,7 @@ import CTA from "@/components/homepage/CTA";
 import Footer from "@/components/homepage/Footer";
 import MobileMenu from "@/components/homepage/MobileMenu";
 import useMousePosition from "@/features/ui/useMousePostion";
+import LineBackground from "@/components/homepage/LineBackground";
 
 export default function Home() {
   const [scrollY, setScrollY] = useState(0);
@@ -49,7 +50,10 @@ export default function Home() {
     <div className="bg-background text-text font-serif overflow-x-hidden">
       <CursorGlow mousePos={mousePos} />
 
-      {/* ─── NAVBAR ─── */}
+      {/* Line Background */}
+      <LineBackground />
+
+      {/* ─── NavBar ─── */}
       <NavBar
         mobileMenuOpen={mobileMenuOpen}
         setMobileMenuOpen={setMobileMenuOpen}

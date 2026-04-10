@@ -1,10 +1,21 @@
-import formatTokenLimit from "@/helpers/format-token-limit";
 import { Building2, Sparkles, Zap } from "lucide-react";
 
 export const PLAN_LIMITS = {
-  free: { tokenLimit: 10000, documentLimit: 10 },
-  premium: { tokenLimit: 100000, documentLimit: 100 },
-  enterprise: { tokenLimit: 1000000, documentLimit: 1000 },
+  free: {
+    documentLimit: 10,
+    storageLimitMB: 50,
+    messagesPerDay: 100,
+  },
+  premium: {
+    documentLimit: 100,
+    storageLimitMB: 1000,
+    messagesPerDay: 1000,
+  },
+  enterprise: {
+    documentLimit: 1000,
+    storageLimitMB: 10000,
+    messagesPerDay: 10000,
+  },
 };
 
 const plans = [
@@ -14,66 +25,85 @@ const plans = [
     icon: <Sparkles size={18} />,
     monthlyPrice: 0,
     annualPrice: 0,
-    tagline: "Perfect for getting started",
+    tagline: "Explore document intelligence basics",
     highlight: false,
     cta: "GET STARTED FREE",
+
     features: [
-      `${formatTokenLimit(PLAN_LIMITS.free.tokenLimit)} tokens / month`,
-      `${PLAN_LIMITS.free.documentLimit} documents`,
-      "Brief & bullet summaries",
+      `${PLAN_LIMITS.free.messagesPerDay} AI messages / day`,
+      `${PLAN_LIMITS.free.documentLimit} documents uploads`,
+      `${PLAN_LIMITS.free.storageLimitMB} MB storage`,
+      "Basic document summaries (short & bullet)",
+      "Limited document chat access",
       "Basic insight extraction",
+      "Basic AI learning sets",
       "Standard processing speed",
       "Community support",
     ],
+
     missing: [
+      "All summary modes (detailed & executive)",
+      "Advanced document chat reasoning",
       "Document comparison",
       "Priority processing",
+      "Export formats (PDF, Markdown, CSV)",
       "API access",
-      "Custom export formats",
     ],
   },
+
   {
     key: "premium",
     name: "Premium",
     icon: <Zap size={18} />,
     monthlyPrice: 19,
     annualPrice: 15,
-    tagline: "For power users & professionals",
+    tagline: "Full document intelligence experience",
     highlight: true,
     cta: "START PREMIUM →",
+
     features: [
-      `${formatTokenLimit(PLAN_LIMITS.premium.tokenLimit)} tokens / month`,
-      `${PLAN_LIMITS.premium.documentLimit} documents`,
-      "All summary modes",
+      `${PLAN_LIMITS.premium.messagesPerDay} AI messages / day`,
+      `${PLAN_LIMITS.premium.documentLimit} documents uploads`,
+      `${PLAN_LIMITS.premium.storageLimitMB} MB storage`,
+      "All summary modes (detailed, bullet, executive, short)",
+      "Full document chat (advanced reasoning)",
       "Advanced insight extraction",
-      "Priority processing speed",
+      "AI learning sets generation",
       "Document comparison",
-      "CSV / Markdown export",
+      "Priority processing speed",
+      "Export: PDF, Markdown, CSV",
       "Email support",
     ],
-    missing: ["Dedicated account manager", "Custom integrations"],
+
+    missing: ["API access", "Dedicated account manager"],
   },
+
   {
     key: "enterprise",
     name: "Enterprise",
     icon: <Building2 size={18} />,
     monthlyPrice: null,
     annualPrice: null,
-    tagline: "For teams at scale",
+    tagline: "Scale document intelligence across teams",
     highlight: false,
     cta: "CONTACT SALES",
+
     features: [
-      `${formatTokenLimit(PLAN_LIMITS.enterprise.tokenLimit)} tokens / month`,
-      `${PLAN_LIMITS.enterprise.documentLimit} documents`,
-      "All Premium features",
-      "Unlimited summary types",
+      `${PLAN_LIMITS.enterprise.messagesPerDay} AI messages / day`,
+      `${PLAN_LIMITS.enterprise.documentLimit} documents uploads`,
+      `${PLAN_LIMITS.enterprise.storageLimitMB} MB storage`,
+      "Everything in Premium",
+      "Unlimited AI summary generation",
+      "Full document reasoning & chat system",
+      "Advanced AI learning set automation",
       "Dedicated processing cluster",
       "Full API access",
-      "SSO & RBAC",
+      "SSO & RBAC authentication",
       "Custom integrations",
       "Dedicated account manager",
-      "SLA guarantee",
+      "SLA uptime guarantee",
     ],
+
     missing: [],
   },
 ];
