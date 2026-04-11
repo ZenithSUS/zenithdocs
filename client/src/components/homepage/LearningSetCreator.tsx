@@ -5,7 +5,7 @@ export default function LearningSetCreator() {
   return (
     <section className="w-full px-5 sm:px-8 md:px-12 py-16 md:py-24 bg-background text-text">
       <div className="text-center mb-10">
-        <p className="text-[11px] tracking-widest text-primary/60 uppercase font-sans mb-3">
+        <p className="text-[11px] tracking-widest text-primary uppercase font-sans mb-3">
           Learning sets
         </p>
         <h2 className="text-[clamp(26px,4vw,44px)] font-normal tracking-[-0.02em] font-serif mb-4">

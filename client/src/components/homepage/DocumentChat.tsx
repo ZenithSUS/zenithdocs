@@ -57,7 +57,7 @@ export default function DocumentChat() {
       <div className="max-w-6xl mx-auto">
         {/* Section label */}
         <div className="text-center mb-12">
-          <p className="text-[11px] tracking-widest text-primary/60 uppercase font-sans mb-3">
+          <p className="text-[11px] tracking-widest text-primary uppercase font-sans mb-3">
             Document chat
           </p>
           <h2 className="text-[clamp(26px,4vw,44px)] font-normal tracking-[-0.02em] font-serif mb-4">
