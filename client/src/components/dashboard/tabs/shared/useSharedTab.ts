@@ -21,7 +21,7 @@ const useSharedTab = (userId: string) => {
     updateDocumentShareMutation;
 
   const allSharedDocuments = sharedDocuments?.documentShares ?? [];
-  const totalPages = sharedDocuments?.pagination.totalPages ?? 0;
+  const totalPages = sharedDocuments?.pagination.totalPages ?? 1;
   const currentPage = sharedDocuments?.pagination.page ?? 1;
 
   const hasNextPage = currentPage < totalPages;

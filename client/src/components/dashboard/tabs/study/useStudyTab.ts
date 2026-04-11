@@ -13,7 +13,7 @@ const useStudyTab = (userId: string) => {
   } = useLearningSetByUserPage(userId, page);
 
   const allLearningSets = learningSets?.learningSets ?? [];
-  const totalPages = learningSets?.pagination.totalPages ?? 0;
+  const totalPages = learningSets?.pagination.totalPages ?? 1;
   const currentPage = learningSets?.pagination.page ?? 1;
 
   const hasNextPage = currentPage < totalPages;
