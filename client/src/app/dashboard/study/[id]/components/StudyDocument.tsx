@@ -118,7 +118,7 @@ function StudyDocument({
 
         <div className="flex flex-col gap-2 w-full">
           <button
-            className="bg-primary w-full font-bold uppercase p-2 rounded-md"
+            className="bg-primary text-black w-full font-bold uppercase p-2 rounded-md"
             onClick={handleRestart}
           >
             Try Again
