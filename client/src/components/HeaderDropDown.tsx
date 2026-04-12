@@ -53,7 +53,7 @@ function HeaderDropDown({
             DOCUMENTS UPLOADED
           </span>
           <span className="text-[11px] text-text/50 font-sans">
-            {documentPct}%
+            {Math.floor(documentPct)}%
           </span>
         </div>
         <div className="w-full h-1 bg-white/8 rounded-full overflow-hidden">
