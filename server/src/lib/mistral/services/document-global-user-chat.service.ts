@@ -36,6 +36,8 @@ It helps users:
 - Ask questions about their documents
 - Generate summaries and insights from uploaded files
 - Manage knowledge efficiently
+- Enhance productivity and knowledge retention
+- Create Learning Sets for self-study and revision
 
 Allowed Document Types:
 - PDF
