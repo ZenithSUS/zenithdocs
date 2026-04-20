@@ -10,7 +10,6 @@ import {
   createPublicChatStream,
 } from "./chat.api";
 import chatKeys from "./chat.keys";
-import { useCallback } from "react";
 import { AxiosError } from "@/types/api";
 import { ResponseWithData, ResponseWithPagedData } from "@/types/api";
 import { useChatDeleteMessages } from "./useChatDeleteMessages";
@@ -38,40 +37,43 @@ const useChat = (userId: string) => {
     },
   });
 
-  const sendMessageStream = useCallback(
-    (
-      input: MessageInput,
-      onChunk: (chunk: string) => void,
-      onDone: () => void,
-      setConfidence: (confidence: number) => void,
-    ) => {
-      return createChatStream(
-        input,
-        onChunk,
-        () => {
-          queryClient.invalidateQueries({
-            queryKey: chatKeys.byDocumentUser(input.documentId, userId),
-          });
-          queryClient.invalidateQueries({
-            queryKey: chatKeys.byId(userId),
-          });
-          onDone();
-        },
-        setConfidence,
-      );
-    },
-    [],
-  );
+  const sendMessageStream = (
+    input: MessageInput,
+    onChunk: (chunk: string) => void,
+    onDone: () => void,
+    setConfidence: (confidence: number) => void,
+    signal?: AbortSignal,
+  ) =>
+    createChatStream(
+      input,
+      onChunk,
+      () => {
+        queryClient.invalidateQueries({
+          queryKey: chatKeys.byDocumentUser(input.documentId, userId),
+        });
+        queryClient.invalidateQueries({
+          queryKey: chatKeys.byId(userId),
+        });
+        onDone();
+      },
+      setConfidence,
+      signal,
+    ).catch((err) => {
+      if (err.name !== "AbortError") throw err;
+    });
 
-  const sendPublicMessageStream = useCallback(
-    (
-      input: PublicMessageInput,
-      onChunk: (chunk: string) => void,
-      onDone: () => void,
-      setConfidence: (confidence: number) => void,
-    ) => createPublicChatStream(input, onChunk, onDone, setConfidence),
-    [],
-  );
+  const sendPublicMessageStream = (
+    input: PublicMessageInput,
+    onChunk: (chunk: string) => void,
+    onDone: () => void,
+    setConfidence: (confidence: number) => void,
+    signal?: AbortSignal,
+  ) =>
+    createPublicChatStream(input, onChunk, onDone, setConfidence, signal).catch(
+      (err) => {
+        if (err.name !== "AbortError") throw err;
+      },
+    );
 
   return {
     deleteChatMessagesMutation: useChatDeleteMessages(queryClient, userId),

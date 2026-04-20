@@ -20,6 +20,7 @@ export const createGlobalChatStream = async (
   onChunk: (chunk: string) => void,
   onDone: () => void,
   setConfidence: (confidence: number) => void,
+  signal?: AbortSignal,
 ): Promise<void> => {
   const token = localStorage.getItem("accessToken") as string;
 
@@ -32,6 +33,7 @@ export const createGlobalChatStream = async (
       "x-api-key": config.api.key,
     },
     body: JSON.stringify({ question }),
+    signal,
   });
 
   // Handle token errors via x-auth-error header
@@ -55,7 +57,13 @@ export const createGlobalChatStream = async (
       if (!newToken) throw new Error("Session expired");
 
       // Retry the stream with the new token
-      return createGlobalChatStream(question, onChunk, onDone, setConfidence);
+      return createGlobalChatStream(
+        question,
+        onChunk,
+        onDone,
+        setConfidence,
+        signal,
+      );
     }
 
     let errorMessage = "Failed to send message";
@@ -75,38 +83,51 @@ export const createGlobalChatStream = async (
   if (!response.body) throw new Error("No stream body");
 
   const reader = response.body.getReader();
-
   const decoder = new TextDecoder();
   let buffer = "";
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
+  signal?.addEventListener(
+    "abort",
+    () => {
+      reader.cancel();
+    },
+    { once: true },
+  );
 
-    buffer += decoder.decode(value, { stream: true });
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
 
-    const lines = buffer.split("\n");
-    buffer = lines.pop() ?? "";
+      buffer += decoder.decode(value, { stream: true });
 
-    for (const line of lines) {
-      if (!line.startsWith("data: ")) continue;
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
 
-      const text = line.slice(6);
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
 
-      if (text.startsWith("[CONFIDENCE]:")) {
-        const { score } = JSON.parse(text.slice("[CONFIDENCE]:".length));
-        setConfidence(score);
-        continue;
+        const text = line.slice(6);
+
+        if (text.startsWith("[CONFIDENCE]:")) {
+          const { score } = JSON.parse(text.slice("[CONFIDENCE]:".length));
+          setConfidence(score);
+          continue;
+        }
+
+        if (text === "[DONE]") {
+          onDone();
+          return;
+        }
+
+        const decoded = text.replace(/\\n/g, "\n");
+        onChunk(decoded);
       }
-
-      if (text === "[DONE]") {
-        onDone();
-        return;
-      }
-
-      const decoded = text.replace(/\\n/g, "\n");
-      onChunk(decoded);
     }
+  } catch (error) {
+    const err = error as Error;
+    if (err.name === "AbortError") return; // swallow abort errors
+    throw err;
   }
 
   if (buffer.startsWith("data: ")) {

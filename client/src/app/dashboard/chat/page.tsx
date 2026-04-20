@@ -54,6 +54,7 @@ function DocumentChatContent() {
     streamingBubble,
     onSubmit,
     handleKeyDown,
+    handleStopStream,
 
     // UI
     mousePos,
@@ -266,6 +267,7 @@ function DocumentChatContent() {
           messageValue={messageValue}
           onSubmit={onSubmit}
           handleSubmit={handleSubmit}
+          handleStopStream={handleStopStream}
         />
       </div>
 

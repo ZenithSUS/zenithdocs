@@ -68,7 +68,6 @@ export const removeRelatedInfiniteSummaryByDocumentIdFromCache = (
   queryKey: readonly unknown[],
   deletedId: string,
 ) => {
-  console.log("removeRelatedInfiniteSummaryByDocumentIdFromCache");
   queryClient.setQueryData<SummaryByUserInfiniteData>(queryKey, (oldData) => {
     if (!oldData) return oldData;
 

@@ -136,6 +136,15 @@ export const streamDocumentUserChat = async ({
     content: m.content,
   }));
 
+  const abortController = new AbortController();
+  let stream: Awaited<ReturnType<typeof client.chat.stream>> | null = null;
+  let aborted = false;
+
+  res.on("close", () => {
+    aborted = true;
+    abortController.abort();
+  });
+
   const MAX_PER_DOC = 3;
   const docCount = new Map();
 
@@ -165,6 +174,8 @@ export const streamDocumentUserChat = async ({
       ...(await generateSearchQueries(validated.question)).slice(0, 2),
     ];
 
+    if (aborted) return;
+
     const allChunks = (
       await Promise.all(
         queries.map(async (q) => {
@@ -173,6 +184,8 @@ export const streamDocumentUserChat = async ({
         }),
       )
     ).flat();
+
+    if (aborted) return;
 
     const uniqueChunks = Array.from(
       new Map(allChunks.map((c) => [c._id.toString(), c])).values(),
@@ -207,31 +220,27 @@ export const streamDocumentUserChat = async ({
 
   const systemPrompt = getSystemPrompt(context, globalSummary);
 
-  const stream = await client.chat.stream({
-    model: "mistral-large-latest",
-    messages: [
-      { role: "system", content: systemPrompt },
-      ...recentHistory,
-      { role: "user", content: validated.question },
-    ],
-    stream: true,
-    temperature: 0.4,
-    topP: 1,
-    maxTokens: 2000,
-  });
+  stream = await client.chat.stream(
+    {
+      model: "mistral-large-latest",
+      messages: [
+        { role: "system", content: systemPrompt },
+        ...recentHistory,
+        { role: "user", content: validated.question },
+      ],
+      stream: true,
+      temperature: 0.4,
+      topP: 1,
+      maxTokens: 2000,
+    },
+    {
+      signal: abortController.signal,
+    },
+  );
 
   const relatedDocumentIds = new Set(
     filteredChunks.map((chunk) => chunk.documentId.toString()),
   );
-
-  await createGlobalMessage({
-    role: "user",
-    content: validated.question,
-    userId: validated.userId,
-    chatId: globalChat._id.toString(),
-    relatedDocumentIds: Array.from(relatedDocumentIds),
-    embedding: questionEmbedding,
-  });
 
   let fullResponse = "";
   let finalUsage = null;
@@ -241,36 +250,63 @@ export const streamDocumentUserChat = async ({
     `data: [CONFIDENCE]:${JSON.stringify({ score: confidenceScore })}\n\n`,
   );
 
-  for await (const chunk of stream) {
-    const token = chunk.data.choices[0].delta.content;
+  try {
+    for await (const chunk of stream) {
+      if (aborted) break;
 
-    if (chunk.data?.usage) {
-      finalUsage = chunk.data.usage;
+      const token = chunk.data.choices[0].delta.content;
+
+      if (chunk.data?.usage) {
+        finalUsage = chunk.data.usage;
+      }
+
+      if (token) {
+        fullResponse += token;
+
+        const encoded = token.toString().replace(/\n/g, "\\n");
+        res.write(`data: ${encoded}\n\n`);
+      }
     }
-
-    if (token) {
-      fullResponse += token;
-
-      const encoded = token.toString().replace(/\n/g, "\\n");
-      res.write(`data: ${encoded}\n\n`);
+  } catch (error) {
+    const err = error as Error;
+    if (
+      err.name === "AbortError" ||
+      err.message?.includes("aborted") ||
+      err.message?.includes("cancelled")
+    ) {
+      aborted = true;
+    } else {
+      throw error;
     }
   }
 
-  res.write("data: [DONE]\n\n");
-  res.end();
+  if (!aborted) {
+    res.write("data: [DONE]\n\n");
+    res.end();
+  }
 
-  const tokenUsed = finalUsage?.totalTokens || 0;
+  if (!aborted && fullResponse) {
+    const tokenUsed = finalUsage?.totalTokens || 0;
+    await incrementAIMessagesUsage(validated.userId, tokenUsed);
 
-  await incrementAIMessagesUsage(validated.userId, tokenUsed);
+    await createGlobalMessage({
+      role: "user",
+      content: validated.question,
+      userId: validated.userId,
+      chatId: globalChat._id.toString(),
+      relatedDocumentIds: Array.from(relatedDocumentIds),
+      embedding: questionEmbedding,
+    });
 
-  await createGlobalMessage({
-    role: "assistant",
-    content: fullResponse,
-    userId: validated.userId,
-    chatId: globalChat._id.toString(),
-    relatedDocumentIds: Array.from(relatedDocumentIds),
-    confidenceScore: confidenceScore,
-  });
+    await createGlobalMessage({
+      role: "assistant",
+      content: fullResponse,
+      userId: validated.userId,
+      chatId: globalChat._id.toString(),
+      relatedDocumentIds: Array.from(relatedDocumentIds),
+      confidenceScore: confidenceScore,
+    });
+  }
 
   return fullResponse;
 };

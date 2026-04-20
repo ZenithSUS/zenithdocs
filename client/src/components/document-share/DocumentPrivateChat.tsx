@@ -39,6 +39,7 @@ export default function DocumentPrivateChat({
     isTyping,
     streamingBubble,
     confidence,
+    handleStopStream,
 
     // Message States
     allMessages,
@@ -127,6 +128,7 @@ export default function DocumentPrivateChat({
         messageValue={messageValue}
         onSubmit={onSubmit}
         handleSubmit={handleSubmit}
+        handleStopStream={handleStopStream}
       />
 
       <style>{`

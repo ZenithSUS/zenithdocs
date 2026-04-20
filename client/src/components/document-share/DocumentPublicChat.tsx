@@ -20,6 +20,7 @@ function DocumentPublicChat({
     // Message Form
     register,
     handleSubmit,
+    handleStopStream,
     setValue,
     messageValue,
     onSubmit,
@@ -82,6 +83,7 @@ function DocumentPublicChat({
         messageValue={messageValue}
         onSubmit={onSubmit}
         handleSubmit={handleSubmit}
+        handleStopStream={handleStopStream}
       />
 
       <style>{`

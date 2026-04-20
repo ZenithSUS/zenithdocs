@@ -38,6 +38,11 @@ const useGlobalMessageStream = ({
   const queryClient = useQueryClient();
   const accumulatedRef = useRef("");
   const confidenceRef = useRef(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Messages Reference
+  const tempUserMessageIdRef = useRef<string | null>(null);
+  const tempAiMessageIdRef = useRef<string | null>(null);
 
   const [isTyping, setIsTyping] = useState(false);
   const [confidence, setConfidence] = useState(0);
@@ -76,11 +81,16 @@ const useGlobalMessageStream = ({
         createdAt: new Date(),
       };
 
+      tempUserMessageIdRef.current = tempMessage._id;
+
       appendGlobalMessagesToCache(
         queryClient,
         globalMessageKeys.byChatPage(chatId),
         tempMessage,
       );
+
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
 
       try {
         await sendGlobalMessageStream(
@@ -90,6 +100,8 @@ const useGlobalMessageStream = ({
             setStreamingBubble({ content: accumulatedRef.current });
           },
           async () => {
+            if (controller.signal.aborted) return;
+
             const finalContent = accumulatedRef.current.trimEnd();
             setIsTyping(false);
             setStreamingBubble(null);
@@ -129,14 +141,29 @@ const useGlobalMessageStream = ({
             );
           },
           updateConfidence,
+          controller.signal,
         );
       } catch (error) {
+        if ((error as Error).name === "AbortError") return; // Swallow abort errors
+
         handleNormalFetchError(error as Error, "Error sending global message");
         removeGlobalMessageFromCache(
           queryClient,
           globalMessageKeys.byChatPage(chatId),
           tempMessage._id,
         );
+
+        if (tempAiMessageIdRef.current) {
+          removeGlobalMessageFromCache(
+            queryClient,
+            globalMessageKeys.byChatPage(chatId),
+            tempAiMessageIdRef.current,
+          );
+
+          tempAiMessageIdRef.current = null;
+        }
+
+        tempUserMessageIdRef.current = null;
         setIsTyping(false);
         setStreamingBubble(null);
       }
@@ -151,6 +178,23 @@ const useGlobalMessageStream = ({
       updateConfidence,
     ],
   );
+
+  const handleStopStream = () => {
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
+    setIsTyping(false);
+    setStreamingBubble(null);
+
+    if (tempUserMessageIdRef.current) {
+      removeGlobalMessageFromCache(
+        queryClient,
+        globalMessageKeys.byChatPage(chatId),
+        tempUserMessageIdRef.current,
+      );
+
+      tempUserMessageIdRef.current = null;
+    }
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -169,6 +213,9 @@ const useGlobalMessageStream = ({
     messageValue,
     handleKeyDown,
     onSubmit,
+
+    // Stop Stream
+    handleStopStream,
 
     // Stream
     isTyping,

@@ -42,6 +42,11 @@ const useMessageStream = ({
   const queryClient = useQueryClient();
   const accumulatedRef = useRef("");
   const confidenceRef = useRef(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Messages Reference
+  const tempUserMessageIdRef = useRef<string | null>(null);
+  const tempAiMessageIdRef = useRef<string | null>(null);
 
   const [isTyping, setIsTyping] = useState(false);
   const [streamingBubble, setStreamingBubble] =
@@ -79,11 +84,16 @@ const useMessageStream = ({
         createdAt: new Date(),
       };
 
+      tempUserMessageIdRef.current = tempUserMessage._id;
+
       appendMessageToCache(
         queryClient,
         messageKeys.byChat(chatId),
         tempUserMessage,
       );
+
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
 
       try {
         await sendMessageStream(
@@ -95,6 +105,8 @@ const useMessageStream = ({
           },
 
           async () => {
+            if (controller.signal.aborted) return;
+
             const finalContent = accumulatedRef.current.trimEnd();
             setStreamingBubble(null);
             setIsTyping(false);
@@ -134,12 +146,15 @@ const useMessageStream = ({
             );
           },
           updateConfidence,
+          controller.signal,
         );
 
         queryClient.invalidateQueries({
           queryKey: documentKeys.byUserWithChatPage(userId),
         });
       } catch (error) {
+        if ((error as Error).name === "AbortError") return; // swallow abort errors
+
         handleNormalFetchError(
           error as Error,
           "Failed to send message. Please try again.",
@@ -150,12 +165,40 @@ const useMessageStream = ({
           messageKeys.byChat(chatId),
           tempUserMessage._id,
         );
+
+        if (tempAiMessageIdRef.current) {
+          removeMessageFromCache(
+            queryClient,
+            messageKeys.byChat(chatId),
+            tempAiMessageIdRef.current,
+          );
+          tempAiMessageIdRef.current = null;
+        }
+
+        tempUserMessageIdRef.current = null;
         setStreamingBubble(null);
         setIsTyping(false);
       }
     },
     [docId, chatId, isTyping, sendMessageStream, reset, queryClient, userId],
   );
+
+  const handleStopStream = () => {
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
+    setStreamingBubble(null);
+    setIsTyping(false);
+
+    if (tempUserMessageIdRef.current) {
+      removeMessageFromCache(
+        queryClient,
+        messageKeys.byChat(chatId),
+        tempUserMessageIdRef.current,
+      );
+
+      tempUserMessageIdRef.current = null;
+    }
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -172,6 +215,10 @@ const useMessageStream = ({
     messageValue,
     onSubmit,
     handleKeyDown,
+
+    // Stream controls
+    handleStopStream,
+
     // Stream state
     isTyping,
     streamingBubble,

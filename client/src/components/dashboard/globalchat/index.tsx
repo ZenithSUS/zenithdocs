@@ -26,6 +26,7 @@ function GlobalChat({ user, setIsOpen }: GlobalChatProps) {
     isProcessing,
     isError,
     handleSubmit,
+    handleStopStream,
     handleKeyDown,
     onSubmit,
     register,
@@ -165,6 +166,7 @@ function GlobalChat({ user, setIsOpen }: GlobalChatProps) {
 
       {/* ── Input Area ── */}
       <GlobalInputArea
+        isTyping={isTyping}
         register={register}
         textareaRef={textareaRef}
         messageValue={messageValue}
@@ -172,6 +174,7 @@ function GlobalChat({ user, setIsOpen }: GlobalChatProps) {
         onSubmit={onSubmit}
         handleSubmit={handleSubmit}
         handleKeyDown={handleKeyDown}
+        handleStopStream={handleStopStream}
         isDisabled={deleteGlobalMessageMutation.isPending}
       />
 

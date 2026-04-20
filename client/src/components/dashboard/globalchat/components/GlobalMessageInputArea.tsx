@@ -1,4 +1,4 @@
-import { Paperclip, Send } from "lucide-react";
+import { Paperclip, Send, Square } from "lucide-react";
 import { UseFormHandleSubmit, UseFormRegister } from "react-hook-form";
 import {
   GlobalMessageFormValues,
@@ -7,6 +7,7 @@ import {
 import React from "react";
 
 interface GlobalInputAreaProps {
+  isTyping: boolean;
   register: UseFormRegister<GlobalMessageFormValues>;
   textareaRef: React.RefObject<HTMLTextAreaElement | null>;
   messageValue: string;
@@ -17,10 +18,12 @@ interface GlobalInputAreaProps {
     GlobalMessageFormValues
   >;
   handleKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
+  handleStopStream: () => void;
   isDisabled: boolean;
 }
 
 function GlobalInputArea({
+  isTyping,
   register,
   textareaRef,
   messageValue,
@@ -28,6 +31,7 @@ function GlobalInputArea({
   onSubmit,
   handleSubmit,
   handleKeyDown,
+  handleStopStream,
   isDisabled = false,
 }: GlobalInputAreaProps) {
   return (
@@ -72,7 +76,7 @@ function GlobalInputArea({
           onKeyDown={handleKeyDown}
           placeholder="Ask about your documents…"
           rows={1}
-          disabled={!!streamingBubble || isDisabled}
+          disabled={!!streamingBubble || isDisabled || isTyping}
           className="gc-textarea flex-1 resize-none bg-transparent text-[12px] text-white/80
                 placeholder:text-white/20 outline-none leading-relaxed
                 disabled:opacity-40 disabled:cursor-not-allowed"
@@ -84,30 +88,30 @@ function GlobalInputArea({
         />
 
         <button
-          onClick={handleSubmit(onSubmit)}
-          disabled={!messageValue?.trim() || !!streamingBubble || isDisabled}
+          onClick={isTyping ? handleStopStream : handleSubmit(onSubmit)}
+          disabled={
+            !isTyping &&
+            (!messageValue?.trim() ||
+              !!streamingBubble ||
+              isDisabled ||
+              isTyping)
+          }
           className="send-btn shrink-0 mb-0.5 w-6 h-6 rounded-lg flex items-center justify-center
                 transition-all duration-150 disabled:opacity-20 active:scale-90"
           style={{
             background:
-              messageValue?.trim() && !streamingBubble
+              (messageValue?.trim() && !streamingBubble) || isTyping
                 ? "rgba(201,162,39,0.18)"
                 : "transparent",
             border:
-              messageValue?.trim() && !streamingBubble
+              (messageValue?.trim() && !streamingBubble) || isTyping
                 ? "1px solid rgba(201,162,39,0.28)"
                 : "1px solid transparent",
           }}
           aria-label="Send message"
         >
-          {streamingBubble ? (
-            <div
-              className="w-3 h-3 rounded-full border border-t-transparent animate-spin"
-              style={{
-                borderColor: "rgba(201,162,39,0.5)",
-                borderTopColor: "transparent",
-              }}
-            />
+          {isTyping ? (
+            <Square size={13} color="#C9A227" />
           ) : (
             <Send
               size={13}

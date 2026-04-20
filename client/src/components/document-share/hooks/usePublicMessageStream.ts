@@ -28,6 +28,10 @@ const usePublicMessageStream = ({
   const accumulatedRef = useRef("");
   const confidenceRef = useRef(0);
   const messageIdRef = useRef(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const tempUserMessageIdRef = useRef<string | null>(null);
+  const tempAiMessageIdRef = useRef<string | null>(null);
 
   const [isTyping, setIsTyping] = useState(false);
   const [streamingBubble, setStreamingBubble] =
@@ -59,12 +63,18 @@ const usePublicMessageStream = ({
       const userMessageId = `msg-${++messageIdRef.current}`;
       const assistantMessageId = `msg-${++messageIdRef.current}`;
 
+      tempUserMessageIdRef.current = userMessageId;
+      tempAiMessageIdRef.current = assistantMessageId;
+
       addMessage({
         _id: userMessageId,
         role: "user",
         content: userMessage,
         createdAt: new Date(),
       });
+
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
 
       try {
         await sendPublicMessageStream(
@@ -78,6 +88,8 @@ const usePublicMessageStream = ({
             setStreamingBubble({ content: accumulatedRef.current });
           },
           async () => {
+            if (controller.signal.aborted) return;
+
             const finalContent = accumulatedRef.current.trimEnd();
             setIsTyping(false);
             setStreamingBubble(null);
@@ -91,8 +103,11 @@ const usePublicMessageStream = ({
             });
           },
           updateConfidence,
+          controller.signal,
         );
-      } catch {
+      } catch (error) {
+        if ((error as Error).name === "AbortError") return;
+
         toast.error("Failed to send message, please try again.");
         setIsTyping(false);
         setStreamingBubble(null);
@@ -102,6 +117,18 @@ const usePublicMessageStream = ({
     },
     [sendPublicMessageStream, isTyping, shareToken, addMessage],
   );
+
+  const handleStopStream = () => {
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
+    setIsTyping(false);
+    setStreamingBubble(null);
+
+    if (tempUserMessageIdRef.current) {
+      removeMessage(tempUserMessageIdRef.current);
+      tempUserMessageIdRef.current = null;
+    }
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -117,6 +144,7 @@ const usePublicMessageStream = ({
     messageValue,
     onSubmit,
     handleSubmit,
+    handleStopStream,
     isTyping,
     streamingBubble,
     confidence,

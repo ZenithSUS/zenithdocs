@@ -1,5 +1,5 @@
 import { getSimilarityScore } from "../../../repositories/document-chunk.repository.js";
-import { Response } from "express";
+import { Request, Response } from "express";
 import client from "../index.js";
 import {
   createChat,
@@ -71,14 +71,28 @@ export const streamDocumentChatWithContextService = async ({
   const cacheKey = `embedding:${question}`;
   const cacheEmbedding = await redis.get(cacheKey);
 
+  const abortController = new AbortController();
+  let aborted = false;
+  let stream: Awaited<ReturnType<typeof client.chat.stream>> | null = null;
+
+  res.on("close", () => {
+    aborted = true;
+    abortController.abort();
+  });
+
   const embedding = cacheEmbedding
     ? JSON.parse(cacheEmbedding)
     : await queryEmbedding(question);
+
+  if (aborted) return "";
 
   if (!cacheEmbedding)
     await redis.setex(cacheKey, 3600, JSON.stringify(embedding));
 
   const chunks = await getSimilarityScore(embedding, validated.documentId);
+
+  if (aborted) return "";
+
   const context = chunks.map((c) => c.text).join("\n\n");
   const confidenceScore = calculateDocumentConfidenceScore(chunks);
 
@@ -106,26 +120,21 @@ ${context}`;
   res.setHeader("X-Accel-Buffering", "no");
   res.flushHeaders();
 
-  const stream = await client.chat.stream({
-    model: "mistral-large-latest",
-    messages: [
-      { role: "system", content: systemPrompt }, // system context
-      ...recentHistory, // previous conversation
-      { role: "user", content: validated.question }, // current question (clean, no prompt)
-    ],
-    stream: true,
-    temperature: 0.4,
-    topP: 1,
-    maxTokens: 2000,
-  });
-
-  await createMessage({
-    chatId: chat._id.toString(),
-    userId: authUser.userId,
-    role: "user",
-    content: question,
-    createdAt: new Date(),
-  });
+  stream = await client.chat.stream(
+    {
+      model: "mistral-large-latest",
+      messages: [
+        { role: "system", content: systemPrompt }, // system context
+        ...recentHistory, // previous conversation
+        { role: "user", content: validated.question }, // current question (clean, no prompt)
+      ],
+      stream: true,
+      temperature: 0.4,
+      topP: 1,
+      maxTokens: 2000,
+    },
+    { signal: abortController.signal },
+  );
 
   let fullResponse = "";
   let finalUsage = null;
@@ -134,35 +143,62 @@ ${context}`;
     `data: [CONFIDENCE]:${JSON.stringify({ score: confidenceScore })}\n\n`,
   );
 
-  for await (const chunk of stream) {
-    const token = chunk.data.choices[0]?.delta?.content;
+  try {
+    for await (const chunk of stream) {
+      if (aborted) break;
 
-    if (chunk.data?.usage) {
-      finalUsage = chunk.data.usage;
+      const token = chunk.data.choices[0]?.delta?.content;
+
+      if (chunk.data?.usage) {
+        finalUsage = chunk.data.usage;
+      }
+
+      if (token) {
+        fullResponse += token;
+
+        const encoded = token.toString().replace(/\n/g, "\\n");
+        res.write(`data: ${encoded}\n\n`);
+      }
     }
-
-    if (token) {
-      fullResponse += token;
-
-      const encoded = token.toString().replace(/\n/g, "\\n");
-      res.write(`data: ${encoded}\n\n`);
+  } catch (error) {
+    const err = error as Error;
+    if (
+      err.name === "AbortError" ||
+      err.message?.includes("aborted") ||
+      err.message?.includes("cancelled")
+    ) {
+      aborted = true;
+    } else {
+      throw error;
     }
   }
-  res.write(`data: [DONE]\n\n`);
-  res.end();
 
-  const tokenUsed = finalUsage?.totalTokens || 0;
+  if (!aborted) {
+    res.write(`data: [DONE]\n\n`);
+    res.end();
+  }
 
-  await incrementAIMessagesUsage(authUser.userId, tokenUsed);
+  if (!aborted && fullResponse) {
+    const tokenUsed = finalUsage?.totalTokens || 0;
+    await incrementAIMessagesUsage(authUser.userId, tokenUsed);
 
-  await createMessage({
-    chatId: chat._id.toString(),
-    userId: authUser.userId,
-    role: "assistant",
-    content: fullResponse,
-    confidenceScore,
-    createdAt: new Date(),
-  });
+    await createMessage({
+      chatId: chat._id.toString(),
+      userId: authUser.userId,
+      role: "user",
+      content: question,
+      createdAt: new Date(),
+    });
+
+    await createMessage({
+      chatId: chat._id.toString(),
+      userId: authUser.userId,
+      role: "assistant",
+      content: fullResponse,
+      confidenceScore,
+      createdAt: new Date(),
+    });
+  }
 
   return fullResponse;
 };

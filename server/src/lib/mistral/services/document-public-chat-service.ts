@@ -55,8 +55,23 @@ export const streamDocumentPublicChatService = async (
     );
   }
 
+  const abortController = new AbortController();
+  let aborted = false;
+  let stream: Awaited<ReturnType<typeof client.chat.stream>> | null = null;
+
+  res.on("close", () => {
+    aborted = true;
+    abortController.abort();
+  });
+
   const embedding = await generateEmbedding(validated.question);
+
+  if (aborted) return "";
+
   const chunks = await getSimilarityScore(embedding, document._id.toString());
+
+  if (aborted) return "";
+
   const context = chunks.map((c) => c.text).join("\n\n");
   const confidenceScore = calculateDocumentConfidenceScore(chunks);
 
@@ -94,20 +109,23 @@ ${context}`;
   res.setHeader("X-Accel-Buffering", "no");
   res.flushHeaders();
 
-  const stream = await client.chat.stream({
-    model: "mistral-large-latest",
-    messages: [
-      { role: "system", content: systemPrompt },
-      ...recentHistory,
-      {
-        role: "user",
-        content: validated.question,
-      },
-    ],
-    stream: true,
-    temperature: 0.4,
-    maxTokens: 1000,
-  });
+  stream = await client.chat.stream(
+    {
+      model: "mistral-large-latest",
+      messages: [
+        { role: "system", content: systemPrompt },
+        ...recentHistory,
+        {
+          role: "user",
+          content: validated.question,
+        },
+      ],
+      stream: true,
+      temperature: 0.4,
+      maxTokens: 1000,
+    },
+    { signal: abortController.signal },
+  );
 
   let fullResponse = "";
 
@@ -115,18 +133,25 @@ ${context}`;
     `data: [CONFIDENCE]:${JSON.stringify({ score: confidenceScore })}\n\n`,
   );
 
-  for await (const chunk of stream) {
-    const token = chunk.data.choices[0].delta.content;
+  try {
+    for await (const chunk of stream) {
+      const token = chunk.data.choices[0].delta.content;
 
-    if (token) {
-      fullResponse += token;
+      if (token) {
+        fullResponse += token;
 
-      const encoded = token.toString().replace(/\n/g, "\\n");
-      res.write(`data: ${encoded}\n\n`);
+        const encoded = token.toString().replace(/\n/g, "\\n");
+        res.write(`data: ${encoded}\n\n`);
+      }
     }
+  } catch (error) {
+    const err = error as Error;
   }
-  res.write(`data: [DONE]\n\n`);
-  res.end();
+
+  if (!aborted) {
+    res.write(`data: [DONE]\n\n`);
+    res.end();
+  }
 
   return fullResponse;
 };

@@ -55,6 +55,7 @@ export const createChatStream = async (
   onChunk: (chunk: string) => void,
   onDone: () => void,
   setConfidence: (confidence: number) => void,
+  signal?: AbortSignal,
 ): Promise<void> => {
   const token = localStorage.getItem("accessToken") as string;
 
@@ -66,6 +67,7 @@ export const createChatStream = async (
       "x-api-key": config.api.key,
     },
     body: JSON.stringify(data),
+    signal,
   });
 
   if (!response.ok) {
@@ -86,7 +88,7 @@ export const createChatStream = async (
 
       if (!newToken) throw new Error("Session expired");
 
-      return createChatStream(data, onChunk, onDone, setConfidence);
+      return createChatStream(data, onChunk, onDone, setConfidence, signal);
     }
 
     let errorMessage = "Failed to send message";
@@ -106,40 +108,53 @@ export const createChatStream = async (
   if (!response.body) throw new Error("No stream body");
 
   const reader = response.body.getReader();
-
   const decoder = new TextDecoder();
   let buffer = "";
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
+  signal?.addEventListener(
+    "abort",
+    () => {
+      reader.cancel();
+    },
+    { once: true },
+  );
 
-    buffer += decoder.decode(value, { stream: true });
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
 
-    // Process all complete lines in buffer
-    const lines = buffer.split("\n");
-    buffer = lines.pop() ?? "";
+      buffer += decoder.decode(value, { stream: true });
 
-    for (const line of lines) {
-      if (!line.startsWith("data: ")) continue;
+      // Process all complete lines in buffer
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
 
-      const text = line.slice(6);
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
 
-      if (text.startsWith("[CONFIDENCE]:")) {
-        const { score } = JSON.parse(text.slice("[CONFIDENCE]:".length));
-        setConfidence(score);
-        continue;
+        const text = line.slice(6);
+
+        if (text.startsWith("[CONFIDENCE]:")) {
+          const { score } = JSON.parse(text.slice("[CONFIDENCE]:".length));
+          setConfidence(score);
+          continue;
+        }
+
+        if (text === "[DONE]") {
+          onDone();
+          return;
+        }
+
+        // Decode the encoded newlines back
+        const decoded = text.replace(/\\n/g, "\n");
+        onChunk(decoded);
       }
-
-      if (text === "[DONE]") {
-        onDone();
-        return;
-      }
-
-      // Decode the encoded newlines back
-      const decoded = text.replace(/\\n/g, "\n");
-      onChunk(decoded);
     }
+  } catch (error) {
+    const err = error as Error;
+    if (err.name === "AbortError") return; // swallow abort errors
+    throw err;
   }
 
   // Flush any remaining buffer
@@ -156,6 +171,7 @@ export const createPublicChatStream = async (
   onChunk: (chunk: string) => void,
   onDone: () => void,
   setConfidence: (confidence: number) => void,
+  signal?: AbortSignal,
 ): Promise<void> => {
   const response = await fetch(`${config.api.baseUrl}/api/chat/public`, {
     method: "POST",
@@ -164,46 +180,60 @@ export const createPublicChatStream = async (
       "x-api-key": config.api.key,
     },
     body: JSON.stringify(data),
+    signal,
   });
 
   if (!response.ok) throw new Error("Failed to send message");
   if (!response.body) throw new Error("No stream body");
 
   const reader = response.body.getReader();
-
   const decoder = new TextDecoder();
   let buffer = "";
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
+  signal?.addEventListener(
+    "abort",
+    () => {
+      reader.cancel();
+    },
+    { once: true },
+  );
 
-    buffer += decoder.decode(value, { stream: true });
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
 
-    // Process all complete lines in buffer
-    const lines = buffer.split("\n");
-    buffer = lines.pop() ?? "";
+      buffer += decoder.decode(value, { stream: true });
 
-    for (const line of lines) {
-      if (!line.startsWith("data: ")) continue;
+      // Process all complete lines in buffer
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
 
-      const text = line.slice(6);
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
 
-      if (text.startsWith("[CONFIDENCE]:")) {
-        const { score } = JSON.parse(text.slice("[CONFIDENCE]:".length));
-        setConfidence(score);
-        continue;
+        const text = line.slice(6);
+
+        if (text.startsWith("[CONFIDENCE]:")) {
+          const { score } = JSON.parse(text.slice("[CONFIDENCE]:".length));
+          setConfidence(score);
+          continue;
+        }
+
+        if (text === "[DONE]") {
+          onDone();
+          return;
+        }
+
+        // Decode the encoded newlines back
+        const decoded = text.replace(/\\n/g, "\n");
+        onChunk(decoded);
       }
-
-      if (text === "[DONE]") {
-        onDone();
-        return;
-      }
-
-      // Decode the encoded newlines back
-      const decoded = text.replace(/\\n/g, "\n");
-      onChunk(decoded);
     }
+  } catch (error) {
+    const err = error as Error;
+    if (err.name === "AbortError") return; // swallow abort errors
+    throw err;
   }
 
   // Flush any remaining buffer

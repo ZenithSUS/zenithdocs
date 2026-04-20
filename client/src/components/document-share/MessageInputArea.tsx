@@ -4,7 +4,7 @@ import {
   UseFormRegister,
 } from "react-hook-form";
 import { MessageFormValues } from "./hooks/useMessageStream";
-import { Send } from "lucide-react";
+import { Send, Square } from "lucide-react";
 import { memo } from "react";
 
 interface MessageInputAreaProps {
@@ -18,6 +18,7 @@ interface MessageInputAreaProps {
     onValid: SubmitHandler<MessageFormValues>,
     onInvalid?: SubmitErrorHandler<MessageFormValues> | undefined,
   ) => (e?: React.BaseSyntheticEvent) => Promise<void>;
+  handleStopStream: () => void;
 }
 
 function MessageInputArea({
@@ -28,6 +29,7 @@ function MessageInputArea({
   onSubmit,
   messageValue,
   handleSubmit,
+  handleStopStream,
 }: MessageInputAreaProps) {
   return (
     <div className="shrink-0 border-t border-white/8 px-4 py-3 bg-background/80 backdrop-blur-sm">
@@ -47,12 +49,12 @@ function MessageInputArea({
         />
 
         <button
-          onClick={handleSubmit(onSubmit)}
-          disabled={!messageValue.trim() || isTyping}
+          onClick={isTyping ? handleStopStream : handleSubmit(onSubmit)}
+          disabled={!isTyping && (!messageValue.trim() || isTyping)}
           className="absolute right-2 bottom-2 w-8 h-8 rounded-full bg-primary text-background flex items-center justify-center hover:bg-[#e0b530] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary"
         >
           {isTyping ? (
-            <div className="w-3.5 h-3.5 border-2 border-background border-t-transparent rounded-full animate-spin" />
+            <Square className="w-3.5 h-3.5" fill="currentColor" />
           ) : (
             <Send className="w-3.5 h-3.5" />
           )}

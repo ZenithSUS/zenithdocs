@@ -1,4 +1,4 @@
-import { Send } from "lucide-react";
+import { Send, Square } from "lucide-react";
 import {
   SubmitErrorHandler,
   SubmitHandler,
@@ -18,6 +18,7 @@ interface MessageInputAreaProps {
     onValid: SubmitHandler<MessageFormValues>,
     onInvalid?: SubmitErrorHandler<MessageFormValues> | undefined,
   ) => (e?: React.BaseSyntheticEvent) => Promise<void>;
+  handleStopStream: () => void;
 }
 
 function MessageInputArea({
@@ -28,6 +29,7 @@ function MessageInputArea({
   onSubmit,
   messageValue,
   handleSubmit,
+  handleStopStream,
 }: MessageInputAreaProps) {
   return (
     <footer className="relative z-10 border-t border-white/8 bg-background/80 backdrop-blur-sm">
@@ -49,12 +51,12 @@ function MessageInputArea({
             style={{ minHeight: "56px", maxHeight: "200px" }}
           />
           <button
-            onClick={handleSubmit(onSubmit)}
-            disabled={!messageValue.trim() || isTyping}
+            onClick={isTyping ? handleStopStream : handleSubmit(onSubmit)}
+            disabled={!isTyping && (!messageValue.trim() || isTyping)}
             className="absolute right-3 bottom-3 w-10 h-10 rounded-full bg-primary text-background flex items-center justify-center hover:bg-[#e0b530] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary"
           >
             {isTyping ? (
-              <div className="w-4 h-4 border-2 border-background border-t-transparent rounded-full animate-spin" />
+              <Square className="w-4 h-4" fill="currentColor" />
             ) : (
               <Send className="w-4 h-4" />
             )}
