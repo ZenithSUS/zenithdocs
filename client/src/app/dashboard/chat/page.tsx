@@ -166,7 +166,7 @@ function DocumentChatContent() {
           {/* Close button visible on mobile */}
           <button
             onClick={() => setPanelOpen(false)}
-            className="lg:hidden p-1.5 rounded hover:bg-white/10 text-[#F5F5F5]/50"
+            className="lg:hidden p-1.5 rounded hover:bg-white/10 text-white/70"
           >
             <ChevronLeft size={16} className="-rotate-90" />
           </button>
@@ -187,11 +187,11 @@ function DocumentChatContent() {
         {/* Animated chevron */}
         <ChevronLeft
           size={14}
-          className={`text-[#F5F5F5]/50 transition-transform duration-300 ${panelOpen ? "" : "rotate-180"}`}
+          className={`text-white/70 transition-transform duration-300 ${panelOpen ? "" : "rotate-180"}`}
         />
         {!panelOpen && (
           <span
-            className="text-[10px] text-[#F5F5F5]/30 font-sans uppercase tracking-widest"
+            className="text-[10px] text-white/70 text- font-sans uppercase tracking-widest"
             style={{ writingMode: "vertical-rl" }}
           >
             Document
