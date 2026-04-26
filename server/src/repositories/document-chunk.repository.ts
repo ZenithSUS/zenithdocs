@@ -131,7 +131,7 @@ export const getSimilaritySummaryScore = async (
   queryEmbedding: number[],
   documentId: string,
   minScore = 0.6,
-  limit = 5,
+  limit = 20,
 ) => {
   const results = await DocumentChunk.aggregate<IDocumentChunkOutput>([
     {
@@ -139,7 +139,7 @@ export const getSimilaritySummaryScore = async (
         index: "embedding",
         path: "embedding",
         queryVector: queryEmbedding,
-        numCandidates: 150,
+        numCandidates: 300,
         limit: limit * 2,
         filter: {
           documentId: { $eq: new mongoose.Types.ObjectId(documentId) },
