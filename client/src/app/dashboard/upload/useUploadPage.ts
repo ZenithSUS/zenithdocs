@@ -33,8 +33,6 @@ const useUploadPage = () => {
   // ─── Folders ──────────────────────────────────────────────────────────────
   const {
     data: folders,
-    isLoading: foldersLoading,
-    refetch: refetchFolders,
     fetchNextPage: fetchNextFolderPage,
     hasNextPage: hasNextFolderPage,
     isFetchingNextPage: isFetchingNextFolderPage,
