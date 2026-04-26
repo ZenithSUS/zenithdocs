@@ -31,7 +31,14 @@ const useUploadPage = () => {
   } = useAuthMe();
 
   // ─── Folders ──────────────────────────────────────────────────────────────
-  const { data: folders } = useFolderByUserPage(user?._id ?? "");
+  const {
+    data: folders,
+    isLoading: foldersLoading,
+    refetch: refetchFolders,
+    fetchNextPage: fetchNextFolderPage,
+    hasNextPage: hasNextFolderPage,
+    isFetchingNextPage: isFetchingNextFolderPage,
+  } = useFolderByUserPage(user?._id ?? "");
   const allFolders = folders?.pages.flatMap((page) => page.folders) ?? [];
 
   // ─── File drop ────────────────────────────────────────────────────────────
@@ -82,6 +89,9 @@ const useUploadPage = () => {
     allFolders,
     selectedFolder,
     setSelectedFolder,
+    hasNextFolderPage,
+    isFetchingNextFolderPage,
+    fetchNextFolderPage,
 
     // Files
     files,

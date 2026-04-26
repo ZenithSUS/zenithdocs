@@ -33,6 +33,9 @@ export default function UploadPage() {
     allFolders,
     selectedFolder,
     setSelectedFolder,
+    hasNextFolderPage,
+    isFetchingNextFolderPage,
+    fetchNextFolderPage,
 
     // Files
     files,
@@ -92,6 +95,9 @@ export default function UploadPage() {
           folders={allFolders}
           value={selectedFolder}
           onChange={setSelectedFolder}
+          hasNextPage={hasNextFolderPage}
+          isFetchingNextPage={isFetchingNextFolderPage}
+          fetchNextPage={fetchNextFolderPage}
         />
 
         <DropZone
