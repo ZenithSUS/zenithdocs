@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
-import { useDocumentByUserPage } from "@/features/documents/useDocumentByUserPage";
 import { useFolderByUserPage } from "@/features/folder/useFolderByUserPage";
+import { useDocumentUnifiedByUser } from "@/features/documents/useDocumentUnifiedByUser";
 
 const useFolderTab = (userId: string) => {
   const {
@@ -15,12 +15,12 @@ const useFolderTab = (userId: string) => {
   } = useFolderByUserPage(userId);
 
   const {
-    data: documentsData,
-    isLoading: documentsLoading,
-    isError: documentsError,
-    error: documentsErrorData,
-    refetch: refetchDocuments,
-  } = useDocumentByUserPage(userId);
+    data: unifiedDocuments,
+    isLoading: unifiedDocumentsLoading,
+    isError: unifiedDocumentsError,
+    error: unifiedDocumentsErrorData,
+    refetch: refetchUnifiedDocuments,
+  } = useDocumentUnifiedByUser(userId);
 
   // Intersection observer for infinite scroll
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -47,43 +47,25 @@ const useFolderTab = (userId: string) => {
     };
   }, [hasNextFolderPage, isFetchingNextFolderPage, fetchNextFolderPage]);
 
-  // Flatten all pages
   const allFolders = foldersData?.pages.flatMap((page) => page.folders) || [];
-  const allDocuments =
-    documentsData?.pages.flatMap((page) => page.documents) || [];
-
-  // Helper to get documents for a specific folder
-  const getDocsForFolder = (folderFilter: string) => {
-    return allDocuments.filter((d) => {
-      const folderId =
-        typeof d.folder === "object"
-          ? d.folder?._id
-          : typeof d.folder === "string"
-            ? d.folder
-            : null;
-
-      return folderId === folderFilter;
-    });
-  };
-
-  // Helper to get unfiled documents
-  const unfiledDocs = allDocuments.filter((d) => !d.folder);
+  const unifiedDocumentsData = unifiedDocuments || { documents: [], total: 0 };
 
   const refetchFoldersAndDocuments = () => {
-    refetchFolders().then(() => refetchDocuments());
+    refetchFolders().then(() => refetchUnifiedDocuments());
   };
 
-  const isFolderTabError = foldersError || documentsError;
-  const foldersTabError = foldersErrorData || documentsErrorData;
+  const isFolderTabError = foldersError || unifiedDocumentsError;
+  const foldersTabError = foldersErrorData || unifiedDocumentsErrorData;
 
   return {
     // Loading states
     foldersLoading,
-    documentsLoading,
+    unifiedDocumentsLoading,
 
     // Data
     allFolders,
-    unfiledDocs,
+    unifiedDocuments: unifiedDocumentsData.documents,
+    unifiedDocumentsTotal: unifiedDocumentsData.total,
 
     // States
     hasNextFolderPage,
@@ -97,7 +79,7 @@ const useFolderTab = (userId: string) => {
     refetchFoldersAndDocuments,
 
     // Actions
-    getDocsForFolder,
+
     fetchNextFolderPage,
 
     // Ref

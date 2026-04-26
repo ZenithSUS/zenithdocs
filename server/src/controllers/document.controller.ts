@@ -10,6 +10,7 @@ import {
   getDocumentByIdService,
   getDocumentsByUserPaginatedService,
   getDocumentsByUserWithChatsPaginatedService,
+  getUnifiedDocumentsByUserService,
   reprocessDocumentService,
   updateDocumentService,
 } from "../services/document.service.js";
@@ -198,6 +199,36 @@ export const getDocumentByIdController = async (
       success: true,
       message: "Document fetched successfully",
       data: document,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get unified documents by user ID
+ * @route GET /api/documents/unified/user/:id
+ */
+export const getUnifiedDocumentsByUserController = async (
+  req: Request<DocumentParams>,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.params.id;
+    const currentUserId = req.user.sub;
+    const role = req.user.role;
+
+    const documents = await getUnifiedDocumentsByUserService(
+      userId,
+      currentUserId,
+      role,
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Documents fetched successfully",
+      data: documents,
     });
   } catch (error) {
     next(error);

@@ -4,7 +4,7 @@ import {
   getFoldersByUserController,
   getFolderByIdController,
   getAllFoldersAdminController,
-  getFolderByUserPaginatedController,
+  getFoldersWithDocumentsByUserPaginatedController,
   updateFolderController,
   deleteFolderController,
 } from "../controllers/folder.controller.js";
@@ -29,7 +29,7 @@ router.get(
   protect,
   authorizeSelfOrAdmin,
   limiter("getFoldersByUserPaginated"),
-  getFolderByUserPaginatedController,
+  getFoldersWithDocumentsByUserPaginatedController,
 );
 
 router.get(

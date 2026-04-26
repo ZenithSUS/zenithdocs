@@ -7,6 +7,8 @@ const documentKeys = {
     [...documentKeys.byUser(userId), page] as const,
   byUserWithChatPage: (userId: string) =>
     [...documentKeys.byUser(userId), "chats"] as const,
+  byUnifiedByUser: (userId: string) =>
+    [...documentKeys.byUser(userId), "unified"] as const,
   create: () => [...documentKeys.all, "create"] as const,
   update: () => [...documentKeys.all, "update"] as const,
   delete: () => [...documentKeys.all, "delete"] as const,

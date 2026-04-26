@@ -29,6 +29,11 @@ export const rateLimiters = {
     "1 m",
     "getDocumentsByUserPaginated",
   ),
+  getUnifiedDocumentsByUser: createLimiter(
+    15,
+    "1 m",
+    "getUnifiedDocumentsByUser",
+  ),
 
   // Document write
   uploadDocument: createLimiter(5, "1 m", "uploadDocument"),

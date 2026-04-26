@@ -264,6 +264,38 @@ export const getRecentDocumentsByUser = async (userId: string) => {
 };
 
 /**
+ * Retrieves the 5 most recent documents belonging to a user that are not in any folder
+ * @param {string} userId - User ID
+ * @returns The 5 most recent documents belonging to the user that are not in any folder if found, empty array otherwise
+ * @throws {null} If the user ID is invalid
+ */
+export const getUnifiedDocumentsByUser = async (userId: string) => {
+  const [documents, total] = await Promise.all([
+    Document.find({
+      user: userId,
+      $or: [{ folder: { $exists: false } }, { folder: null }],
+    })
+      .select("-rawText")
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate({
+        path: "folder",
+        select: "_id name",
+      })
+      .lean(),
+    Document.countDocuments({
+      user: userId,
+      $or: [{ folder: { $exists: false } }, { folder: null }],
+    }),
+  ]);
+
+  return {
+    documents,
+    total,
+  };
+};
+
+/**
  * Update a document by ID
  * @param {string} id - Document ID
  * @param {Partial<IDocumentInput>} data - Data to update

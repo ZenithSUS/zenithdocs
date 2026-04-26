@@ -23,6 +23,11 @@ export interface Doc {
   updatedAt?: string;
 }
 
+export type UnifiedDoc = {
+  documents: Doc[];
+  total: number;
+};
+
 export type DocWithChat = Doc & {
   chat:
     | (Omit<Chat, "rawText"> & {

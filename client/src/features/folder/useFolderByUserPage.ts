@@ -2,7 +2,7 @@ import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
 import { FolderPage } from "./useFolder";
 import { AxiosError } from "@/types/api";
 import folderKeys from "./folder.keys";
-import { fetchFoldersByUserPaginated } from "./folder.api";
+import { fetchFoldersByUserWithDocumentsPaginated } from "./folder.api";
 import fetchLimits from "@/constants/fetch-limits";
 
 export const useFolderByUserPage = (userId: string) =>
@@ -15,7 +15,11 @@ export const useFolderByUserPage = (userId: string) =>
   >({
     queryKey: folderKeys.byUserPage(userId, fetchLimits.folder),
     queryFn: ({ pageParam = 1 }) =>
-      fetchFoldersByUserPaginated(userId, pageParam, fetchLimits.folder),
+      fetchFoldersByUserWithDocumentsPaginated(
+        userId,
+        pageParam,
+        fetchLimits.folder,
+      ),
     initialPageParam: 1,
 
     getNextPageParam: (lastPage) => {

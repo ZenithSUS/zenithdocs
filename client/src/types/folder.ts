@@ -1,3 +1,5 @@
+import Doc from "./doc";
+
 export interface Folder {
   _id: string;
   name: string;
@@ -10,3 +12,21 @@ export interface Folder {
   createdAt: string;
   updatedAt?: string;
 }
+
+export type FolderWithDocuments = Folder & {
+  documents: Pick<
+    Doc,
+    | "_id"
+    | "title"
+    | "status"
+    | "fileSize"
+    | "fileType"
+    | "createdAt"
+    | "folder"
+  >[];
+  documentCount: number;
+  completedCount: number;
+  uploadedCount: number;
+  processingCount: number;
+  failedCount: number;
+};

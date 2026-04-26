@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Folder, { IFolderInput } from "../models/folder.model.js";
 
 /**
@@ -56,31 +57,127 @@ export const getFolderById = async (id: string) => {
 };
 
 /**
- * Retrieves all folders belonging to a user in a paginated manner
+ * Retrieves folders belonging to a user with their documents, paginated
  * @param {string} userId - User ID
  * @param {number} page - Page number to retrieve
  * @param {number} limit - Number of folders to retrieve per page
- * @returns An object containing the folders, total count of folders and total number of pages
- * @throws {null} If the user ID is invalid
+ * @returns An array of folders with their documents if found, null otherwise and pagination info
+ * @throws {AppError} If the user ID is invalid or missing
+ * @throws {AppError} If page or limit is invalid or missing
+ * @throws {AppError} If page or limit is not a positive integer
  */
-export const getFoldersByUserPaginated = async (
+export const getFoldersWithDocumentsByUserPaginated = async (
   userId: string,
   page: number,
   limit: number,
 ) => {
   const offset = (page - 1) * limit;
 
-  const folders = await Folder.find({ user: userId })
-    .skip(offset)
-    .limit(limit)
-    .sort({ createdAt: -1 })
-    .populate({
-      path: "user",
-      select: "_id email",
-    })
-    .lean();
-
-  const total = await Folder.countDocuments({ user: userId });
+  const [folders, total] = await Promise.all([
+    Folder.aggregate([
+      { $match: { user: new mongoose.Types.ObjectId(userId) } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      {
+        $lookup: {
+          from: "documents",
+          localField: "_id",
+          foreignField: "folder",
+          as: "documents",
+        },
+      },
+      {
+        $addFields: {
+          documentCount: { $size: "$documents" },
+          counts: {
+            $reduce: {
+              input: "$documents",
+              initialValue: {
+                completed: 0,
+                uploaded: 0,
+                processing: 0,
+                failed: 0,
+              },
+              in: {
+                completed: {
+                  $add: [
+                    "$$value.completed",
+                    { $cond: [{ $eq: ["$$this.status", "completed"] }, 1, 0] },
+                  ],
+                },
+                uploaded: {
+                  $add: [
+                    "$$value.uploaded",
+                    { $cond: [{ $eq: ["$$this.status", "uploaded"] }, 1, 0] },
+                  ],
+                },
+                processing: {
+                  $add: [
+                    "$$value.processing",
+                    { $cond: [{ $eq: ["$$this.status", "processing"] }, 1, 0] },
+                  ],
+                },
+                failed: {
+                  $add: [
+                    "$$value.failed",
+                    { $cond: [{ $eq: ["$$this.status", "failed"] }, 1, 0] },
+                  ],
+                },
+              },
+            },
+          },
+          user: { $arrayElemAt: ["$user", 0] },
+          documents: {
+            $map: {
+              input: "$documents", // from the $lookup stage
+              as: "doc", // each document in the documents array
+              in: {
+                _id: "$$doc._id",
+                title: "$$doc.title",
+                status: "$$doc.status",
+                fileSize: "$$doc.fileSize",
+                fileType: "$$doc.fileType",
+                createdAt: "$$doc.createdAt",
+                folder: "$$doc.folder",
+              },
+            },
+          },
+        },
+      },
+      {
+        $addFields: {
+          completedCount: "$counts.completed",
+          uploadedCount: "$counts.uploaded",
+          processingCount: "$counts.processing",
+          failedCount: "$counts.failed",
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          createdAt: 1,
+          documentCount: 1,
+          completedCount: 1,
+          uploadedCount: 1,
+          processingCount: 1,
+          failedCount: 1,
+          user: { _id: 1, email: 1 },
+          documents: 1,
+        },
+      },
+      { $sort: { createdAt: -1 } },
+      { $skip: offset },
+      { $limit: limit },
+    ]),
+    Folder.countDocuments({ user: userId }),
+  ]);
 
   return {
     folders,

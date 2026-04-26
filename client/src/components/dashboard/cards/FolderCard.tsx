@@ -1,19 +1,21 @@
 import STATUS_META from "@/constants/status-meta";
 import sizefmt from "@/helpers/size-format";
-import Doc, { DocStatus } from "@/types/doc";
-import { Folder } from "@/types/folder";
+import { DocStatus } from "@/types/doc";
+import { FolderWithDocuments } from "@/types/folder";
 import RenameFolderModal from "@/components/dashboard/modals/folder/RenameFolderModal";
 import DeleteFolderModal from "../modals/folder/DeleteFolderModal";
 
 interface FolderCardProps {
-  folder: Folder;
-  docs: Doc[];
+  folder: FolderWithDocuments;
   handleFolderClick: (folderId: string) => void;
 }
 
-const FolderCard = ({ folder, docs, handleFolderClick }: FolderCardProps) => {
-  const completed = docs.filter((d) => d.status === "completed").length;
-  const totalSize = docs.reduce((acc, d) => acc + d.fileSize, 0);
+const FolderCard = ({ folder, handleFolderClick }: FolderCardProps) => {
+  const completed = folder.completedCount;
+  const totalSize = folder.documents.reduce(
+    (acc, doc) => acc + doc.fileSize,
+    0,
+  );
   const userId =
     typeof folder.user === "object" ? folder.user._id : folder.user;
 
@@ -50,20 +52,21 @@ const FolderCard = ({ folder, docs, handleFolderClick }: FolderCardProps) => {
 
       {/* Meta */}
       <p className="text-[11px] text-text/30 font-sans mb-3.5 tracking-wide">
-        {docs.length} document{docs.length !== 1 ? "s" : ""}
+        {folder.documents.length} document
+        {folder.documents.length !== 1 ? "s" : ""}
         {totalSize > 0 && ` · ${sizefmt.bytes(totalSize)}`}
       </p>
 
       <hr className="border-t border-white/6 mb-3" />
 
       {/* Status badges */}
-      {docs.length > 0 && (
+      {folder.documents.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mb-3.5">
           {(["uploaded", "processing", "completed", "failed"] as DocStatus[])
-            .filter((s) => docs.some((d) => d.status === s))
+            .filter((s) => folder.documents.some((d) => d.status === s))
             .map((s) => {
               const sm = STATUS_META[s];
-              const cnt = docs.filter((d) => d.status === s).length;
+              const cnt = folder.documents.filter((d) => d.status === s).length;
               return (
                 <span
                   key={s}
@@ -86,22 +89,24 @@ const FolderCard = ({ folder, docs, handleFolderClick }: FolderCardProps) => {
       )}
 
       {/* Progress bar */}
-      {docs.length > 0 && (
+      {folder.documents.length > 0 && (
         <div>
           <div className="w-full h-0.75 bg-white/6 rounded-full overflow-hidden mb-1.5">
             <div
               className="h-full bg-green-400/50 rounded-full transition-all duration-300"
-              style={{ width: `${(completed / docs.length) * 100}%` }}
+              style={{
+                width: `${(completed / folder.documents.length) * 100}%`,
+              }}
             />
           </div>
           <p className="text-[10px] text-text/22 font-sans tracking-wide">
-            {completed} / {docs.length} completed
+            {completed} / {folder.documents.length} completed
           </p>
         </div>
       )}
 
       {/* Empty state */}
-      {docs.length === 0 && (
+      {folder.documents.length === 0 && (
         <p className="text-[11px] text-text/20 font-sans text-center py-1.5">
           No documents yet
         </p>

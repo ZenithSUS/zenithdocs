@@ -28,7 +28,7 @@ export interface IDocumentInput {
   fileSize: number;
   rawText: string;
   user: string;
-  folder?: string;
+  folder?: string | null;
   status?: "uploaded" | "processing" | "completed" | "failed";
   publicId: string;
 }

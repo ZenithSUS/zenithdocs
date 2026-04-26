@@ -1,6 +1,6 @@
 import { api } from "@/lib/axios";
 import { ResponseWithData, ResponseWithPagedData } from "@/types/api";
-import Doc, { DocWithChat } from "@/types/doc";
+import Doc, { DocWithChat, UnifiedDoc } from "@/types/doc";
 
 export const createDocument = async (data: Partial<Doc> & { file?: File }) => {
   const formData = new FormData();
@@ -59,6 +59,14 @@ export const fetchDocumentByUserWithChatsPaginated = async (
       includeChats: true,
     },
   });
+
+  return res.data;
+};
+
+export const fetchUnifiedDocumentsByUser = async (userId: string) => {
+  const { data: res } = await api.get<ResponseWithData<UnifiedDoc>>(
+    `/api/documents/unified/user/${userId}`,
+  );
 
   return res.data;
 };

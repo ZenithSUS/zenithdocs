@@ -5,7 +5,7 @@ import {
   getAllFoldersAdminService,
   getFolderByIdService,
   getFolderByNameService,
-  getFolderByUserPaginatedService,
+  getFoldersWithDocumentsByUserPaginatedService,
   getFoldersByUserService,
   updateFolderService,
 } from "../services/folder.service.js";
@@ -136,10 +136,10 @@ export const getFolderByIdController = async (
 };
 
 /**
- * Get folders by user ID with pagination
- * @route GET /api/folders/user/:id/paginated
+ * Get folders with their documents by user ID, paginated
+ * @route GET /api/folders/user/:id/paginated?page=1&limit=10
  */
-export const getFolderByUserPaginatedController = async (
+export const getFoldersWithDocumentsByUserPaginatedController = async (
   req: Request<FolderParams>,
   res: Response,
   next: NextFunction,
@@ -149,7 +149,11 @@ export const getFolderByUserPaginatedController = async (
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
 
-    const folder = await getFolderByUserPaginatedService(id, page, limit);
+    const folder = await getFoldersWithDocumentsByUserPaginatedService(
+      id,
+      page,
+      limit,
+    );
 
     return res.status(200).json({
       success: true,

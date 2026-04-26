@@ -11,6 +11,7 @@ import { removeRelatedChatByDocumentIdFromCache } from "./document.cache";
 import { removeRelatedInfiniteSummaryByDocumentIdFromCache } from "../summary/summary.cache";
 import summaryKeys from "../summary/summary.keys";
 import fetchLimits from "@/constants/fetch-limits";
+import folderKeys from "../folder/folder.keys";
 
 export const useDocumentDelete = (
   queryClient: QueryClient,
@@ -72,6 +73,11 @@ export const useDocumentDelete = (
     onSuccess: (_, deletedId: string) => {
       queryClient.removeQueries({
         queryKey: documentKeys.byId(deletedId),
+      });
+
+      // Invalidate folder list to update document counts
+      queryClient.invalidateQueries({
+        queryKey: folderKeys.byUserPage(userId, fetchLimits.folder),
       });
     },
   });

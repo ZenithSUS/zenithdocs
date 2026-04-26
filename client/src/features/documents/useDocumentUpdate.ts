@@ -9,6 +9,8 @@ import {
 import documentKeys from "./document.keys";
 import { updateDocumentById } from "./document.api";
 import { updateInfiniteDocument } from "./document.cache";
+import folderKeys from "../folder/folder.keys";
+import fetchLimits from "@/constants/fetch-limits";
 
 export const useDocumentUpdate = (
   queryClient: QueryClient,
@@ -52,5 +54,10 @@ export const useDocumentUpdate = (
       );
 
       queryClient.setQueryData(documentKeys.byId(updatedDoc._id), updatedDoc);
+
+      // Invalidate folder queries to update document counts and folder info
+      queryClient.invalidateQueries({
+        queryKey: folderKeys.byUserPage(userId, fetchLimits.folder),
+      });
     },
   });

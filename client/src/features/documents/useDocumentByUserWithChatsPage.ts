@@ -1,4 +1,4 @@
-import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import {
   DocumentsWithChatInfiniteData,
   DocumentWithChatPage,

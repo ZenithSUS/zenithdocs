@@ -6,6 +6,7 @@ import {
   getAllDocumentsController,
   getDocumentByIdController,
   getDocumentsByUserPaginatedController,
+  getUnifiedDocumentsByUserController,
   reprocessDocumentController,
   updateDocumentController,
 } from "../controllers/document.controller.js";
@@ -23,6 +24,13 @@ router.get(
   requireAdmin,
   limiter("fetchDocuments"),
   getAllDocumentsController,
+);
+
+router.get(
+  "/unified/user/:id",
+  protect,
+  limiter("getUnifiedDocumentsByUser"),
+  getUnifiedDocumentsByUserController,
 );
 
 router.get(

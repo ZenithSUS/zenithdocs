@@ -5,6 +5,10 @@ export const documentParamsSchema = z.object({
   docId: objectId,
 });
 
+export const documentUserParamsSchema = z.object({
+  userId: objectId,
+});
+
 export const createDocumentSchema = z.object({
   title: z.string().min(1, "Title is required."),
   fileUrl: z.string().min(1, "File URL is required."),

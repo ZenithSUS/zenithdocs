@@ -1,12 +1,15 @@
 import { InfiniteData, useQueryClient } from "@tanstack/react-query";
-import { Folder } from "@/types/folder";
+import { Folder, FolderWithDocuments } from "@/types/folder";
 import { ResponseWithPagedData } from "@/types/api";
 import { useFolderCreate } from "./useFolderCreate";
 import { useFolderUpdate } from "./useFolderUpdate";
 import { useFolderDelete } from "./useFolderDelete";
 import fetchLimits from "@/constants/fetch-limits";
 
-export type FolderPage = ResponseWithPagedData<Folder, "folders">["data"];
+export type FolderPage = ResponseWithPagedData<
+  FolderWithDocuments,
+  "folders"
+>["data"];
 export type FoldersInfiniteData = InfiniteData<FolderPage>;
 export type UpdateVariables = {
   id: string;

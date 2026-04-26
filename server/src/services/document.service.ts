@@ -7,6 +7,7 @@ import {
   getDocumentById,
   getDocumentsByUserPaginated,
   getDocumentsByUserWithChatsPaginated,
+  getUnifiedDocumentsByUser,
   updateDocument,
 } from "../repositories/document.repository.js";
 import { getFolderById } from "../repositories/folder.repository.js";
@@ -26,6 +27,7 @@ import { embeddingQueue } from "../queues/embedding.queue.js";
 import {
   createDocumentSchema,
   documentParamsSchema,
+  documentUserParamsSchema,
   getDocumentsByUserPageSchema,
   updateDocumentSchema,
 } from "../schemas/document.schema.js";
@@ -255,6 +257,33 @@ export const getDocumentByIdService = async (
   }
 
   return document;
+};
+
+/**
+ * Retrieves all documents that has no folder belonging to a user
+ * @param {string} userId - User ID
+ * @param {string} currentUserId - Current user ID (used for authorization)
+ * @param {"user" | "admin"} role - User role (used for authorization)
+ * @returns An array of documents belonging to the user
+ * @throws {AppError} If the user ID is invalid or missing
+ * @throws {AppError} If the current user ID does not match the user ID and the role is not admin (403 Forbidden)
+ */
+export const getUnifiedDocumentsByUserService = async (
+  userId: string,
+  currentUserId: string,
+  role: "user" | "admin",
+) => {
+  const { userId: validatedUserId } = documentUserParamsSchema.parse({
+    userId,
+  });
+  const authUser = userTokenSchema.parse({ userId: currentUserId, role });
+
+  if (validatedUserId !== authUser.userId && authUser.role !== "admin") {
+    throw new AppError("Forbidden", 403);
+  }
+
+  const documents = await getUnifiedDocumentsByUser(validatedUserId);
+  return documents;
 };
 
 /**

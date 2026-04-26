@@ -1,4 +1,4 @@
-import { Folder } from "@/types/folder";
+import { Folder, FolderWithDocuments } from "@/types/folder";
 import { QueryClient } from "@tanstack/react-query";
 import { FoldersInfiniteData } from "./useFolder";
 
@@ -12,12 +12,23 @@ export const addInfiniteFolder = (
 
     const firstPage = oldData.pages[0];
 
+    // Initialize the new folder with empty documents and counts
+    const initialFolderWithDocs: FolderWithDocuments = {
+      ...newFolder,
+      documents: [],
+      documentCount: 0,
+      completedCount: 0,
+      uploadedCount: 0,
+      processingCount: 0,
+      failedCount: 0,
+    };
+
     return {
       ...oldData,
       pages: [
         {
           ...firstPage,
-          folders: [newFolder, ...firstPage.folders],
+          folders: [initialFolderWithDocs, ...firstPage.folders],
         },
         ...oldData.pages.slice(1),
       ],
@@ -38,7 +49,9 @@ export const updateInfiniteFolder = (
       pages: oldData.pages.map((page) => ({
         ...page,
         folders: page.folders.map((folder) =>
-          folder._id === updatedFolder._id ? updatedFolder : folder,
+          folder._id === updatedFolder._id
+            ? { ...folder, ...updatedFolder }
+            : folder,
         ),
       })),
     };

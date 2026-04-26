@@ -26,11 +26,12 @@ function FolderTab({
   const {
     // Loading states
     foldersLoading,
-    documentsLoading,
+    unifiedDocumentsLoading,
 
     // Data
     allFolders,
-    unfiledDocs,
+    unifiedDocuments,
+    unifiedDocumentsTotal,
 
     // States
     hasNextFolderPage,
@@ -44,7 +45,6 @@ function FolderTab({
     refetchFoldersAndDocuments,
 
     // Actions
-    getDocsForFolder,
     fetchNextFolderPage,
 
     // Ref
@@ -56,7 +56,7 @@ function FolderTab({
     setNav("documents");
   };
 
-  if (foldersLoading || documentsLoading) {
+  if (foldersLoading || unifiedDocumentsLoading) {
     return <FolderLoadingSkeletion />;
   }
 
@@ -70,7 +70,7 @@ function FolderTab({
     );
   }
 
-  if (allFolders.length === 0 && unfiledDocs.length === 0) {
+  if (allFolders.length === 0 && unifiedDocuments.length === 0) {
     return <NoFolderCard userId={userId} onRefresh={onRefresh || (() => {})} />;
   }
 
@@ -78,13 +78,10 @@ function FolderTab({
     <div className="space-y-5">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {allFolders.map((folder) => {
-          const docs = getDocsForFolder(folder._id);
-
           return (
             <FolderCard
               key={folder._id}
               folder={folder}
-              docs={docs}
               handleFolderClick={handleFolderClick}
             />
           );
@@ -127,18 +124,18 @@ function FolderTab({
       )}
 
       {/* Unfiled documents section */}
-      {unfiledDocs.length > 0 && (
+      {unifiedDocuments.length > 0 && (
         <div className="border border-white/8 rounded-sm overflow-hidden">
           <div className="px-5 py-3.5 border-b border-white/6 bg-white/2 flex items-center gap-2">
             <span className="text-[11px] tracking-[0.15em] text-text/40 font-sans">
               UNFILED DOCUMENTS
             </span>
             <span className="ml-auto text-[10px] text-text/20 font-sans">
-              {unfiledDocs.length}
+              {unifiedDocumentsTotal}
             </span>
           </div>
           <div className="divide-y divide-white/4">
-            {unfiledDocs.slice(0, 5).map((doc) => {
+            {unifiedDocuments.slice(0, 5).map((doc) => {
               return (
                 <UnifiedDocumentsCard
                   key={doc._id}
@@ -147,12 +144,15 @@ function FolderTab({
                 />
               );
             })}
-            {unfiledDocs.length > 5 && (
+            {unifiedDocumentsTotal > 5 && (
               <div
                 className="px-5 py-3 text-center text-[11px] text-primary/70 font-sans hover:text-primary transition-colors cursor-pointer"
-                onClick={() => setNav("documents")}
+                onClick={() => {
+                  setNav("documents");
+                  setFilterFolder(""); // Clear folder filter to show all unfiled documents
+                }}
               >
-                View all {unfiledDocs.length} unfiled documents →
+                View all {unifiedDocumentsTotal} unfiled documents →
               </div>
             )}
           </div>

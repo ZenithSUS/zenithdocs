@@ -30,6 +30,7 @@ const folderSchema = new Schema<IFolder>(
 );
 
 folderSchema.index({ user: 1, name: 1 }, { unique: true });
+folderSchema.index({ user: 1, createdAt: -1 });
 
 // Update documents when a folder is deleted
 folderSchema.post("findOneAndDelete", async (doc: IDocument) => {

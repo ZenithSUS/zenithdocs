@@ -1,8 +1,4 @@
-import {
-  QueryClient,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { QueryClient, useMutation } from "@tanstack/react-query";
 import documentKeys from "./document.keys";
 import Doc from "@/types/doc";
 import { AxiosError } from "@/types/api";

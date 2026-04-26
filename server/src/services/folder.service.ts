@@ -6,7 +6,7 @@ import {
   getFolderById,
   getFolderByName,
   getFoldersByUser,
-  getFoldersByUserPaginated,
+  getFoldersWithDocumentsByUserPaginated,
   updateFolder,
 } from "../repositories/folder.repository.js";
 import AppError from "../utils/app-error.js";
@@ -103,23 +103,23 @@ export const getFolderByIdService = async (id: string) => {
 };
 
 /**
- * Retrieves all folders belonging to a user in a paginated manner
+ * Retrieves folders belonging to a user with their documents, paginated
  * @param {string} userId - User ID
  * @param {number} page - Page number to retrieve
  * @param {number} limit - Number of folders to retrieve per page
- * @returns An object containing the folders and the count of folders belonging to the user
- * @throws {AppError} If user ID is invalid or missing
+ * @returns An array of folders with their documents if found, null otherwise and pagination info
+ * @throws {AppError} If the user ID is invalid or missing
  * @throws {AppError} If page or limit is invalid or missing
  * @throws {AppError} If page or limit is not a positive integer
  */
-export const getFolderByUserPaginatedService = async (
+export const getFoldersWithDocumentsByUserPaginatedService = async (
   userId: string,
   page: number,
   limit: number,
 ) => {
   const validated = getFolderByUserPageSchema.parse({ userId, page, limit });
 
-  const folders = await getFoldersByUserPaginated(
+  const folders = await getFoldersWithDocumentsByUserPaginated(
     validated.userId,
     validated.page,
     validated.limit,
