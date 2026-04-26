@@ -1,4 +1,4 @@
-import Doc from "@/types/doc";
+import Doc, { UnifiedDoc } from "@/types/doc";
 import { QueryClient } from "@tanstack/react-query";
 import {
   DocumentsInfiniteData,
@@ -57,6 +57,48 @@ export const changeIsSharedInfiniteDocument = (
         })),
       })),
     };
+  });
+};
+
+export const updateUnifiedDocumentsData = (
+  queryClient: QueryClient,
+  querykey: readonly unknown[],
+  updatedDoc: Partial<Doc>,
+) => {
+  queryClient.setQueryData<UnifiedDoc>(querykey, (oldData) => {
+    if (!oldData) return oldData;
+
+    const folderId = updatedDoc.folder
+      ? typeof updatedDoc.folder === "object"
+        ? updatedDoc.folder._id
+        : updatedDoc.folder
+      : null;
+
+    const alreadyInCache = oldData.documents.some(
+      (doc) => doc._id === updatedDoc._id,
+    );
+
+    if (!folderId) {
+      // Document is unfiled — add if not already in cache, otherwise no-op
+      if (alreadyInCache) return oldData; // moving within unfiled, do nothing
+
+      return {
+        ...oldData,
+        documents: [...oldData.documents, updatedDoc as Doc],
+        total: oldData.total + 1,
+      };
+    } else {
+      // Document is moving to a folder — remove from unified cache if it was there
+      if (!alreadyInCache) return oldData; // wasn't in cache, nothing to remove
+
+      return {
+        ...oldData,
+        documents: oldData.documents.filter(
+          (doc) => doc._id !== updatedDoc._id,
+        ),
+        total: oldData.total - 1,
+      };
+    }
   });
 };
 

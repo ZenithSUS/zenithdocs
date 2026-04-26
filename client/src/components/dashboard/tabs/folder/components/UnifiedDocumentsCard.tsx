@@ -7,11 +7,13 @@ import STATUS_META from "@/constants/status-meta";
 interface UnifiedDocumentsProps {
   document: Doc;
   setNav: (value: SetStateAction<NavItem>) => void;
+  setFilterFolder: (value: SetStateAction<string>) => void;
 }
 
 function UnifiedDocumentsCard({
   document: doc,
   setNav,
+  setFilterFolder,
 }: UnifiedDocumentsProps) {
   const sm = STATUS_META[doc.status];
 
@@ -19,7 +21,10 @@ function UnifiedDocumentsCard({
     <div
       key={doc._id}
       className="px-5 py-3.5 flex items-center gap-3 hover:bg-white/3 transition-colors cursor-pointer"
-      onClick={() => setNav("documents")}
+      onClick={() => {
+        setFilterFolder(""); // Clear folder filter to ensure the document is visible in the documents tab
+        setNav("documents");
+      }}
     >
       <FileIcon type={doc.fileType} />
       <span className="flex-1 text-[13px] font-sans text-text/70 truncate">

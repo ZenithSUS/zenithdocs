@@ -141,6 +141,7 @@ function FolderTab({
                   key={doc._id}
                   document={doc}
                   setNav={setNav}
+                  setFilterFolder={setFilterFolder}
                 />
               );
             })}

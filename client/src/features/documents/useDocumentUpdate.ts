@@ -8,7 +8,10 @@ import {
 } from "./useDocument";
 import documentKeys from "./document.keys";
 import { updateDocumentById } from "./document.api";
-import { updateInfiniteDocument } from "./document.cache";
+import {
+  updateInfiniteDocument,
+  updateUnifiedDocumentsData,
+} from "./document.cache";
 import folderKeys from "../folder/folder.keys";
 import fetchLimits from "@/constants/fetch-limits";
 
@@ -50,6 +53,12 @@ export const useDocumentUpdate = (
       updateInfiniteDocument(
         queryClient,
         documentKeys.byUserPage(userId, documentLimit),
+        updatedDoc,
+      );
+
+      updateUnifiedDocumentsData(
+        queryClient,
+        documentKeys.byUnifiedByUser(userId),
         updatedDoc,
       );
 
