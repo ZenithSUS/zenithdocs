@@ -1,12 +1,9 @@
 interface DocumentErrorProps {
   errorMessage: string;
-  refetchDocumentChats: () => void;
+  onRefresh: () => void;
 }
 
-function DocumentError({
-  errorMessage,
-  refetchDocumentChats,
-}: DocumentErrorProps) {
+function DocumentError({ errorMessage, onRefresh }: DocumentErrorProps) {
   return (
     <div className="border border-white/8 rounded-sm px-8 py-16 text-center">
       <div className="text-[48px] text-text/10 mb-4">▣</div>
@@ -18,7 +15,7 @@ function DocumentError({
       </p>
       <button
         type="button"
-        onClick={() => refetchDocumentChats()}
+        onClick={() => onRefresh()}
         className="px-6 py-3 bg-primary text-background text-[12px] font-bold tracking-[0.12em] font-sans rounded-sm transition-all duration-200 hover:bg-[#e0b530] hover:-translate-y-0.5 cursor-pointer"
       >
         TRY AGAIN

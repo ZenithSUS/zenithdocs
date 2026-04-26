@@ -24,6 +24,7 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [moveModalOpen, setMoveModalOpen] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [folderDropdownOpen, setFolderDropdownOpen] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<Doc["status"] | "all">(
@@ -52,6 +53,7 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
 
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const actionsButtonRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
+  const folderDropdownRef = useRef<HTMLDivElement>(null);
 
   // ─── Queries ──────────────────────────────────────────────────────────────
   const { reprocessDocumentMutation } = useDocument(userId);
@@ -63,13 +65,27 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
     isFetchingNextPage: isFetchingNextDocPage,
     isError: documentError,
     error: documentErrorData,
-    refetch: refetchDocumentChats,
+    refetch: refetchDocument,
   } = useDocumentByUserPage(userId);
 
-  const { data: foldersData, isLoading: foldersLoading } =
-    useFolderByUserPage(userId);
+  const {
+    data: foldersData,
+    isLoading: foldersLoading,
+    fetchNextPage: fetchNextFolderPage,
+    hasNextPage: hasNextFolderPage,
+    isFetchingNextPage: isFetchingNextFolderPage,
+    isError: folderError,
+    error: folderErrorData,
+    refetch: refetchFolder,
+  } = useFolderByUserPage(userId);
 
-  const { data: summariesData } = useSummaryByUserPage(userId);
+  const {
+    data: summariesData,
+    refetch: refetchSummary,
+    isLoading: summariesLoading,
+    isError: summaryError,
+    error: summaryErrorData,
+  } = useSummaryByUserPage(userId);
 
   // ─── Mutations ───────────────────────────────────────────────────
   const { mutateAsync: reprocessDoc } = reprocessDocumentMutation;
@@ -111,65 +127,6 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
     if (filterStatus !== "all" && doc.status !== filterStatus) return false;
     return true;
   });
-
-  // ─── Close dropdown on outside click ─────────────────────────────────────
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      const target = e.target as Node;
-      const insideButton = Array.from(actionsButtonRefs.current.values()).some(
-        (btn) => btn?.contains(target),
-      );
-      const dropdown = document.getElementById("actions-dropdown-menu");
-      if (!insideButton && !dropdown?.contains(target)) {
-        setActionsMenuOpen(null);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  // ─── Update dropdown position ─────────────────────────────────────────────
-  useEffect(() => {
-    if (actionsMenuOpen && actionsButtonRefs.current.has(actionsMenuOpen)) {
-      const button = actionsButtonRefs.current.get(actionsMenuOpen);
-      if (button) {
-        const rect = button.getBoundingClientRect();
-        const DROPDOWN_HEIGHT = 280;
-        const DROPDOWN_WIDTH = 192;
-        const MARGIN = 8;
-
-        const spaceBelow = window.innerHeight - rect.bottom;
-        const top =
-          spaceBelow < DROPDOWN_HEIGHT
-            ? rect.top + window.scrollY - DROPDOWN_HEIGHT - MARGIN // flip up
-            : rect.bottom + window.scrollY + MARGIN; // default down
-
-        const left = Math.min(
-          rect.right + window.scrollX - DROPDOWN_WIDTH,
-          window.innerWidth + window.scrollX - DROPDOWN_WIDTH - MARGIN,
-        );
-
-        setDropdownPosition({ top, left });
-      }
-    } else {
-      setDropdownPosition(null);
-    }
-  }, [actionsMenuOpen]);
-
-  // ─── Infinite scroll ──────────────────────────────────────────────────────
-  useEffect(() => {
-    const el = loadMoreRef.current;
-    if (!el || !hasNextDocPage || isFetchingNextDocPage) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) fetchNextDocPage();
-      },
-      { threshold: 0.1 },
-    );
-    observer.observe(el);
-    return () => observer.unobserve(el); // captures el, not the ref
-  }, [hasNextDocPage, isFetchingNextDocPage, fetchNextDocPage]);
 
   // ─── Handlers ─────────────────────────────────────────────────────────────
   const handleDeleteClick = (docId: string, docTitle: string) => {
@@ -244,33 +201,119 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
     [isNavigating],
   );
 
+  /// ─── Combined states ──────────────────────────────────────────────────────
+  const documentTabError = documentError || folderError || summaryError;
+  const documentTabErrorData =
+    documentErrorData || folderErrorData || summaryErrorData;
+  const documentTabLoading =
+    documentsLoading || foldersLoading || summariesLoading;
+
+  const refetchDocumentTab = useCallback(async () => {
+    await Promise.all([refetchDocument(), refetchFolder(), refetchSummary()]);
+  }, [refetchDocument, refetchFolder, refetchSummary]);
+
+  // ─── Close dropdown on outside click ─────────────────────────────────────
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      const target = e.target as Node;
+      const insideButton = Array.from(actionsButtonRefs.current.values()).some(
+        (btn) => btn?.contains(target),
+      );
+      const dropdown = document.getElementById("actions-dropdown-menu");
+      if (!insideButton && !dropdown?.contains(target)) {
+        setActionsMenuOpen(null);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  // ─── Update dropdown position ─────────────────────────────────────────────
+  useEffect(() => {
+    if (actionsMenuOpen && actionsButtonRefs.current.has(actionsMenuOpen)) {
+      const button = actionsButtonRefs.current.get(actionsMenuOpen);
+      if (button) {
+        const rect = button.getBoundingClientRect();
+        const DROPDOWN_HEIGHT = 280;
+        const DROPDOWN_WIDTH = 192;
+        const MARGIN = 8;
+
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const top =
+          spaceBelow < DROPDOWN_HEIGHT
+            ? rect.top + window.scrollY - DROPDOWN_HEIGHT - MARGIN // flip up
+            : rect.bottom + window.scrollY + MARGIN; // default down
+
+        const left = Math.min(
+          rect.right + window.scrollX - DROPDOWN_WIDTH,
+          window.innerWidth + window.scrollX - DROPDOWN_WIDTH - MARGIN,
+        );
+
+        setDropdownPosition({ top, left });
+      }
+    } else {
+      setDropdownPosition(null);
+    }
+  }, [actionsMenuOpen]);
+
+  // ─── Infinite scroll ──────────────────────────────────────────────────────
+  useEffect(() => {
+    const el = loadMoreRef.current;
+    if (!el || !hasNextDocPage || isFetchingNextDocPage) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) fetchNextDocPage();
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(el);
+    return () => observer.unobserve(el); // captures el, not the ref
+  }, [hasNextDocPage, isFetchingNextDocPage, fetchNextDocPage]);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (!folderDropdownRef.current?.contains(e.target as Node)) {
+        setFolderDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
   return {
     // Loading
-    documentsLoading,
-    foldersLoading,
+    documentTabLoading,
+    isFetchingNextDocPage,
+    isFetchingNextFolderPage,
+    hasNextDocPage,
+    hasNextFolderPage,
+    isNavigating,
 
     // Data
     allDocs,
+    filteredDocs,
     allFolders,
     allSummaries,
-    filteredDocs,
-    documentErrorData,
+
+    // Error
+    documentTabError,
+    documentTabErrorData,
 
     // State
     selectedDoc,
-    actionsMenuOpen,
     filterStatus,
-    isFetchingNextDocPage,
-    hasNextDocPage,
-    isNavigating,
     dropdownPosition,
+    actionsMenuOpen,
+    folderDropdownOpen,
+
     documentToDelete,
     documentToMove,
     documentToShare,
+
     moveModalOpen,
     shareModalOpen,
     deleteModalOpen,
-    documentError,
 
     // Setters
     setFilterStatus,
@@ -279,23 +322,29 @@ const useDocumentTab = (userId: string, filterFolder: string) => {
     setMoveModalOpen,
     setShareModalOpen,
     setDeleteModalOpen,
+    setFolderDropdownOpen,
 
     // Handlers
     handleNavigate,
+    handleSearch,
+    handleReprocessClick,
+
     handleMoveClick,
     handleDeleteClick,
+    handleShareClick,
+
     handleDeleteSuccess,
     handleMoveSuccess,
     handleShareSuccess,
-    handleReprocessClick,
-    handleShareClick,
-    handleSearch,
+
     fetchNextDocPage,
-    refetchDocumentChats,
+    fetchNextFolderPage,
+    refetchDocumentTab,
 
     // Refs
     actionsButtonRefs,
     loadMoreRef,
+    folderDropdownRef,
   };
 };
 

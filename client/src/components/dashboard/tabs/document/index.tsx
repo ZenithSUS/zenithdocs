@@ -19,6 +19,7 @@ import DocumentError from "./components/DocumentError";
 import EmptyDocument from "./components/EmptyDocument";
 import { SearchIcon } from "lucide-react";
 import ShareDocumentModal from "../../modals/document/ShareDocumentModal";
+import FolderFilterDropdown from "./components/FolderFilterDropdown";
 
 interface Props {
   userId: string;
@@ -38,79 +39,91 @@ const TABLE_HEADERS = ["TYPE", "DOCUMENT", "SIZE", "STATUS", "DATE", "ACTIONS"];
 function DocumentsTab({ userId, filterFolder, setFilterFolder }: Props) {
   const {
     // Loading
-    documentsLoading,
-    foldersLoading,
+    documentTabLoading,
+    isFetchingNextDocPage,
+    isFetchingNextFolderPage,
+    hasNextDocPage,
+    hasNextFolderPage,
+    isNavigating,
 
     // Data
     allDocs,
+    filteredDocs,
     allFolders,
     allSummaries,
-    filteredDocs,
-    documentErrorData,
+
+    // Error
+    documentTabError,
+    documentTabErrorData,
 
     // State
     selectedDoc,
-    actionsMenuOpen,
     filterStatus,
-    isFetchingNextDocPage,
-    hasNextDocPage,
-    isNavigating,
     dropdownPosition,
+    actionsMenuOpen,
+    folderDropdownOpen,
+
     documentToDelete,
     documentToMove,
     documentToShare,
+
     moveModalOpen,
     shareModalOpen,
     deleteModalOpen,
-    documentError,
 
     // Setters
     setFilterStatus,
     setSelectedDoc,
     setActionsMenuOpen,
     setMoveModalOpen,
-    setDeleteModalOpen,
     setShareModalOpen,
+    setDeleteModalOpen,
+    setFolderDropdownOpen,
 
     // Handlers
     handleNavigate,
+    handleSearch,
+    handleReprocessClick,
+
     handleMoveClick,
     handleDeleteClick,
+    handleShareClick,
+
     handleDeleteSuccess,
     handleMoveSuccess,
     handleShareSuccess,
-    handleReprocessClick,
-    handleSearch,
-    handleShareClick,
+
     fetchNextDocPage,
-    refetchDocumentChats,
+    fetchNextFolderPage,
+    refetchDocumentTab,
 
     // Refs
     actionsButtonRefs,
     loadMoreRef,
+    folderDropdownRef,
   } = useDocumentTab(userId, filterFolder);
 
   // ─── Guards ───────────────────────────────────────────────────────────────
 
-  if (documentsLoading || foldersLoading) return <DocumentsLoadingSkeleton />;
+  if (documentTabLoading) return <DocumentsLoadingSkeleton />;
 
   if (allDocs.length === 0) {
     return <EmptyDocument />;
   }
 
-  if (documentError) {
+  if (documentTabError) {
     return (
       <DocumentError
         errorMessage={
-          documentErrorData?.response?.data?.message ?? "Something went wrong"
+          documentTabErrorData?.response?.data?.message ??
+          "Something went wrong"
         }
-        refetchDocumentChats={refetchDocumentChats}
+        onRefresh={refetchDocumentTab}
       />
     );
   }
 
   // ─── Render ───────────────────────────────────────────────────────────────
-
   return (
     <div className="space-y-5">
       {/* ── Filters ──────────────────────────────────────────────────────── */}
@@ -134,22 +147,19 @@ function DocumentsTab({ userId, filterFolder, setFilterFolder }: Props) {
           ))}
         </div>
 
-        <select
-          value={filterFolder}
-          onChange={(e) => {
-            setFilterFolder(e.target.value);
-            setSelectedDoc(null);
-          }}
-          className="px-3 py-2 bg-white/4 border border-white/8 rounded-sm text-[11px] font-sans text-text/60 outline-none hover:border-primary/30 transition-colors cursor-pointer"
-        >
-          <option value="all">All Folders</option>
-          {allFolders.map((f: Folder) => (
-            <option key={f._id} value={f._id}>
-              {f.name}
-            </option>
-          ))}
-          <option value="">No Folder</option>
-        </select>
+        {/* Custom folder dropdown */}
+        <FolderFilterDropdown
+          allFolders={allFolders}
+          filterFolder={filterFolder}
+          setFilterFolder={setFilterFolder}
+          setSelectedDoc={setSelectedDoc}
+          hasNextFolderPage={hasNextFolderPage}
+          isFetchingNextFolderPage={isFetchingNextFolderPage}
+          fetchNextFolderPage={fetchNextFolderPage}
+          folderDropdownOpen={folderDropdownOpen}
+          setFolderDropdownOpen={setFolderDropdownOpen}
+          folderDropdownRef={folderDropdownRef}
+        />
 
         <div className="relative">
           <SearchIcon
