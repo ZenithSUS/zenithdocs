@@ -15,12 +15,13 @@ const upload = multer({
     const allowed = [
       "application/pdf",
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "text/plain",
     ];
     if (allowed.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error("Invalid file type. Only PDF, DOCX, and TXT allowed."));
+      cb(new Error("Invalid file type. Only PDF, DOCX, XLSX and TXT allowed."));
     }
   },
 });

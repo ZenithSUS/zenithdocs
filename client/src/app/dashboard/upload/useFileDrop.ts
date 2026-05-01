@@ -11,6 +11,7 @@ const useFileDrop = (
 
   const addFiles = useCallback(
     (newFiles: FileList | File[]) => {
+      console.log("Adding files:", newFiles);
       const added: UploadFile[] = Array.from(newFiles).map((file) => {
         const error = validateFile(file);
         return {

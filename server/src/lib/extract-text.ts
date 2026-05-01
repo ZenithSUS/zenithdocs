@@ -3,6 +3,7 @@ import fs from "fs/promises";
 import * as pdfParseModule from "pdf-parse-new";
 import colors from "../utils/log-colors.js";
 import extractWithMistralOCR from "./mistral/services/extract-text-ocr.js";
+import xlsx from "node-xlsx";
 
 // Suppress pdf-parse/PDF.js internal logs
 const originalConsoleLog = console.log;
@@ -102,6 +103,38 @@ const extractRawText = async (
         const filePath = await getFilePath();
         const result = await mammoth.extractRawText({ path: filePath });
         return result.value;
+      }
+    }
+
+    case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
+      try {
+        return await extractWithMistralOCR(fileUrl);
+      } catch (error) {
+        console.error("=".repeat(50));
+        console.error(
+          `${colors.red}Mistral OCR failed for XLSX — falling back to excel${colors.reset}`,
+        );
+        console.error(
+          "Reason:",
+          error instanceof Error ? error.message : error,
+        );
+        console.error("=".repeat(50) + "\n");
+
+        const filePath = await getFilePath();
+        const buffer = await fs.readFile(filePath);
+        const sheets = xlsx.parse(buffer);
+        const lines: string[] = [];
+
+        for (const sheet of sheets) {
+          lines.push(`--- Sheet: ${sheet.name} ---`);
+          for (const row of sheet.data) {
+            lines.push(
+              row.map((cell) => (cell == null ? "" : String(cell))).join("\t"),
+            );
+          }
+        }
+
+        return lines.join("\n");
       }
     }
 

@@ -14,7 +14,9 @@ function FileIcon({ type }: { type: string }) {
   const colorMap: Record<string, string> = {
     pdf: "#C9A227",
     docx: "#3b82f6",
+    xlsx: "#16a34a",
     txt: "#6b7280",
+    pptx: "#f59e0b",
   };
 
   const normalized = normalizeType(type);

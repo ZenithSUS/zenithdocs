@@ -5,6 +5,7 @@ import { pdfjs } from "react-pdf";
 import DocumentControls from "./DocumentControls";
 import DocumentCanvas from "./DocumentCanvas";
 import DocumentViewerDocx from "./DocumentViewerDocx";
+import DocumentViewerXlsx from "./DocumentViewerXlsx";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
@@ -71,13 +72,20 @@ export default function DocumentViewer({ document }: DocumentViewerProps) {
 
   const isPdf =
     document?.fileType === "application/pdf" || document?.fileType === "pdf";
+
   const isDocx =
     document?.fileType ===
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
     document?.fileType ===
       "vnd.openxmlformats-officedocument.wordprocessingml.document";
 
-  if (!isPdf && !isDocx) {
+  const isXlsx =
+    document?.fileType ===
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+    document?.fileType ===
+      "vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+  if (!isPdf && !isDocx && !isXlsx) {
     return (
       <div className="h-full overflow-y-auto p-6 text-sm text-[#F5F5F5]/80 font-mono leading-relaxed whitespace-pre-wrap">
         {document?.rawText || "No preview available."}
@@ -90,6 +98,16 @@ export default function DocumentViewer({ document }: DocumentViewerProps) {
       <div className="flex flex-col h-full min-h-0">
         <div className="flex-1 min-h-0 overflow-hidden">
           <DocumentViewerDocx fileUrl={document.fileUrl} scale={scale} />
+        </div>
+      </div>
+    );
+  }
+
+  if (isXlsx && document.fileUrl) {
+    return (
+      <div className="flex flex-col h-full min-h-0">
+        <div className="flex-1 min-h-0">
+          <DocumentViewerXlsx url={document.fileUrl} />
         </div>
       </div>
     );

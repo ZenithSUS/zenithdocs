@@ -1,6 +1,12 @@
 import { JSX } from "react";
 import { ACCEPTED_FORMATS, MAX_FILE_SIZE } from "./upload.types";
-import { FileText, FileType, AlignLeft, Paperclip } from "lucide-react";
+import {
+  FileText,
+  FileType,
+  AlignLeft,
+  Paperclip,
+  FileBarChart,
+} from "lucide-react";
 
 export const validateFile = (file: File): string | null => {
   const ext = "." + file.name.split(".").pop()?.toLowerCase();
@@ -23,6 +29,8 @@ export const getFileIcon = (fileName: string): JSX.Element => {
       return <FileText {...props} className="text-[#3b82f6]/70" />;
     case "txt":
       return <AlignLeft {...props} className="text-[#F5F5F5]/50" />;
+    case "xlsx":
+      return <FileBarChart {...props} className="text-[#10b981]/70" />;
     default:
       return <Paperclip {...props} className="text-[#C9A227]/70" />;
   }
