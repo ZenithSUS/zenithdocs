@@ -11,20 +11,37 @@
  * the original text, no longer than the given maximum number of
  * characters.
  */
-function chunkText(text: string, maxChars: number): string[] {
+function chunkText(
+  text: string,
+  maxChars: number,
+  mimeType?: string,
+): string[] {
   const chunks: string[] = [];
 
-  const paragraphs = text.split(/\n{2,}/);
+  const isTabular =
+    mimeType ===
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+  const paragraphs = text.split(isTabular ? /\n+/ : /\n{2,}/);
   let current = "";
 
   for (const para of paragraphs) {
-    // if paragraph is too long, add it to chunks
+    if (para.length > maxChars) {
+      if (current.trim()) {
+        chunks.push(current.trim());
+        current = "";
+      }
+      for (let i = 0; i < para.length; i += maxChars) {
+        chunks.push(para.slice(i, i + maxChars));
+      }
+      continue;
+    }
+
     if ((current + para).length > maxChars) {
-      if (current) chunks.push(current.trim());
+      if (current.trim()) chunks.push(current.trim());
       current = para;
     } else {
-      // if paragraph is not too long, add it to current
-      current += (current ? "\n\n" : "") + para;
+      current += (current ? (isTabular ? "\n" : "\n\n") : "") + para;
     }
   }
 

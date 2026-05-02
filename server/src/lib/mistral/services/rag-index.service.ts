@@ -11,15 +11,17 @@ const BATCH_DELAY_MS = 200;
 export async function prepareDocumentforRAG(
   documentId: string,
   userId: string,
+  mineType: string,
 ) {
   const document = await getDocumentById(documentId);
 
   if (!document || !document.rawText) return;
 
-  const chunks = chunkText(document.rawText, MAX_CHAR_PER_CHUNK).slice(
-    0,
-    MAX_CHUNKS,
-  );
+  const chunks = chunkText(
+    document.rawText,
+    MAX_CHAR_PER_CHUNK,
+    mineType,
+  ).slice(0, MAX_CHUNKS);
 
   const enrichedChunks = [];
 

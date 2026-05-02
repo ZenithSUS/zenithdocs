@@ -55,7 +55,7 @@ export const embeddingWorker = new Worker(
 
       await updateDocument(documentId, { rawText });
 
-      await prepareDocumentforRAG(documentId, userId);
+      await prepareDocumentforRAG(documentId, userId, mimeType);
 
       await updateDocument(documentId, { status: "completed" });
       await redis.publish(

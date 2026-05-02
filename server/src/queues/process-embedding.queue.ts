@@ -5,11 +5,13 @@ import { getIO } from "../config/socket.js";
 interface EmbeddingJobData {
   documentId: string;
   userId: string;
+  mineType: string;
 }
 
 export const processEmbedding = async ({
   documentId,
   userId,
+  mineType,
 }: EmbeddingJobData) => {
   await updateDocument(documentId, { status: "processing" });
   getIO()
@@ -17,7 +19,7 @@ export const processEmbedding = async ({
     .emit("document:processing", { documentId, status: "processing" });
 
   try {
-    await prepareDocumentforRAG(documentId, userId);
+    await prepareDocumentforRAG(documentId, userId, mineType);
     await updateDocument(documentId, { status: "completed" });
     getIO()
       .to(userId)
