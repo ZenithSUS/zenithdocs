@@ -1,6 +1,14 @@
 import DocumentCardSkeleton from "@/components/dashboard/skeleton/DocumentCardSkeleton";
 
-const TABLE_HEADERS = ["TYPE", "DOCUMENT", "SIZE", "STATUS", "DATE", ""];
+const TABLE_HEADERS = [
+  "TYPE",
+  "DOCUMENT",
+  "SIZE",
+  "STATUS",
+  "SHARED",
+  "DATE",
+  "ACTIONS",
+];
 
 const DocumentsLoadingSkeleton = () => (
   <div className="space-y-5">
@@ -10,7 +18,7 @@ const DocumentsLoadingSkeleton = () => (
       <div className="ml-auto w-24 h-4 bg-white/6 rounded-sm animate-pulse" />
     </div>
     <div className="border border-white/8 rounded-sm overflow-hidden">
-      <div className="hidden sm:grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-5 py-3 border-b border-white/6 bg-white/2">
+      <div className="hidden sm:grid grid-cols-[auto_1fr_auto_auto_auto_auto_auto] gap-4 px-5 py-3 border-b border-white/6 bg-white/2">
         {TABLE_HEADERS.map((h) => (
           <span
             key={h}
