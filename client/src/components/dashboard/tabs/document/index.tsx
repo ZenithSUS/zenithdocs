@@ -34,7 +34,15 @@ const STATUS_FILTERS = [
   "completed",
   "failed",
 ] as const;
-const TABLE_HEADERS = ["TYPE", "DOCUMENT", "SIZE", "STATUS", "DATE", "ACTIONS"];
+const TABLE_HEADERS = [
+  "TYPE",
+  "DOCUMENT",
+  "SIZE",
+  "STATUS",
+  "SHARED",
+  "DATE",
+  "ACTIONS",
+];
 
 function DocumentsTab({ userId, filterFolder, setFilterFolder }: Props) {
   const {
@@ -194,7 +202,7 @@ function DocumentsTab({ userId, filterFolder, setFilterFolder }: Props) {
 
       {/* ── Document table ────────────────────────────────────────────────── */}
       <div className="border border-white/8 rounded-sm overflow-visible">
-        <div className="hidden sm:grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-5 py-3 border-b border-white/6 bg-white/2">
+        <div className="hidden sm:grid grid-cols-[auto_1fr_auto_auto_auto_auto_auto] gap-4 px-5 py-3 border-b border-white/6 bg-white/2">
           {TABLE_HEADERS.map((h) => (
             <span
               key={h}
@@ -251,7 +259,7 @@ function DocumentsTab({ userId, filterFolder, setFilterFolder }: Props) {
               return (
                 <div
                   key={doc._id}
-                  className={`grid grid-cols-1 sm:grid-cols-[auto_1fr_auto_auto_auto_auto] gap-2 sm:gap-4 px-5 py-4 transition-all duration-150 ${
+                  className={`flex sm:grid sm:grid-cols-[auto_1fr_auto_auto_auto_auto_auto] items-center overflow-hidden gap-2 sm:gap-4 px-5 py-4 transition-all duration-150 ${
                     isSelected
                       ? "bg-primary/8 border-l-2 border-l-primary"
                       : "hover:bg-white/3"
@@ -262,14 +270,15 @@ function DocumentsTab({ userId, filterFolder, setFilterFolder }: Props) {
                     isSelected={isSelected}
                     setSelectedDoc={setSelectedDoc}
                     folder={folder}
-                  />
-
-                  <ActionButton
-                    document={doc}
-                    actionsButtonRefs={actionsButtonRefs}
-                    setActionsMenuOpen={setActionsMenuOpen}
-                    isNavigating={isNavigating}
-                    isActionsOpen={isActionsOpen}
+                    actionButton={
+                      <ActionButton
+                        document={doc}
+                        actionsButtonRefs={actionsButtonRefs}
+                        setActionsMenuOpen={setActionsMenuOpen}
+                        isNavigating={isNavigating}
+                        isActionsOpen={isActionsOpen}
+                      />
+                    }
                   />
 
                   {isSelected && (
