@@ -84,16 +84,19 @@ function DocumentViewerXlsx({ url }: { url: string }) {
   useEffect(() => {
     if (rawSheets.length === 0) return;
 
-    const cacheKey = `${url}::${activeIndex}`;
+    const sheetName = rawSheets[activeIndex]?.name ?? activeIndex;
+    const cacheKey = `${url}::${sheetName}::${activeIndex}`;
+
     if (computedSheetCache.has(cacheKey)) {
       setActiveSheet(computedSheetCache.get(cacheKey)!);
+      setComputingSheet(false);
       return;
     }
 
+    setActiveSheet(null);
     setComputingSheet(true);
     computeRef.current = { url, index: activeIndex };
 
-    // Defer heavy work off the render cycle
     const timer = setTimeout(() => {
       const snap = computeRef.current;
       if (!snap || snap.url !== url || snap.index !== activeIndex) return;
@@ -114,6 +117,7 @@ function DocumentViewerXlsx({ url }: { url: string }) {
 
   const handleSheetChange = useCallback((index: number) => {
     setActiveIndex(index);
+    setActiveSheet(null);
   }, []);
 
   if (loadingFile) {
@@ -141,6 +145,7 @@ function DocumentViewerXlsx({ url }: { url: string }) {
           <button
             key={i}
             onClick={() => handleSheetChange(i)}
+            disabled={activeIndex === i}
             className={`px-3 py-1.5 text-xs whitespace-nowrap border-r border-gray-700 transition-colors ${
               i === activeIndex
                 ? "bg-primary text-gray-900 font-semibold"
