@@ -2,22 +2,40 @@
 
 import getCellValue from "@/utils/get-cell-value";
 import { Workbook } from "@fortune-sheet/react";
-import { HyperFormula } from "hyperformula";
 import "@fortune-sheet/react/dist/index.css";
 import ExcelJS from "exceljs";
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useState, useRef, useCallback } from "react";
 import type { Sheet } from "@fortune-sheet/core";
+import computeSheet from "@/utils/compute-sheets";
 
-const sheetsCache = new Map<string, Sheet[]>();
+// Raw sheet data before formula evaluation
+interface RawSheet {
+  name: string;
+  data: (string | null)[][];
+}
+
+// Cache raw sheet data per URL (cheap to store, avoids re-fetching)
+const rawSheetsCache = new Map<string, RawSheet[]>();
+// Cache computed Fortune Sheet data per "url::sheetIndex"
+const computedSheetCache = new Map<string, Sheet>();
 
 function DocumentViewerXlsx({ url }: { url: string }) {
-  const [sheets, setSheets] = useState<Sheet[]>(
-    () => sheetsCache.get(url) ?? [],
+  const [rawSheets, setRawSheets] = useState<RawSheet[]>(
+    () => rawSheetsCache.get(url) ?? [],
   );
-  const [loading, setLoading] = useState(() => !sheetsCache.has(url));
+  const [loadingFile, setLoadingFile] = useState(
+    () => !rawSheetsCache.has(url),
+  );
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeSheet, setActiveSheet] = useState<Sheet | null>(null);
+  const [computingSheet, setComputingSheet] = useState(false);
+  const computeRef = useRef<{ url: string; index: number } | null>(null);
 
   useEffect(() => {
-    if (sheetsCache.has(url)) return;
+    if (rawSheetsCache.has(url)) {
+      setRawSheets(rawSheetsCache.get(url)!);
+      return;
+    }
 
     let cancelled = false;
 
@@ -25,11 +43,10 @@ function DocumentViewerXlsx({ url }: { url: string }) {
       try {
         const res = await fetch(url);
         const arrayBuffer = await res.arrayBuffer();
-
         const workbook = new ExcelJS.Workbook();
         await workbook.xlsx.load(arrayBuffer);
 
-        const sheetsData: { name: string; data: (string | null)[][] }[] = [];
+        const sheetsData: RawSheet[] = [];
         workbook.eachSheet((sheet) => {
           const data: (string | null)[][] = [];
           sheet.eachRow((row) => {
@@ -37,9 +54,8 @@ function DocumentViewerXlsx({ url }: { url: string }) {
             data.push(
               values.slice(1).map((cell) => {
                 if (cell == null) return null;
-                if (typeof cell === "object" && "formula" in cell) {
-                  return `=${cell.formula}`;
-                }
+                if (typeof cell === "object" && "formula" in cell)
+                  return `=${(cell as ExcelJS.CellFormulaValue).formula}`;
                 return getCellValue(cell);
               }),
             );
@@ -47,69 +63,114 @@ function DocumentViewerXlsx({ url }: { url: string }) {
           sheetsData.push({ name: sheet.name, data });
         });
 
-        if (sheetsData.length === 0) {
-          if (!cancelled) setLoading(false);
-          return;
-        }
-
-        const hf = HyperFormula.buildFromSheets(
-          Object.fromEntries(sheetsData.map((s) => [s.name, s.data])),
-          { licenseKey: "gpl-v3" },
-        );
-
-        const computed: Sheet[] = sheetsData.map((s, sheetIndex) => ({
-          name: s.name,
-          celldata: s.data.flatMap((row, r) =>
-            row
-              .map((_, c) => {
-                const val = hf.getCellValue({
-                  sheet: sheetIndex,
-                  row: r,
-                  col: c,
-                });
-                const m = val == null ? "" : String(val);
-                return { r, c, v: { v: m, m } };
-              })
-              .filter((cell) => cell.v.m !== ""),
-          ),
-        }));
-
-        sheetsCache.set(url, computed);
-
+        rawSheetsCache.set(url, sheetsData);
         if (!cancelled) {
-          setSheets(computed);
-          setLoading(false);
+          setRawSheets(sheetsData);
+          setLoadingFile(false);
         }
       } catch (err) {
         console.error("Failed to load XLSX:", err);
-        if (!cancelled) setLoading(false);
+        if (!cancelled) setLoadingFile(false);
       }
     }
 
     load();
-
     return () => {
       cancelled = true;
     };
   }, [url]);
 
-  if (loading) {
+  // Compute active sheet
+  useEffect(() => {
+    if (rawSheets.length === 0) return;
+
+    const cacheKey = `${url}::${activeIndex}`;
+    if (computedSheetCache.has(cacheKey)) {
+      setActiveSheet(computedSheetCache.get(cacheKey)!);
+      return;
+    }
+
+    setComputingSheet(true);
+    computeRef.current = { url, index: activeIndex };
+
+    // Defer heavy work off the render cycle
+    const timer = setTimeout(() => {
+      const snap = computeRef.current;
+      if (!snap || snap.url !== url || snap.index !== activeIndex) return;
+
+      try {
+        const sheet = computeSheet(rawSheets, activeIndex);
+        computedSheetCache.set(cacheKey, sheet);
+        setActiveSheet(sheet);
+      } catch (err) {
+        console.error("Failed to compute sheet:", err);
+      } finally {
+        setComputingSheet(false);
+      }
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [rawSheets, activeIndex, url]);
+
+  const handleSheetChange = useCallback((index: number) => {
+    setActiveIndex(index);
+  }, []);
+
+  if (loadingFile) {
     return (
-      <div className="flex justify-center items-center h-full">
-        Loading XLSX viewer...
+      <div className="flex flex-col gap-2 justify-center items-center h-full text-sm text-gray-400">
+        <div className="animate-spin w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full" />
+        Loading workbook…
+      </div>
+    );
+  }
+
+  if (rawSheets.length === 0) {
+    return (
+      <div className="flex justify-center items-center h-full text-sm text-gray-400">
+        No sheets found.
       </div>
     );
   }
 
   return (
-    <div className="w-full h-full overflow-hidden">
-      <Workbook
-        data={sheets}
-        onChange={() => {}}
-        allowEdit={false}
-        showToolbar={false}
-        showFormulaBar={false}
-      />
+    <div className="flex flex-col w-full h-full overflow-hidden">
+      {/* Sheet tab bar */}
+      <div className="flex overflow-x-auto border-b border-gray-700 bg-gray-900 shrink-0">
+        {rawSheets.map((s, i) => (
+          <button
+            key={i}
+            onClick={() => handleSheetChange(i)}
+            className={`px-3 py-1.5 text-xs whitespace-nowrap border-r border-gray-700 transition-colors ${
+              i === activeIndex
+                ? "bg-primary text-gray-900 font-semibold"
+                : "bg-white/8 text-gray-400 hover:bg-gray-800"
+            }`}
+          >
+            {s.name}
+          </button>
+        ))}
+      </div>
+
+      {/* Sheet content */}
+      <div className="flex-1 relative overflow-hidden">
+        {computingSheet && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-900/60 text-sm text-gray-300 gap-2">
+            <div className="animate-spin w-4 h-4 border-2 border-gray-300 border-t-transparent rounded-full" />
+            Computing sheet…
+          </div>
+        )}
+        {activeSheet && (
+          <Workbook
+            key={`${url}::${activeIndex}`} // remount only when sheet changes
+            data={[activeSheet]}
+            onChange={() => {}}
+            allowEdit={false}
+            showToolbar={false}
+            showFormulaBar={false}
+          />
+        )}
+      </div>
     </div>
   );
 }
