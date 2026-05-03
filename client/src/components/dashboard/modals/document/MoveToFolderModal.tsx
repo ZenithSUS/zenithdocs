@@ -75,7 +75,12 @@ const MoveToFolderModal = ({
 
       await updateDoc({
         id: documentId,
-        data: { folder: selectedFolder === "none" ? null : selectedFolder },
+        data: {
+          folder:
+            selectedFolder === "none"
+              ? null
+              : { _id: selectedFolder, name: selectedName },
+        },
       });
 
       toast.success("Document moved successfully!");

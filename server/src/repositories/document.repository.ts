@@ -95,6 +95,28 @@ export const getDocumentsByUserPaginated = async (
       },
     },
     {
+      $lookup: {
+        from: "folders",
+        localField: "folder",
+        foreignField: "_id",
+        pipeline: [
+          {
+            $project: {
+              _id: 1,
+              name: 1,
+            },
+          },
+        ],
+        as: "folder",
+      },
+    },
+    {
+      $unwind: {
+        path: "$folder",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
       $sort: { createdAt: -1 },
     },
     {
@@ -306,6 +328,7 @@ export const updateDocument = async (
   data: Partial<IDocumentInput>,
 ) => {
   return await Document.findByIdAndUpdate(id, data, { returnDocument: "after" })
+    .select("-rawText")
     .populate({
       path: "user",
       select: "_id email",

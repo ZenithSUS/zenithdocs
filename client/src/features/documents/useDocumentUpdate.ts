@@ -22,8 +22,15 @@ export const useDocumentUpdate = (
 ) =>
   useMutation<Doc, AxiosError, UpdateVariables, MutationContext>({
     mutationKey: documentKeys.update(),
-    mutationFn: ({ id, data }: { id: string; data: Partial<Doc> }) =>
-      updateDocumentById(id, data),
+    mutationFn: ({ id, data }: { id: string; data: Partial<Doc> }) => {
+      const { folder } = data;
+      const finalData: Partial<Doc> = {
+        ...data,
+        folder: typeof folder === "object" ? folder?._id : null,
+      };
+
+      return updateDocumentById(id, finalData);
+    },
     onMutate: async ({ id, data }) => {
       await queryClient.cancelQueries({
         queryKey: documentKeys.byUserPage(userId, documentLimit),
@@ -33,10 +40,19 @@ export const useDocumentUpdate = (
         documentKeys.byUserPage(userId, documentLimit),
       );
 
+      const newFolder =
+        typeof data.folder === "string"
+          ? data.folder
+          : data.folder?._id && data.folder?.name
+            ? { _id: data.folder._id, name: data.folder.name }
+            : null;
+
+      const finalData: Partial<Doc> = { ...data, folder: newFolder };
+
       updateInfiniteDocument(
         queryClient,
         documentKeys.byUserPage(userId, documentLimit),
-        { _id: id, ...data },
+        { _id: id, ...finalData },
       );
 
       return { previousDoc };

@@ -9,7 +9,6 @@ interface Props {
   document: Doc;
   isSelected: boolean;
   setSelectedDoc: (value: SetStateAction<Doc | null>) => void;
-  folder: { _id: string; name: string } | null | undefined;
   actionButton: React.ReactNode;
 }
 
@@ -17,10 +16,13 @@ const DocumentRowCard = ({
   document: doc,
   isSelected,
   setSelectedDoc,
-  folder,
   actionButton,
 }: Props) => {
   const sm = STATUS_META[doc.status];
+  const folderName =
+    typeof doc.folder === "object" && doc.folder !== null
+      ? doc.folder.name
+      : "No folder";
 
   const handleSelectDoc = () => {
     setSelectedDoc(isSelected ? null : doc);
@@ -43,7 +45,7 @@ const DocumentRowCard = ({
         </div>
         {/* Mobile subtitle: folder · size · status dot · shared */}
         <div className="flex items-center gap-2 text-[11px] text-text/30 font-sans mt-0.5 sm:hidden">
-          <span>{folder?.name ?? "No folder"}</span>
+          <span>{folderName}</span>
           <span>·</span>
           <span>{sizefmt.bytes(doc.fileSize)}</span>
           <span
@@ -59,7 +61,7 @@ const DocumentRowCard = ({
         </div>
         {/* Desktop subtitle: folder only */}
         <div className="text-[11px] text-text/30 font-sans mt-0.5 hidden sm:block">
-          {folder?.name ?? "No folder"}
+          {folderName}
         </div>
       </div>
 

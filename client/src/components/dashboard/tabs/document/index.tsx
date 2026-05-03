@@ -229,10 +229,6 @@ function DocumentsTab({ userId, filterFolder, setFilterFolder }: Props) {
             </div>
           ) : (
             filteredDocs.map((doc) => {
-              const folder =
-                typeof doc.folder === "object"
-                  ? doc.folder
-                  : allFolders.find((f) => f._id === doc.folder);
               const isSelected = selectedDoc?._id === doc._id;
               const isActionsOpen = actionsMenuOpen === doc._id;
 
@@ -269,7 +265,6 @@ function DocumentsTab({ userId, filterFolder, setFilterFolder }: Props) {
                     document={doc}
                     isSelected={isSelected}
                     setSelectedDoc={setSelectedDoc}
-                    folder={folder}
                     actionButton={
                       <ActionButton
                         document={doc}
