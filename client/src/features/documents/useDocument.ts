@@ -26,7 +26,7 @@ export type MutationContext = {
   previousDoc?: DocumentsInfiniteData;
 };
 
-const useDocument = (userId: string) => {
+const useDocument = (userId: string, page: number = 1) => {
   const queryClient = useQueryClient();
 
   return {
@@ -39,6 +39,7 @@ const useDocument = (userId: string) => {
       queryClient,
       userId,
       fetchLimits.document,
+      page,
     ),
     updateDocumentMutation: useDocumentUpdate(
       queryClient,

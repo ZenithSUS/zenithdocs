@@ -17,6 +17,7 @@ export const useDocumentDelete = (
   queryClient: QueryClient,
   userId: string,
   documentLimit: number,
+  page: number,
 ) =>
   useMutation<Doc, AxiosError, string, MutationContext>({
     mutationKey: documentKeys.delete(),
@@ -50,8 +51,9 @@ export const useDocumentDelete = (
 
       removeRelatedLearningSetByDocumentIdCache(
         queryClient,
-        learningSetKeys.byUser(userId),
+        learningSetKeys.byUserPage(userId, page),
         id,
+        fetchLimits.learningSets,
       );
 
       removeRelatedChatByDocumentIdFromCache(

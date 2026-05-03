@@ -10,7 +10,6 @@ import documentKeys from "@/features/documents/document.keys";
 import { AxiosError } from "@/types/api";
 import Doc from "@/types/doc";
 import { UploadFile } from "./upload.types";
-import { useDocumentCreate } from "@/features/documents/useDocumentCreate";
 
 interface UseFileUploadOptions {
   userId: string;
