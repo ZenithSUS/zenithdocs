@@ -26,7 +26,7 @@ export const useDocumentUpdate = (
       const { folder } = data;
       const finalData: Partial<Doc> = {
         ...data,
-        folder: typeof folder === "object" ? folder?._id : null,
+        folder: typeof folder === "object" ? (folder?._id ?? null) : null,
       };
 
       return updateDocumentById(id, finalData);
