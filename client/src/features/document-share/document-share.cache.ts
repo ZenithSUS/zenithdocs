@@ -6,29 +6,42 @@ export const addDocumentShareCache = (
   queryClient: QueryClient,
   queryKey: readonly unknown[],
   newDocumentShare: DocumentShare,
+  limit: number,
 ) => {
-  queryClient.setQueriesData<DocumentSharePage>({ queryKey }, (oldData) => {
-    if (!oldData) return oldData;
+  const existingData = queryClient.getQueryData<DocumentSharePage>(queryKey);
 
-    const isPageOne = oldData.pagination.page === 1;
-    const newTotal = isPageOne ? 1 : oldData.pagination.total + 1;
-    const newTotalPages = isPageOne
-      ? 1
-      : Math.ceil(newTotal / oldData.pagination.limit);
+  if (!existingData) {
+    queryClient.invalidateQueries({ queryKey });
+    return;
+  }
 
-    return {
-      ...oldData,
-      // Add pagination if the current page or documentShares is empty
-      pagination: {
-        ...oldData.pagination,
-        total: newTotal,
-        totalPages: newTotalPages,
-      },
-      documentShares: isPageOne
-        ? [newDocumentShare, ...oldData.documentShares]
-        : oldData.documentShares,
-    };
+  const { total } = existingData.pagination;
+  const newTotal = total + 1;
+  const newTotalPages = Math.ceil(newTotal / limit);
+  const currentPageIsFull = existingData.documentShares.length >= limit;
+
+  const updatedShares = currentPageIsFull
+    ? [newDocumentShare, ...existingData.documentShares.slice(0, limit - 1)]
+    : [newDocumentShare, ...existingData.documentShares];
+
+  queryClient.setQueryData<DocumentSharePage>(queryKey, {
+    ...existingData,
+    pagination: {
+      ...existingData.pagination,
+      total: newTotal,
+      totalPages: newTotalPages,
+    },
+    documentShares: updatedShares,
   });
+
+  // Invalidate all other pages so they refetch fresh
+  if (currentPageIsFull) {
+    const baseKey = queryKey.slice(0, -1);
+    queryClient.invalidateQueries({
+      queryKey: baseKey,
+      predicate: (query) => query.queryKey !== queryKey, // skip page 1, already updated
+    });
+  }
 };
 
 export const updateDocumentShareCache = (

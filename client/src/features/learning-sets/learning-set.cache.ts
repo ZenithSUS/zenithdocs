@@ -4,34 +4,43 @@ import { LearningSetPage } from "./useLearningSet";
 
 export const addLearningSetCache = (
   queryClient: QueryClient,
-  querykey: readonly unknown[],
+  queryKey: readonly unknown[],
   newLearningSet: LearningSet,
+  limit: number,
 ) => {
-  queryClient.setQueriesData<LearningSetPage>(
-    { queryKey: querykey },
-    (oldData) => {
-      if (!oldData) return undefined;
+  const existingData = queryClient.getQueryData<LearningSetPage>(queryKey);
 
-      const isPageOne = oldData.pagination.page === 1;
-      const newTotal = isPageOne ? 1 : oldData.pagination.total + 1;
-      const newTotalPages = isPageOne
-        ? 1
-        : Math.ceil(newTotal / oldData.pagination.limit);
+  if (!existingData) {
+    queryClient.invalidateQueries({ queryKey });
+    return;
+  }
 
-      return {
-        ...oldData,
-        // Add pagination if the current page or learningSets is empty
-        pagination: {
-          ...oldData.pagination,
-          total: newTotal,
-          totalPages: newTotalPages,
-        },
-        learningSets: isPageOne
-          ? [newLearningSet, ...oldData.learningSets]
-          : oldData.learningSets,
-      };
+  const { total } = existingData.pagination;
+  const newTotal = total + 1;
+  const newTotalPages = Math.ceil(newTotal / limit);
+  const currentPageIsFull = existingData.learningSets.length >= limit;
+
+  const updatedLearningSets = currentPageIsFull
+    ? [newLearningSet, ...existingData.learningSets.slice(0, limit - 1)]
+    : [newLearningSet, ...existingData.learningSets];
+
+  queryClient.setQueryData<LearningSetPage>(queryKey, {
+    ...existingData,
+    pagination: {
+      ...existingData.pagination,
+      total: newTotal,
+      totalPages: newTotalPages,
     },
-  );
+    learningSets: updatedLearningSets,
+  });
+
+  if (currentPageIsFull) {
+    const baseKey = queryKey.slice(0, -1);
+    queryClient.invalidateQueries({
+      queryKey: baseKey,
+      predicate: (query) => query.queryKey !== queryKey,
+    });
+  }
 };
 
 export const updateLearningSetCache = (

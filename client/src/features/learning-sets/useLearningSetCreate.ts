@@ -10,6 +10,7 @@ import { incrementAIRequestsCache } from "../usage/usage.cache";
 import usageKeys from "../usage/usage.keys";
 import { incrementDashboardAIRequestCache } from "../dashboard/dashboard.cache";
 import { dashboardKeys } from "../dashboard/dashboard.keys";
+import fetchLimits from "@/constants/fetch-limits";
 
 export const useCreateLearningSet = (
   queryClient: QueryClient,
@@ -21,8 +22,9 @@ export const useCreateLearningSet = (
     onSuccess: (newLearningSet) => {
       addLearningSetCache(
         queryClient,
-        learningSetKeys.byUser(userId),
+        learningSetKeys.byUserPage(userId, 1),
         newLearningSet,
+        fetchLimits.learningSets,
       );
 
       incrementAIRequestsCache(queryClient, usageKeys.byUserSixMonths(userId));

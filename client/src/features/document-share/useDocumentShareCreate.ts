@@ -35,8 +35,9 @@ export const useDocumentShareCreate = (
       // Optimistically prepend new share to current page cache
       addDocumentShareCache(
         queryClient,
-        documentShareKeys.byUser(userId),
+        documentShareKeys.byUserPage(userId, 1),
         finalDocumentShare,
+        fetchLimits.documentShare,
       );
 
       // Increment Document Share Dashboard

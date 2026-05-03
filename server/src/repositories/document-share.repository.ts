@@ -116,7 +116,7 @@ export const getDocumentSharesByUserIdPaginated = async (
 
   return {
     documentShares,
-    pagination: { page, limit, total, totalPages: totalPages },
+    pagination: { page, limit, total: totalShares, totalPages: totalPages },
   };
 };
 
