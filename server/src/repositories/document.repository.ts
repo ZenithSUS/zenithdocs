@@ -1,16 +1,30 @@
 import { Types } from "mongoose";
-import Document, { IDocumentInput } from "../models/document.model.js";
+import Document, {
+  IDocument,
+  IDocumentInput,
+} from "../models/document.model.js";
 import Chat from "../models/chat.model.js";
 
 /**
- * Creates a new document with the given data
- * @param data - Partial document data
+ * Creates a new document in the database
+ * @param data - The data to create the document with
  * @returns The created document
- * @throws MongooseError if document data is invalid
  */
 export const createDocument = async (data: Partial<IDocumentInput>) => {
-  const document = new Document(data);
-  return await document.save();
+  const createdDocument = await Document.create(data);
+
+  const document = await Document.findById(createdDocument._id)
+    .select("-rawText")
+    .populate({ path: "folder", select: "_id name" })
+    .lean<IDocument>();
+
+  if (!document) {
+    throw new Error(
+      `Document not found after creation: ${createdDocument._id}`,
+    );
+  }
+
+  return document;
 };
 
 /**

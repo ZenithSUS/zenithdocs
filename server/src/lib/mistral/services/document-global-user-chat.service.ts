@@ -41,9 +41,10 @@ It helps users:
 
 Allowed Document Types:
 - PDF
+- Docx
 - Word
 - TXT
-- CSV
+- Excel (XLSX)
 
 Maximum Document Size: 10MB
 

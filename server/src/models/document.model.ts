@@ -14,7 +14,7 @@ export interface IDocument extends Document {
   rawText: string;
   status: "uploaded" | "processing" | "completed" | "failed";
   user: Types.ObjectId;
-  folder?: Types.ObjectId;
+  folder?: Types.ObjectId | null;
   publicId: string;
   isDirty: boolean;
   createdAt: Date;

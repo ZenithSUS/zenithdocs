@@ -14,10 +14,22 @@ export const useDocumentCreate = (
     mutationKey: documentKeys.create(),
     mutationFn: (data) => createDocument(data),
     onSuccess: (newDocs) => {
+      const newFolder =
+        typeof newDocs.folder === "string"
+          ? newDocs.folder
+          : newDocs.folder?._id && newDocs.folder?.name
+            ? { _id: newDocs.folder._id, name: newDocs.folder.name }
+            : null;
+
+      const finalData = {
+        ...newDocs,
+        folder: newFolder,
+      };
+
       addInfiniteDocument(
         queryClient,
         documentKeys.byUserPage(userId, documentLimit),
-        newDocs,
+        finalData,
       );
     },
   });
