@@ -1,4 +1,4 @@
-import { Schema, Document } from "mongoose";
+import { Schema, Document, FlattenMaps, Types } from "mongoose";
 import { mainDB } from "../config/db.js";
 
 export interface IUser extends Document {
@@ -10,6 +10,16 @@ export interface IUser extends Document {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export type IUserLean = FlattenMaps<IUser> & {
+  _id: Types.ObjectId;
+};
+
+export type UserWithLimits = IUserLean & {
+  documentLimit: number;
+  storageLimit: number;
+  messagesPerDay: number;
+};
 
 const userSchema = new Schema<IUser>(
   {

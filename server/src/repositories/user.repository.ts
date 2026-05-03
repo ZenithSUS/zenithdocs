@@ -1,4 +1,4 @@
-import User, { IUser } from "../models/user.model.js";
+import User, { IUser, IUserLean } from "../models/user.model.js";
 import mongoose from "mongoose";
 
 /**
@@ -27,11 +27,11 @@ export const oauthCreateOrGetUser = async (email: string) => {
  * @param id - User ID
  * @returns User if found, null otherwise
  */
-export const getUserById = async (id: string): Promise<IUser | null> => {
+export const getUserById = async (id: string): Promise<IUserLean | null> => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return null;
   }
-  return await User.findById(id).select("-password").lean();
+  return await User.findById(id).select("-password").lean<IUserLean>();
 };
 
 /**

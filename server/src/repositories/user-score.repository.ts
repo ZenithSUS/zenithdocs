@@ -1,7 +1,7 @@
 import UserScore, {
   IUserScore,
   IUserScoreInput,
-} from "../models/user-score.js";
+} from "../models/user-score.model.js";
 
 export const createUserScore = async (data: IUserScoreInput) => {
   const userScore = await UserScore.create(data);

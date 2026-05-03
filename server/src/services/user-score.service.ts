@@ -1,4 +1,4 @@
-import { IUserScoreInput } from "../models/user-score.js";
+import { IUserScoreInput } from "../models/user-score.model.js";
 import { getLearningSetById } from "../repositories/learning-set.repository.js";
 import {
   createUserScore,

@@ -1,5 +1,9 @@
 import mongoose from "mongoose";
-import Summary, { ISummary, ISummaryInput } from "../models/summary.model.js";
+import Summary, {
+  ISummary,
+  ISummaryInput,
+  SummaryTypeCount,
+} from "../models/summary.model.js";
 
 /**
  * Creates a new summary with the given data
@@ -147,12 +151,14 @@ export const getSummaryByuserPaginated = async (
  * @returns An array of objects containing the type of summary and the count of summaries of that type belonging to the user if found, empty array otherwise
  * @throws {null} If the user ID is invalid
  */
-export const getAllTotalEachSummaryTypesByUser = async (userId: string) => {
+export const getAllTotalEachSummaryTypesByUser = async (
+  userId: string,
+): Promise<SummaryTypeCount[] | null> => {
   if (!mongoose.Types.ObjectId.isValid(userId)) {
     return null;
   }
 
-  return await Summary.aggregate([
+  return await Summary.aggregate<SummaryTypeCount>([
     {
       $match: {
         user: new mongoose.Types.ObjectId(userId),

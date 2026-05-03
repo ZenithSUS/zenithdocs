@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { IUserScoreInput } from "../models/user-score.js";
+import { IUserScoreInput } from "../models/user-score.model.js";
 import {
   createUserScoreService,
   deleteUserScoreService,

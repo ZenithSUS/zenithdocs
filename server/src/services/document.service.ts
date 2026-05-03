@@ -1,3 +1,5 @@
+import redis from "../config/redis.js";
+import CacheKeys from "../config/cache-keys.js";
 import subtypePrefixMap from "../constants/subtype-prefix.js";
 import { IDocumentInput } from "../models/document.model.js";
 import {
@@ -97,6 +99,8 @@ export const createDocumentService = async (data: Partial<IDocumentInput>) => {
   await incrementUsage(validData.user, 0, validData.fileSize);
 
   const document = await createDocument(validData);
+
+  await redis.del(CacheKeys.dashboardStable(validData.user)).catch(() => {});
   return document;
 };
 
@@ -162,6 +166,7 @@ export const reprocessDocumentService = async (
     },
   );
 
+  await redis.del(CacheKeys.dashboardStable(currentUserId)).catch(() => {});
   return { ...document, status: "processing" };
 };
 
@@ -324,6 +329,8 @@ export const updateDocumentService = async (
   delete data.user;
 
   const document = await updateDocument(docId, documentData);
+
+  await redis.del(CacheKeys.dashboardStable(currentUserId)).catch(() => {});
   return document;
 };
 
@@ -379,5 +386,6 @@ export const deleteDocumentByIdService = async (
     deletedDocument.fileSize,
   );
 
+  await redis.del(CacheKeys.dashboardStable(currentUserId)).catch(() => {});
   return deletedDocument;
 };

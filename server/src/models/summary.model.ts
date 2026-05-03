@@ -7,6 +7,11 @@ export interface IAdditionalDetails {
   entity: string[]; // e.g. ["Acme Corp", "John Doe (CEO)"]
 }
 
+export type SummaryTypeCount = {
+  _id: string;
+  count: number;
+};
+
 export interface ISummary extends Document {
   user: Types.ObjectId;
   document: Types.ObjectId;

@@ -59,6 +59,41 @@ const isZenithDocsQuestion = (question: string): boolean => {
     "how do i upload",
     "how to upload",
     "what can you do with uploaded files",
+
+    // User Account & Plan
+    "my plan",
+    "my account",
+    "my subscription",
+    "what plan am i on",
+    "am i on free",
+    "am i on premium",
+    "upgrade plan",
+    "current plan",
+
+    // Usage & Limits
+    "my usage",
+    "my limit",
+    "my limits",
+    "messages per day",
+    "how many messages",
+    "how many documents",
+    "document limit",
+    "storage limit",
+    "how much storage",
+    "storage left",
+    "remaining storage",
+    "how much space",
+
+    // Dashboard
+    "my dashboard",
+    "my overview",
+    "my stats",
+    "my statistics",
+    "my activity",
+    "how many files",
+    "how many documents do i have",
+    "total documents",
+    "total files",
   ];
 
   return keywords.some((kw) => question.toLowerCase().includes(kw));

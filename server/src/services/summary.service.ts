@@ -1,3 +1,5 @@
+import redis from "../config/redis.js";
+import CacheKeys from "../config/cache-keys.js";
 import { summarizeText } from "../lib/mistral/services/document-summary.service.js";
 import { ISummary } from "../models/summary.model.js";
 import {
@@ -94,6 +96,7 @@ export const createSummaryService = async (data: Partial<ISummary>) => {
   const populatedSummary = await getSummaryById(summary._id.toString());
   if (!populatedSummary) throw new AppError("Summary not found", 500);
 
+  await redis.del(CacheKeys.dashboardStable(validated.user));
   return populatedSummary;
 };
 
@@ -215,5 +218,7 @@ export const deleteSummaryService = async (id: string) => {
   const { summaryId } = summaryParamsSchema.parse({ summaryId: id });
   const summary = await deleteSummary(summaryId);
   if (!summary) throw new AppError("Summary not found", 404);
+
+  await redis.del(CacheKeys.dashboardStable(summary.user.toString()));
   return summary;
 };

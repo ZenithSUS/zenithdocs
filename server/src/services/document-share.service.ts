@@ -1,3 +1,5 @@
+import redis from "../config/redis.js";
+import CacheKeys from "../config/cache-keys.js";
 import { nanoid } from "nanoid";
 import AppError from "../utils/app-error.js";
 import {
@@ -21,7 +23,6 @@ import {
   updateDocumentShareSchema,
 } from "../schemas/document-share.schema.js";
 import { IDocumentShareInput } from "../models/document-share.model.js";
-import redis from "../config/redis.js";
 import { Request } from "express";
 
 /**
@@ -101,6 +102,7 @@ export const createDocumentShareService = async (data: IDocumentShareInput) => {
 
   const documentShare = await createDocumentShare(payload);
 
+  await redis.del(CacheKeys.dashboardStable(validated.ownerId)).catch(() => {});
   return documentShare;
 };
 
@@ -333,5 +335,7 @@ export const deleteDocumentShareService = async (
   }
 
   const deletedShare = await deleteDocumentShareById(data.id);
+
+  await redis.del(CacheKeys.dashboardStable(data.ownerId)).catch(() => {});
   return deletedShare;
 };

@@ -2,6 +2,7 @@ import colors from "../utils/log-colors.js";
 import config from "./env.js";
 import redis from "./redis.js";
 import { getIO } from "./socket.js";
+import CacheKeys from "./cache-keys.js";
 
 interface DocumentEvent {
   type: string;
@@ -10,10 +11,17 @@ interface DocumentEvent {
   status: string;
 }
 
+const INVALIDATING_EVENTS = new Set([
+  "document:uploaded",
+  "document:processing",
+  "document:completed",
+  "document:failed",
+]);
+
 const startEventBridge = async () => {
   const sub = redis.duplicate();
 
-  sub.on("message", (channel, message) => {
+  sub.on("message", async (channel, message) => {
     if (config.nodeEnv === "development") {
       console.log("=".repeat(50));
       console.log(
@@ -31,6 +39,12 @@ const startEventBridge = async () => {
     try {
       const event: DocumentEvent = JSON.parse(message);
       const io = getIO();
+
+      // ─── Cache Invalidation ────────────────────────────────────
+      if (INVALIDATING_EVENTS.has(event.type)) {
+        await redis.del(CacheKeys.dashboardStable(event.userId));
+      }
+
       io.to(event.userId).emit(event.type, {
         documentId: event.documentId,
         status: event.status,

@@ -17,6 +17,13 @@ import { globalChatUserSchema } from "../../../schemas/global-chat.schema.js";
 import isZenithDocsQuestion from "../../../utils/zenithdocs-question.js";
 import redis from "../../../config/redis.js";
 import { incrementAIMessagesUsage } from "../../../repositories/usage.repository.js";
+import {
+  getDashboardOverviewService,
+  IDashboardOverview,
+} from "../../../services/dashboard.service.js";
+import { getUserByIdService } from "../../../services/user.service.js";
+import { UserWithLimits } from "../../../models/user.model.js";
+import CacheKeys from "../../../config/cache-keys.js";
 
 interface streamDocumentUserChatPayload {
   userId: string;
@@ -24,7 +31,12 @@ interface streamDocumentUserChatPayload {
   res: Response;
 }
 
-const getSystemPrompt = (context: string, summary: string) => {
+const getSystemPrompt = (
+  context: string,
+  summary: string,
+  userInfo: UserWithLimits,
+  dashboardOverview: IDashboardOverview,
+) => {
   return `You are ZenithDocs AI, the assistant inside the ZenithDocs platform.
 
 About ZenithDocs:
@@ -57,33 +69,28 @@ Summary Types:
 Your Role:
 You answer user questions using information from their uploaded documents.
 
-The provided context contains excerpts from uploaded documents. 
-Each section may come from different files.
-
 ${summary ? "\nPrevious Conversation Summary:\n" + summary + "\n" : ""}
 
+Context Interpretation:
+The "Context" section at the bottom will contain one of three things:
+- Exactly "ZENITHDOCS_GENERAL_QUESTION": the user is asking about ZenithDocs itself.
+  Answer using your knowledge of the platform described above. Begin your response with:
+  "ZenithDocs - AI-Powered Document Manager - General Question:"
+  Do NOT say the documents don't contain this info.
+- Exactly "NO_RELEVANT_DOCUMENT_CONTEXT": no matching documents were found.
+  Respond: "The uploaded documents do not contain information about this question."
+- Actual document excerpts: use these as your PRIMARY source of truth.
+  Each section may come from different files.
+
 Rules:
-- Use the provided document context as the PRIMARY source of truth.
-- Do NOT rely on your general knowledge unless the question is about ZenithDocs itself.
-- If the answer is not present in the context, say:
-
-"The uploaded documents do not contain information about this question."
-
-- If the question is unrelated to both the context and ZenithDocs, say:
-
-"I can't answer that because it is not related to the documents or ZenithDocs."
-
+- Use document excerpts as the PRIMARY source of truth when present.
+- Do NOT rely on general knowledge unless the context is "ZENITHDOCS_GENERAL_QUESTION".
+- If the answer is not in the document excerpts, say:
+  "The uploaded documents do not contain information about this question."
+- If the question is unrelated to both the documents AND ZenithDocs, say:
+  "I can't answer that because it is not related to the documents or ZenithDocs."
 - Never guess.
 - Never invent information.
-
-Special Case:
-If the context is "NO_RELEVANT_DOCUMENT_CONTEXT", respond:
-
-"The uploaded documents do not contain information about this question."
-
-If the context is "ZENITHDOCS_GENERAL_QUESTION", your respond starts with:
-
-"ZenithDocs - AI-Powered Document Manager - General Question:"
 
 Formatting Rules:
 - Use markdown formatting
@@ -91,9 +98,18 @@ Formatting Rules:
 - Use bullet points or numbered lists for multiple items
 - Use headers (##) for longer explanations
 - Keep technical terms in \`backticks\`
+- When possible, mention which document the information came from.
 
-When possible:
-- Mention which document the information came from.
+User: ${userInfo.email}
+Plan: ${userInfo.plan}
+
+User Limits:
+- Messages Per Day: ${userInfo.messagesPerDay}
+- Document Limit: ${userInfo.documentLimit}
+- Storage Limit: ${userInfo.storageLimit}MB
+
+User Dashboard Overview (use only if the user asks about their usage, document count, storage, or activity):
+${JSON.stringify(dashboardOverview)}
 
 Context:
 ${context}`;
@@ -137,6 +153,28 @@ export const streamDocumentUserChat = async ({
     content: m.content,
   }));
 
+  const userCacheKey = CacheKeys.userInfo(validated.userId);
+  const dashboardCacheKey = CacheKeys.dashboardStable(validated.userId);
+
+  const [cachedUser, cachedDashboard] = await Promise.all([
+    redis.get(userCacheKey),
+    redis.get(dashboardCacheKey),
+  ]);
+
+  const [dashboardOverview, userInfo] = await Promise.all([
+    cachedDashboard
+      ? JSON.parse(cachedDashboard)
+      : getDashboardOverviewService(validated.userId),
+    cachedUser ? JSON.parse(cachedUser) : getUserByIdService(validated.userId),
+  ]);
+
+  if (!cachedUser) {
+    await redis.setex(userCacheKey, 300, JSON.stringify(userInfo)); // 5 min TTL
+  }
+  if (!cachedDashboard) {
+    await redis.setex(dashboardCacheKey, 60, JSON.stringify(dashboardOverview)); // 1 min TTL
+  }
+
   const abortController = new AbortController();
   let stream: Awaited<ReturnType<typeof client.chat.stream>> | null = null;
   let aborted = false;
@@ -149,7 +187,7 @@ export const streamDocumentUserChat = async ({
   const MAX_PER_DOC = 3;
   const docCount = new Map();
 
-  const cacheKey = `global-embedding-${validated.question}`;
+  const cacheKey = CacheKeys.questionEmbedding(validated.question);
   const cachedEmbedding = await redis.get(cacheKey);
 
   const questionEmbedding = cachedEmbedding
@@ -219,7 +257,12 @@ export const streamDocumentUserChat = async ({
         : "NO_RELEVANT_DOCUMENT_CONTEXT";
   }
 
-  const systemPrompt = getSystemPrompt(context, globalSummary);
+  const systemPrompt = getSystemPrompt(
+    context,
+    globalSummary,
+    userInfo,
+    dashboardOverview,
+  );
 
   stream = await client.chat.stream(
     {

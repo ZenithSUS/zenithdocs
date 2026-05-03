@@ -1,3 +1,5 @@
+import redis from "../config/redis.js";
+import CacheKeys from "../config/cache-keys.js";
 import { IFolderInput } from "../models/folder.model.js";
 import {
   createFolder,
@@ -43,6 +45,7 @@ export const createFolderService = async (
     throw new AppError("Folder already exists", 400);
   }
 
+  await redis.del(CacheKeys.dashboardStable(validated.user)).catch(() => {});
   return await createFolder(validated);
 };
 
@@ -209,5 +212,6 @@ export const deleteFolderService = async (
 
   const deletedFolder = await deleteFolder(folderId);
 
+  await redis.del(CacheKeys.dashboardStable(currentUserId)).catch(() => {});
   return deletedFolder;
 };

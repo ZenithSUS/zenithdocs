@@ -1,4 +1,6 @@
-import { IUser } from "../models/user.model.js";
+import redis from "../config/redis.js";
+import CacheKeys from "../config/cache-keys.js";
+import { IUser, UserWithLimits } from "../models/user.model.js";
 import {
   deleteUser,
   getAllUsers,
@@ -13,7 +15,6 @@ import PLAN_LIMITS from "../config/plans.js";
 import { updateUsageMonthByUser } from "../repositories/usage.repository.js";
 import {
   userEmailSchema,
-  searchUsersByEmailSchema,
   updateUserSchema,
   userParamsSchema,
 } from "../schemas/user.schema.js";
@@ -25,7 +26,9 @@ import {
  * @throws {Error} error if not full
  *
  */
-export const getUserByIdService = async (id: string) => {
+export const getUserByIdService = async (
+  id: string,
+): Promise<UserWithLimits> => {
   const month = new Date().toISOString().slice(0, 7);
 
   const { userId: validatedId } = userParamsSchema.parse({ userId: id });
@@ -110,6 +113,8 @@ export const updateUserService = async (id: string, data: Partial<IUser>) => {
   const user = await updateUser(validated.userId, validated.data);
 
   if (!user) throw new AppError("User not found", 404);
+
+  await redis.del(CacheKeys.userInfo(validated.userId)).catch(() => {});
   return user;
 };
 
@@ -124,5 +129,10 @@ export const deleteUserService = async (id: string) => {
   const user = await deleteUser(validatedId);
 
   if (!user) throw new AppError("User not found", 404);
+
+  await Promise.all([
+    redis.del(CacheKeys.userInfo(validatedId)),
+    redis.del(CacheKeys.dashboardStable(validatedId)),
+  ]);
   return user;
 };

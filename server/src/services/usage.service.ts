@@ -1,3 +1,5 @@
+import redis from "../config/redis.js";
+import CacheKeys from "../config/cache-keys.js";
 import { IUsageInput } from "../models/usage.model.js";
 import {
   createUsage,
@@ -235,6 +237,7 @@ export const deleteUsageByUserService = async (
     throw new AppError("No usage documents found for the user", 404);
   }
 
+  await redis.del(CacheKeys.dashboardStable(validated.userId)).catch(() => {});
   return usage;
 };
 
@@ -271,5 +274,8 @@ export const deleteUsageById = async (
 
   const usage = await deleteUsage(id);
 
+  await redis
+    .del(CacheKeys.dashboardStable(existingUsage.user._id.toString()))
+    .catch(() => {});
   return usage;
 };

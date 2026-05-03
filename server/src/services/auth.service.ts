@@ -1,3 +1,5 @@
+import redis from "../config/redis.js";
+import CacheKeys from "../config/cache-keys.js";
 import { Request } from "express";
 import config from "../config/env.js";
 import { IUser } from "../models/user.model.js";
@@ -165,6 +167,11 @@ export const logoutService = async (userId: string, refreshToken: string) => {
   const hashed = hashToken(refreshToken);
 
   await deleteTokenByUserAndToken(validated.userId, hashed);
+
+  await Promise.all([
+    redis.del(CacheKeys.userInfo(validated.userId)),
+    redis.del(CacheKeys.dashboardStable(validated.userId)),
+  ]);
 };
 
 /**
