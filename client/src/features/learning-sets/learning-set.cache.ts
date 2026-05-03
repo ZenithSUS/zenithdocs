@@ -45,62 +45,83 @@ export const addLearningSetCache = (
 
 export const updateLearningSetCache = (
   queryClient: QueryClient,
-  querykey: readonly unknown[],
+  queryKey: readonly unknown[],
   updatedLearningSet: Partial<LearningSet>,
 ) => {
-  queryClient.setQueryData<LearningSetPage>(querykey, (oldData) => {
-    if (!oldData) return oldData;
+  const baseKey = queryKey.slice(0, -1);
+  queryClient.setQueriesData<LearningSetPage>(
+    { queryKey: baseKey },
+    (oldData) => {
+      if (!oldData) return oldData;
 
-    return {
-      ...oldData,
-      learningSets: oldData.learningSets.map((learningSet) =>
-        learningSet._id === updatedLearningSet._id
-          ? {
-              ...learningSet,
-              ...updatedLearningSet,
-            }
-          : learningSet,
-      ),
-    };
-  });
+      const exists = oldData.learningSets.some(
+        (d) => d._id === updatedLearningSet._id,
+      );
+      if (!exists) return oldData;
+
+      return {
+        ...oldData,
+        learningSets: oldData.learningSets.map((learningSet) =>
+          learningSet._id === updatedLearningSet._id
+            ? { ...learningSet, ...updatedLearningSet }
+            : learningSet,
+        ),
+      };
+    },
+  );
 };
 
 export const removeLearningSetCache = (
   queryClient: QueryClient,
-  querykey: readonly unknown[],
+  queryKey: readonly unknown[],
   deletedLearningSetId: string,
+  limit: number,
 ) => {
-  queryClient.setQueryData<LearningSetPage>(querykey, (oldData) => {
-    if (!oldData) return oldData;
+  const existingData = queryClient.getQueryData<LearningSetPage>(queryKey);
 
-    const hasItem = oldData.learningSets.some(
-      (d) => d._id === deletedLearningSetId,
-    );
-    const newTotal = oldData.pagination.total - 1;
+  if (!existingData) {
+    queryClient.invalidateQueries({ queryKey });
+    return;
+  }
 
-    if (!hasItem) return oldData;
+  const hasItem = existingData.learningSets.some(
+    (d) => d._id === deletedLearningSetId,
+  );
 
-    return {
-      ...oldData,
-      pagination: {
-        ...oldData.pagination,
-        total: newTotal,
-        totalPages: Math.ceil(newTotal / oldData.pagination.limit),
-      },
-      learningSets: hasItem
-        ? oldData.learningSets.filter((d) => d._id !== deletedLearningSetId)
-        : oldData.learningSets,
-    };
+  if (!hasItem) return;
+
+  const newTotal = existingData.pagination.total - 1;
+  const newTotalPages = Math.ceil(newTotal / limit);
+
+  queryClient.setQueryData<LearningSetPage>(queryKey, {
+    ...existingData,
+    pagination: {
+      ...existingData.pagination,
+      total: newTotal,
+      totalPages: newTotalPages,
+    },
+    learningSets: existingData.learningSets.filter(
+      (d) => d._id !== deletedLearningSetId,
+    ),
+  });
+
+  const baseKey = queryKey.slice(0, -1);
+  queryClient.invalidateQueries({
+    queryKey: baseKey,
+    predicate: (query) => query.queryKey !== queryKey,
   });
 };
 
 export const removeRelatedLearningSetByDocumentIdCache = (
   queryClient: QueryClient,
-  querykey: readonly unknown[],
+  queryKey: readonly unknown[],
   deletedDocumentId: string,
+  limit: number,
 ) => {
+  const baseKey = queryKey.slice(0, -1);
+
   queryClient.setQueriesData<LearningSetPage>(
-    { queryKey: querykey },
+    { queryKey: baseKey },
     (oldData) => {
       if (!oldData) return oldData;
 
@@ -117,7 +138,7 @@ export const removeRelatedLearningSetByDocumentIdCache = (
         pagination: {
           ...oldData.pagination,
           total: newTotal,
-          totalPages: Math.ceil(newTotal / oldData.pagination.limit),
+          totalPages: Math.ceil(newTotal / limit),
         },
         learningSets: oldData.learningSets.filter(
           (d) => d.documentId !== deletedDocumentId,
@@ -125,4 +146,7 @@ export const removeRelatedLearningSetByDocumentIdCache = (
       };
     },
   );
+
+  // Invalidate all pages to correct any pagination gaps
+  queryClient.invalidateQueries({ queryKey: baseKey });
 };

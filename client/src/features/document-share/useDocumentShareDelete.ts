@@ -20,29 +20,33 @@ export const useDocumentShareDelete = (
     mutationKey: documentShareKeys.delete(),
     mutationFn: (id) => deleteDocumentShare(id),
     onMutate: async (deletedId) => {
+      // Cancel only the current page query
       await queryClient.cancelQueries({
-        queryKey: documentShareKeys.byUser(userId),
+        queryKey: documentShareKeys.byUserPage(userId, page),
       });
 
-      // Snapshot BEFORE removal for rollback
+      // Snapshot for rollback
       const previousDocumentShares =
         queryClient.getQueryData<DocumentSharePage>(
           documentShareKeys.byUserPage(userId, page),
         );
+
       removeDocumentShareCache(
         queryClient,
-        documentShareKeys.byUser(userId),
+        documentShareKeys.byUserPage(userId, page),
         deletedId,
+        fetchLimits.documentShare,
       );
 
       return { previousDocumentShares };
     },
     onError: (_, __, context) => {
+      // Restore snapshot on error
       if (context?.previousDocumentShares) {
-        // Invalidate all pages so they refetch clean data
-        queryClient.invalidateQueries({
-          queryKey: documentShareKeys.byUser(userId),
-        });
+        queryClient.setQueryData(
+          documentShareKeys.byUserPage(userId, page),
+          context.previousDocumentShares,
+        );
       }
     },
     onSuccess: (documentShare) => {
@@ -51,24 +55,19 @@ export const useDocumentShareDelete = (
           ? documentShare.documentId
           : documentShare.documentId._id;
 
-      // Change is Shared to false
       changeIsSharedInfiniteDocument(
         queryClient,
         documentKeys.byUserPage(userId, fetchLimits.document),
-        {
-          _id: documentId,
-          isShared: false,
-        },
+        { _id: documentId, isShared: false },
       );
 
       decrementTotalDocumentSharedCache(queryClient, dashboardKeys.overview());
 
-      // Invalidate all pages to correct any pagination gaps (e.g. page 2 losing an item)
+      // Invalidate all pages to correct pagination gaps
       queryClient.invalidateQueries({
         queryKey: documentShareKeys.byUser(userId),
       });
 
-      // Remove individual cache entry
       queryClient.removeQueries({
         queryKey: documentShareKeys.byId(documentShare._id),
       });

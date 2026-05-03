@@ -40,10 +40,9 @@ export const useUpdateLearningSet = (
     },
     onError: (_, __, context) => {
       if (context?.previousLearningSets) {
-        queryClient.setQueryData(
-          learningSetKeys.byUserPage(userId, page),
-          context.previousLearningSets,
-        );
+        queryClient.invalidateQueries({
+          queryKey: learningSetKeys.byUser(userId),
+        });
       }
     },
     onSuccess: (updatedLearningSet) => {

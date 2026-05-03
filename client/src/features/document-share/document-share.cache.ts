@@ -34,12 +34,11 @@ export const addDocumentShareCache = (
     documentShares: updatedShares,
   });
 
-  // Invalidate all other pages so they refetch fresh
   if (currentPageIsFull) {
     const baseKey = queryKey.slice(0, -1);
     queryClient.invalidateQueries({
       queryKey: baseKey,
-      predicate: (query) => query.queryKey !== queryKey, // skip page 1, already updated
+      predicate: (query) => query.queryKey !== queryKey,
     });
   }
 };
@@ -49,43 +48,62 @@ export const updateDocumentShareCache = (
   queryKey: readonly unknown[],
   updatedDocumentShare: DocumentShare,
 ) => {
-  queryClient.setQueryData<DocumentSharePage>(queryKey, (oldData) => {
-    if (!oldData) return oldData;
+  const baseKey = queryKey.slice(0, -1);
+  queryClient.setQueriesData<DocumentSharePage>(
+    { queryKey: baseKey },
+    (oldData) => {
+      if (!oldData) return oldData;
 
-    return {
-      ...oldData,
-      documentShares: oldData.documentShares.map((documentShare) =>
-        documentShare._id === updatedDocumentShare._id
-          ? updatedDocumentShare
-          : documentShare,
-      ),
-    };
-  });
+      const exists = oldData.documentShares.some(
+        (d) => d._id === updatedDocumentShare._id,
+      );
+      if (!exists) return oldData;
+
+      return {
+        ...oldData,
+        documentShares: oldData.documentShares.map((d) =>
+          d._id === updatedDocumentShare._id ? updatedDocumentShare : d,
+        ),
+      };
+    },
+  );
 };
 
 export const removeDocumentShareCache = (
   queryClient: QueryClient,
   queryKey: readonly unknown[],
   deletedId: string,
+  limit: number,
 ) => {
-  queryClient.setQueriesData<DocumentSharePage>({ queryKey }, (oldData) => {
-    if (!oldData) return oldData;
+  const existingData = queryClient.getQueryData<DocumentSharePage>(queryKey);
 
-    const hasItem = oldData.documentShares.some((d) => d._id === deletedId);
-    const newTotal = oldData.pagination.total - 1;
+  if (!existingData) {
+    queryClient.invalidateQueries({ queryKey });
+    return;
+  }
 
-    if (!hasItem) return oldData;
+  const hasItem = existingData.documentShares.some((d) => d._id === deletedId);
 
-    return {
-      ...oldData,
-      pagination: {
-        ...oldData.pagination,
-        total: newTotal,
-        totalPages: Math.ceil(newTotal / oldData.pagination.limit),
-      },
-      documentShares: hasItem
-        ? oldData.documentShares.filter((d) => d._id !== deletedId)
-        : oldData.documentShares,
-    };
+  if (!hasItem) return;
+
+  const newTotal = existingData.pagination.total - 1;
+  const newTotalPages = Math.ceil(newTotal / limit);
+
+  queryClient.setQueryData<DocumentSharePage>(queryKey, {
+    ...existingData,
+    pagination: {
+      ...existingData.pagination,
+      total: newTotal,
+      totalPages: newTotalPages,
+    },
+    documentShares: existingData.documentShares.filter(
+      (d) => d._id !== deletedId,
+    ),
+  });
+
+  const baseKey = queryKey.slice(0, -1);
+  queryClient.invalidateQueries({
+    queryKey: baseKey,
+    predicate: (query) => query.queryKey !== queryKey,
   });
 };

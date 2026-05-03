@@ -5,6 +5,7 @@ import learningSetKeys from "./learning-set.keys";
 import { deleteLearningSet } from "./learning-set.api";
 import { LearningSetPage, MutationContext } from "./useLearningSet";
 import { removeLearningSetCache } from "./learning-set.cache";
+import fetchLimits from "@/constants/fetch-limits";
 
 export const useDeleteLearningSet = (
   queryClient: QueryClient,
@@ -25,17 +26,19 @@ export const useDeleteLearningSet = (
 
       removeLearningSetCache(
         queryClient,
-        learningSetKeys.byUser(userId),
+        learningSetKeys.byUserPage(userId, page),
         deletedId,
+        fetchLimits.learningSets,
       );
 
       return { previousLearningSets };
     },
     onError: (_, __, context) => {
       if (context?.previousLearningSets) {
-        queryClient.invalidateQueries({
-          queryKey: learningSetKeys.byUser(userId),
-        });
+        queryClient.setQueryData(
+          learningSetKeys.byUserPage(userId, page),
+          context.previousLearningSets,
+        );
       }
     },
     onSuccess: (deletedLearningSet) => {
@@ -43,7 +46,12 @@ export const useDeleteLearningSet = (
         queryClient,
         learningSetKeys.byUserPage(userId, page),
         deletedLearningSet._id,
+        fetchLimits.learningSets,
       );
+
+      queryClient.invalidateQueries({
+        queryKey: learningSetKeys.byUser(userId),
+      });
 
       queryClient.removeQueries({
         queryKey: learningSetKeys.byId(deletedLearningSet._id),

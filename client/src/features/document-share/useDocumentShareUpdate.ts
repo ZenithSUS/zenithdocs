@@ -20,10 +20,12 @@ export const useDocumentShareUpdate = (
     mutationKey: documentShareKeys.update(),
     mutationFn: ({ id, data }) => updateDocumentShare(id, data),
     onMutate: async ({ id, data, document }) => {
+      // Cancel ALL cached pages
       await queryClient.cancelQueries({
-        queryKey: documentShareKeys.byUserPage(userId, page),
+        queryKey: documentShareKeys.byUser(userId),
       });
 
+      // Snapshot current page for rollback
       const previousDocumentShares =
         queryClient.getQueryData<DocumentSharePage>(
           documentShareKeys.byUserPage(userId, page),
@@ -49,7 +51,6 @@ export const useDocumentShareUpdate = (
 
       const updatedDocumentShare: DocumentShare = {
         ...existing,
-        // Spread only the safe fields from data (excludes documentId which is a string in UpdateDocumentShareInput)
         ...(data.type && { type: data.type }),
         ...(data.publicPermission !== undefined && {
           publicPermission: data.publicPermission,
@@ -67,7 +68,6 @@ export const useDocumentShareUpdate = (
         ...(data.expiresAt !== undefined && {
           expiresAt: data.expiresAt ? new Date(data.expiresAt) : undefined,
         }),
-        // Override documentId and ownerId with proper object shapes only if document is provided
         ...(document && {
           documentId: {
             ...document,
@@ -80,6 +80,7 @@ export const useDocumentShareUpdate = (
         }),
       };
 
+      // Update across all cached pages
       updateDocumentShareCache(
         queryClient,
         documentShareKeys.byUserPage(userId, page),
@@ -90,21 +91,21 @@ export const useDocumentShareUpdate = (
     },
     onError: (_, __, context) => {
       if (context?.previousDocumentShares) {
-        queryClient.setQueryData<DocumentSharePage>(
-          documentShareKeys.byUserPage(userId, page),
-          context.previousDocumentShares,
-        );
+        // Invalidate all pages to restore clean state
+        queryClient.invalidateQueries({
+          queryKey: documentShareKeys.byUser(userId),
+        });
       }
     },
     onSuccess: (updatedDocumentShare) => {
-      // Sync confirmed server data into cache
+      // Sync confirmed server data across all cached pages
       updateDocumentShareCache(
         queryClient,
         documentShareKeys.byUserPage(userId, page),
         updatedDocumentShare,
       );
 
-      // Also update the individual document share cache
+      // Update individual cache entry
       queryClient.setQueryData(
         documentShareKeys.byId(updatedDocumentShare._id),
         updatedDocumentShare,
