@@ -79,37 +79,44 @@ export const getDocumentSharesByUserIdPaginated = async (
 ) => {
   const offest = (page - 1) * limit;
 
-  const documentShares = await DocumentShare.find({
-    $or: [
-      { ownerId: new Types.ObjectId(userId) },
-      { "allowedUsers.userId": new Types.ObjectId(userId) },
-    ],
-  })
-    .skip(offest)
-    .limit(limit)
-    .populate({
-      path: "ownerId",
-      select: "_id email",
+  const [documentShares, total, totalAllowedUsers] = await Promise.all([
+    DocumentShare.find({
+      $or: [
+        { ownerId: new Types.ObjectId(userId) },
+        { "allowedUsers.userId": new Types.ObjectId(userId) },
+      ],
     })
-    .populate({
-      path: "documentId",
-      select: "_id title fileType fileSize fileUrl",
-    })
-    .populate({
-      path: "allowedUsers.userId",
-      select: "_id email",
-    })
-    .select({
-      "allowedUsers._id": 0,
-    })
-    .sort({ createdAt: -1 })
-    .lean();
+      .skip(offest)
+      .limit(limit)
+      .populate({
+        path: "ownerId",
+        select: "_id email",
+      })
+      .populate({
+        path: "documentId",
+        select: "_id title fileType fileSize fileUrl",
+      })
+      .populate({
+        path: "allowedUsers.userId",
+        select: "_id email",
+      })
+      .select({
+        "allowedUsers._id": 0,
+      })
+      .sort({ createdAt: -1 })
+      .lean(),
+    DocumentShare.countDocuments({ ownerId: userId }),
+    DocumentShare.countDocuments({
+      "allowedUsers.userId": userId,
+    }),
+  ]);
 
-  const total = await DocumentShare.countDocuments({ ownerId: userId });
+  const totalShares = total + totalAllowedUsers;
+  const totalPages = Math.ceil(totalShares / limit);
 
   return {
     documentShares,
-    pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    pagination: { page, limit, total, totalPages: totalPages },
   };
 };
 
