@@ -213,7 +213,10 @@ export const streamDocumentUserChat = async ({
       ...(await generateSearchQueries(validated.question)).slice(0, 2),
     ];
 
-    if (aborted) return;
+    if (aborted) {
+      res.end();
+      return;
+    }
 
     const allChunks = (
       await Promise.all(
@@ -224,13 +227,16 @@ export const streamDocumentUserChat = async ({
       )
     ).flat();
 
-    if (aborted) return;
+    if (aborted) {
+      res.end();
+      return;
+    }
 
     const uniqueChunks = Array.from(
       new Map(allChunks.map((c) => [c._id.toString(), c])).values(),
     );
 
-    const filteredChunks = uniqueChunks
+    filteredChunks = uniqueChunks
       .filter((c) => c.score >= 0.82)
       .sort((a, b) => b.score - a.score)
       .filter((chunk) => {
@@ -320,6 +326,7 @@ export const streamDocumentUserChat = async ({
     ) {
       aborted = true;
     } else {
+      res.end();
       throw error;
     }
   }

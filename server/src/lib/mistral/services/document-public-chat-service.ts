@@ -66,11 +66,17 @@ export const streamDocumentPublicChatService = async (
 
   const embedding = await generateEmbedding(validated.question);
 
-  if (aborted) return "";
+  if (aborted) {
+    res.end();
+    return "";
+  }
 
   const chunks = await getSimilarityScore(embedding, document._id.toString());
 
-  if (aborted) return "";
+  if (aborted) {
+    res.end();
+    return "";
+  }
 
   const context = chunks.map((c) => c.text).join("\n\n");
   const confidenceScore = calculateDocumentConfidenceScore(chunks);
