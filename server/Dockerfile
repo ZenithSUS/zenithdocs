@@ -1,5 +1,5 @@
-# Use Node 20 Alpine
-FROM node:20-alpine
+# Use Node 26 Alpine
+FROM node:26-alpine
 
 WORKDIR /app
 
