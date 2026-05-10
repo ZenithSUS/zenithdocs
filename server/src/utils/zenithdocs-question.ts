@@ -69,20 +69,32 @@ const isZenithDocsQuestion = (question: string): boolean => {
     "am i on premium",
     "upgrade plan",
     "current plan",
+    "my tier",
+    "what tier am i on",
 
     // Usage & Limits
     "my usage",
+    "my usage summary",
+    "explain my usage",
+    "show my usage",
     "my limit",
     "my limits",
+    "what are my limits",
+    "what is my limit",
     "messages per day",
     "how many messages",
+    "how many messages can i send",
     "how many documents",
+    "how many documents can i upload",
     "document limit",
     "storage limit",
     "how much storage",
+    "how much storage do i have",
     "storage left",
     "remaining storage",
     "how much space",
+    "storage used",
+    "storage available",
 
     // Dashboard
     "my dashboard",
@@ -90,10 +102,23 @@ const isZenithDocsQuestion = (question: string): boolean => {
     "my stats",
     "my statistics",
     "my activity",
+    "explain my dashboard",
+    "show my dashboard",
+    "dashboard overview",
     "how many files",
     "how many documents do i have",
     "total documents",
     "total files",
+    "my documents",
+    "my files",
+
+    // User Info / Profile
+    "my email",
+    "my profile",
+    "who am i",
+    "my account info",
+    "my account details",
+    "my information",
 
     // Onboarding / Help
     "walkthrough",
@@ -162,6 +187,43 @@ const isZenithDocsQuestion = (question: string): boolean => {
     "what's the purpose",
     "whats the purpose",
     "how is this useful",
+
+    // Greetings
+    "hi",
+    "hello",
+    "hey",
+    "good morning",
+    "good afternoon",
+    "good evening",
+    "how are you",
+    "what's up",
+    "whats up",
+
+    // AI Identity
+    "who are you",
+    "what are you",
+    "are you an ai",
+    "are you a bot",
+    "are you human",
+    "are you real",
+
+    // Learning Sets
+    "learning set",
+    "learning sets",
+    "create a learning set",
+    "what is a learning set",
+    "flashcard",
+    "flashcards",
+    "study set",
+    "revision set",
+
+    // Feedback / Reactions
+    "great app",
+    "nice app",
+    "love this",
+    "this is good",
+    "awesome",
+    "amazing app",
   ];
 
   return keywords.some((kw) => question.toLowerCase().includes(kw));
