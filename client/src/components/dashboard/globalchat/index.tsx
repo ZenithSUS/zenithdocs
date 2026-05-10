@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 
 import { User } from "@/types/user";
 
@@ -13,6 +13,7 @@ import StreamingBubbleCard from "./components/StreamingBubbleCard";
 import GlobalMessageWrapper from "./components/GlobalMessageWrapper";
 import GlobalChatHeader from "./components/GlobalChatHeader";
 import GlobalErrorMessage from "./components/GlobalErrorMessage";
+import useChatScroll from "@/features/ui/useChatScroll";
 
 interface GlobalChatProps {
   user: User | null;
@@ -41,7 +42,7 @@ function GlobalChat({ user, setIsOpen }: GlobalChatProps) {
     deleteGlobalMessageMutation,
   } = useGlobalChatUI(user?._id ?? "");
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useChatScroll(allGlobalMessages, streamingBubble);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [isFetchingMore, setIsFetchingMore] = React.useState(false);
 
@@ -67,12 +68,6 @@ function GlobalChat({ user, setIsOpen }: GlobalChatProps) {
       setIsFetchingMore(false);
     }
   };
-
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [allGlobalMessages]);
 
   if (isProcessing) {
     return <GlobalChatLoading />;
