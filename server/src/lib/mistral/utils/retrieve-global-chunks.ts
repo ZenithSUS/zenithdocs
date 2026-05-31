@@ -16,8 +16,6 @@ const retrieveGlobalChunks = async (
 ): Promise<IDocumentChunkOutput[]> => {
   const keywords = extractKeywords(queries[0] ?? queries.join(" "));
 
-  console.log("Keywords for global chunk retrieval:", keywords);
-
   const allChunks = (
     await Promise.all(
       queries.map(async (q) => {
