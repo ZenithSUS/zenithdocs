@@ -54,6 +54,11 @@ const documentChunkSchema = new Schema<IDocumentChunk>(
     embedding: {
       type: [Number], // 512 length
       required: true,
+      validate: {
+        validator: (v: number[]) => v.length === 512,
+        message: (props) =>
+          `${props.value} is not a valid embedding vector! It should have a length of 512.`,
+      },
     },
     chunkIndex: {
       type: Number,
@@ -66,6 +71,9 @@ const documentChunkSchema = new Schema<IDocumentChunk>(
   },
   { timestamps: true },
 );
+
+documentChunkSchema.index({ userId: 1, documentId: 1 });
+documentChunkSchema.index({ userId: 1, chunkIndex: 1 });
 
 export default vectorDB.model<IDocumentChunk>(
   "DocumentChunk",

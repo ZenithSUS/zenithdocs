@@ -78,9 +78,12 @@ export const getSimilarityScore = async (
 export const getDocumentUserSimilarityScore = async (
   queryEmbedding: number[],
   userId: string,
+  keywords?: string[],
 ) => {
   try {
     if (!queryEmbedding.length) return [];
+
+    const hasKeywords = keywords && keywords.length > 0;
 
     const results = await DocumentChunk.aggregate<IDocumentChunkOutput>([
       {
@@ -102,6 +105,38 @@ export const getDocumentUserSimilarityScore = async (
           documentId: 1,
           documentName: 1,
           score: { $meta: "vectorSearchScore" },
+          nameBoost: hasKeywords
+            ? {
+                $cond: {
+                  if: {
+                    $gt: [
+                      {
+                        $size: {
+                          $filter: {
+                            input: { $literal: keywords },
+                            as: "kw",
+                            cond: {
+                              $regexMatch: {
+                                input: { $toLower: "$documentName" },
+                                regex: { $toLower: "$$kw" },
+                              },
+                            },
+                          },
+                        },
+                      },
+                      0,
+                    ],
+                  },
+                  then: 0.1,
+                  else: 0,
+                },
+              }
+            : { $literal: 0 },
+        },
+      },
+      {
+        $addFields: {
+          score: { $add: ["$score", "$nameBoost"] },
         },
       },
     ]);
